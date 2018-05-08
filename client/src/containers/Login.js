@@ -33,7 +33,6 @@ export default class Login extends Component {
         password: this.state.password,
       })
       .then(function (res) {
-        console.log(res.data[0].Role);
         if(res.data.length === 1){
           authenticate.userHasAuthenticated(true, res.data[0].Username, res.data[0].Role);
           if((res.data[0].Role)===1) {
