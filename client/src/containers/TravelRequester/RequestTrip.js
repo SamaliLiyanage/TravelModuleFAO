@@ -78,12 +78,12 @@ export default class RequestTrip extends React.Component {
     if(this.props.isAuthenticated===false) {
       this.props.history.push('/login');
     }else if(this.props.userType===1) {
-       this.props.history.push('/viewusers');
+      this.props.history.push('/viewusers');
     }
 
     axios.get('/trips/lastindex')
     .then(res => {
-       this.generateTripID(res.data.TripCount);
+      this.generateTripID(res.data.TripCount);
     });
   }
 
@@ -106,8 +106,9 @@ export default class RequestTrip extends React.Component {
       username: this.state.rqstrID,
       tripType: parseInt(this.state.tripType),
     })
-    .then(function (res) {
-      console.log(res);
+    .then(response => {
+      console.log(response);
+      this.props.history.push('/success/'+this.state.tripID);
     })
     .catch(function(error) {
       console.log(error);
