@@ -111,7 +111,13 @@ export default class UserForm extends React.Component {
   }
 
   componenetDidMount() {
-    if(this.props.isAuthenticated===false) this.props.history.push('/login');
+    console.log("Painful");
+    if(this.props.isAuthenticated===false){ 
+      this.props.history.push('/login');
+      console.log("Are we here?????");
+    } else {
+      console.log("No :(");
+    }
   }
 
   render() {

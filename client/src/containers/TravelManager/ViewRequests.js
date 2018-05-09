@@ -7,6 +7,8 @@ function Trip(props) {
   switch(props.tripType) {
     case 1: return "Day Trip";
     case 2: return "Field Trip";
+    case 3: return "Field Day Trip";
+    case 4: return "Airport";
     default: break;
   }
 }
@@ -43,7 +45,7 @@ export default class ViewTrips extends React.Component {
   }
 
   componentDidMount() {
-    //if(this.props.isAuthenticated===false) this.props.history.push('/login');
+    if(this.props.isAuthenticated===false) this.props.history.push('/login');
 
     axios.get('/trips/all')
     .then(res => {
