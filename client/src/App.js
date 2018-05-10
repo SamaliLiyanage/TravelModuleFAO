@@ -1,9 +1,9 @@
-import React, { Component, Fragment } from 'react';
-import { Nav, Navbar, NavItem } from 'react-bootstrap';
-import { LinkContainer } from 'react-router-bootstrap';
+import React, { Component } from 'react';
+import { Nav, Navbar } from 'react-bootstrap';
 import './App.css';
 import { Link, withRouter } from 'react-router-dom';
 import Routes from './Routes';
+import MenuNavigation from './MenuNavigation';
 
 class App extends Component {
   constructor(props) {
@@ -49,21 +49,7 @@ class App extends Component {
           </Navbar.Header>
           <Navbar.Collapse>
             <Nav pullRight>
-              {(this.state.isAuthenticated && !(this.state.userType === null)) ?
-                <Fragment>
-                  <LinkContainer to='/viewusers'>
-                    <NavItem>View Users</NavItem>
-                  </LinkContainer>
-                  <LinkContainer to='/newuser'>
-                    <NavItem>Add Users</NavItem>
-                  </LinkContainer>
-                  <NavItem onClick={this.handleLogout}>Logout</NavItem> 
-                </Fragment>:
-                <Fragment>
-                  <LinkContainer to='/login'>
-                    <NavItem>Login</NavItem>
-                  </LinkContainer>
-                </Fragment>}
+              <MenuNavigation isAuthenticated={this.state.isAuthenticated} userType={this.state.userType} onClick={this.handleLogout} />
             </Nav>
           </Navbar.Collapse>
         </Navbar>

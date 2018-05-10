@@ -1,9 +1,13 @@
 var db = require('../db.js');
 
-exports.newTrip = function(tripID, userName, tripType, res) {
-  values = [tripID, userName, tripType];
+//Trip:::`TripID``Username``Driver_ID``Trip_Type``Requested_Date``Destination``Trip_Date``Start``End`
+//User:::`Username``Full_Name``Password``Role``Mobile_No`
 
-  db.connection.query('INSERT INTO Trip(TripID, Username, Trip_Type) VALUES (?, ?, ?)', values, function(err, results) {
+exports.newTrip = function(tripID, userName, tripType, res) {
+  date = new Date();
+  values = [tripID, userName, tripType, date.getFullYear()+"-"+date.getMonth()+"-"+date.getDate()];
+
+  db.connection.query('INSERT INTO Trip(TripID, Username, Trip_Type, Requested_Date) VALUES (?, ?, ?, ?)', values, function(err, results) {
     if(err) {
       console.log(err);
       return res.send(err);
@@ -22,4 +26,31 @@ exports.allTrips = function(res) {
       res.send(results);
     }
   })
+}
+
+exports.getLastIndex = function(res) {
+  date = new Date();
+  value = [date.getFullYear()+"-"+date.getMonth()+"-"+date.getDate()];
+  
+  db.connection.query('SELECT Count(TripID) AS TripCount FROM Trip WHERE Requested_Date=?', value, function(err, results) {
+    if(err) {
+      console.log(err);
+      return res.send(err);
+    } else {
+      res.send(results[0]);
+    }
+  })
+}
+
+exports.userTrips = function(userID, res) {
+  value = [userID];
+
+  db.connection.query('SELECT * FROM Trip WHERE Username=?', value, function(err, results) {
+    if(err) {
+      console.log(err);
+      return res.send(err);
+    } else {
+      res.send(results);
+    }
+  });
 }

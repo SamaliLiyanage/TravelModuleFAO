@@ -10,3 +10,11 @@ module.exports.newTrip = function(req, res, next) {
 module.exports.allTrips = function(req, res, next) {
   trip.allTrips(res);
 }
+
+module.exports.getLastIndex = function(req, res, next) {
+	trip.getLastIndex(res);
+}
+
+module.exports.userTrips = function(req, res, next) {
+  trip.userTrips(req.params.id, res);
+}
