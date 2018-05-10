@@ -2,6 +2,7 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/css/bootstrap-theme.css';
 import axios from 'axios';
+import {UserTypes} from '../../Selections';
 
 function Role(props) {
   switch(props.role) {
@@ -19,7 +20,7 @@ function UserRows(props) {
     <tr>
       <td>{tableContent.Full_Name}</td>
       <td>{tableContent.Username}</td>
-      <td><Role role={tableContent.Role} /></td>
+      <td><UserTypes role={tableContent.Role} /></td>
       <td><button onClick={props.onClick}>Edit/Delete</button></td>
     </tr>
   );
@@ -62,13 +63,17 @@ export default class ViewUsers extends React.Component {
     return(
       <div className="container">
         <table>
-          <tr>
-            <th>Full Name</th>
-            <th>Username</th>
-            <th>Role</th>
-            <th>Edit/Delete</th>
-          </tr>
-          {this.renderRows(this.state.tableContent)}
+          <thead>
+            <tr>
+              <th>Full Name</th>
+              <th>Username</th>
+              <th>Role</th>
+              <th>Edit/Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            {this.renderRows(this.state.tableContent)}
+          </tbody>
         </table>
       </div>
     )

@@ -1,5 +1,8 @@
 var db = require('../db.js');
 
+//Trip:::`TripID``Username``Driver_ID``Trip_Type``Requested_Date``Destination``Trip_Date``Start``End`
+//User:::`Username``Full_Name``Password``Role``Mobile_No`
+
 exports.newTrip = function(tripID, userName, tripType, res) {
   date = new Date();
   values = [tripID, userName, tripType, date.getFullYear()+"-"+date.getMonth()+"-"+date.getDate()];
@@ -37,4 +40,17 @@ exports.getLastIndex = function(res) {
       res.send(results[0]);
     }
   })
+}
+
+exports.userTrips = function(userID, res) {
+  value = [userID];
+
+  db.connection.query('SELECT * FROM Trip WHERE Username=?', value, function(err, results) {
+    if(err) {
+      console.log(err);
+      return res.send(err);
+    } else {
+      res.send(results);
+    }
+  });
 }

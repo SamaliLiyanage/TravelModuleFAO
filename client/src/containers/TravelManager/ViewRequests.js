@@ -2,6 +2,7 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/css/bootstrap-theme.css';
 import axios from 'axios';
+import { TripStatus } from '../../Selections';
 
 function Trip(props) {
   switch(props.tripType) {
@@ -21,6 +22,7 @@ function TripRow(props) {
       <td>{tableContent.TripID}</td>
       <td>{tableContent.Username}</td>
       <td><Trip tripType={tableContent.Trip_Type} /></td>
+      <td><TripStatus tripStatus={tableContent.Trip_Status} /></td>
       <td>
         <select onChange={props.onChange}>
           <option>Unassigned</option>
@@ -73,13 +75,18 @@ export default class ViewTrips extends React.Component {
     return(
       <div className="container">
         <table>
-          <tr>
-            <th>Trip id</th>
-            <th>Username</th>
-            <th>Trip Type</th>
-            <th>Assign Driver</th>
-          </tr>
-          {this.renderRows(this.state.tableContent)}
+          <thead>
+            <tr>
+              <th>Trip id</th>
+              <th>Username</th>
+              <th>Trip Type</th>
+              <th>Trip Status</th>
+              <th>Assign Driver</th>
+            </tr>
+          </thead>
+          <tbody>
+            {this.renderRows(this.state.tableContent)}
+          </tbody>
         </table>
       </div>
     )

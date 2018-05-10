@@ -17,3 +17,22 @@ export function TripTypes(props) {
         default: break;
       }
 }
+
+export function DriverName(props) {
+    switch(props.driverID) {
+        case 1: return "Driver 1";
+        case 2: return "Driver 2";
+        case 3: return "Driver 3";
+        default: return "Unassigned";
+    }
+}
+
+export function TripStatus(props) {
+    switch(props.tripStatus) {
+        case 1: return "Pending";
+        case 2: return "Assigned";
+        case 3: return "Completed";
+        case 4: return "Cancelled";
+        default: break;
+    }
+}

@@ -145,12 +145,12 @@ export default class RequestTrip extends React.Component {
       <form onSubmit={this.handleSubmit}>
         <div className='form-group'>
           <label>Trip Number:
-            <input name="tripID" type="text" value={this.state.tripID} />
+            <input name="tripID" type="text" value={this.state.tripID} readOnly='true' />
           </label>
         </div>
         <div className='form-group'>
           <label>Requester:
-            <input name="tripRequester" type="text" value={this.state.rqstrID} />
+            <input name="tripRequester" type="text" value={this.state.rqstrID} readOnly='true' />
           </label>
         </div>
         <div className="form-group">

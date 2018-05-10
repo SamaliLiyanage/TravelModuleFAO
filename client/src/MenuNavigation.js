@@ -41,7 +41,7 @@ function SetMenu(props) {
                     <LinkContainer to='/requesttrip'>
                         <NavItem>Request Trip</NavItem>
                     </LinkContainer> 
-                    <LinkContainer to='viewrequests'>
+                    <LinkContainer to='/viewrequests'>
                         <NavItem>View Requests</NavItem>
                     </LinkContainer>
                     <NavItem onClick={props.onClick}>Log Out</NavItem>
