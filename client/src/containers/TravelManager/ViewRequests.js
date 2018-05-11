@@ -60,18 +60,20 @@ export default class ViewTrips extends React.Component {
     })
   }
 
-  handleChange(event, i) {
-    //event.preventDefault();
-    console.log(this.state.tableContent);
+  handleChange(event, i, index) {
+    const tableContent = this.state.tableContent.slice();
+    console.log(tableContent[index]);
     axios.post('/trips/assigndriver', {
       tripID:i,
       driverID: event.target.value,
     })
     .then((response)=> {
-      axios.get('/trips/all')
+      axios.get('/trips/gettrip/'+i)
       .then((res)=>{
+        console.log(res.data);
+        tableContent[index] = res.data;
         this.setState({
-          tableContent:res.data
+          tableContent: tableContent,
         });
       });
     })
@@ -84,10 +86,10 @@ export default class ViewTrips extends React.Component {
   renderRows(tableContents, type) {
     const content = tableContents.map((item, index) => {
       if(type===0){
-        return (<TripRow key={item.TripID} tableContent={item} onChange={(e)=>this.handleChange(e, item.TripID)} />);               
+        return (<TripRow key={item.TripID} tableContent={item} onChange={(e)=>this.handleChange(e, item.TripID, index)} />);               
       } else {
         if(type===item.Trip_Type){
-          return (<TripRow key={item.TripID} tableContent={item} onChange={(e)=>this.handleChange(e, item.TripID)} />);        
+          return (<TripRow key={item.TripID} tableContent={item} onChange={(e)=>this.handleChange(e, item.TripID, index)} />);        
         } else {
           return null
         }

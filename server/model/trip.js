@@ -63,7 +63,20 @@ exports.assignDriver = function(tripID, driverID, res) {
       console.log(err);
       return res.send(err);
     } else {
-      res.send(results)
+      res.send(results);
+    }
+  });
+}
+
+exports.getTrip = function(tripID, res) {
+  value = [tripID];
+
+  db.connection.query('SELECT * FROM Trip WHERE TripID=?', value, function(err, result) {
+    if(err) {
+      console.log(err);
+      return res.send(err);
+    } else {
+      res.send(result[0]);
     }
   });
 }

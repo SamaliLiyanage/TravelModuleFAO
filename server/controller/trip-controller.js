@@ -22,3 +22,7 @@ module.exports.userTrips = function(req, res, next) {
 module.exports.assignDriver = function(req, res, next) {
   trip.assignDriver(req.body.tripID, req.body.driverID, res);
 }
+
+module.exports.getTrip = function(req, res, next) {
+  trip.getTrip(req.params.tripID, res);
+}
