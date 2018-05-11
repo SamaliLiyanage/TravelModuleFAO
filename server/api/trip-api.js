@@ -6,5 +6,6 @@ router.post('/new', tripController.newTrip);
 router.get('/all', tripController.allTrips);
 router.get('/lastindex', tripController.getLastIndex);
 router.get('/all/:id', tripController.userTrips);
+router.post('/assigndriver', tripController.assignDriver);
 
 module.exports = router;

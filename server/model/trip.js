@@ -54,3 +54,16 @@ exports.userTrips = function(userID, res) {
     }
   });
 }
+
+exports.assignDriver = function(tripID, driverID, res) {
+  values = [driverID, tripID];
+
+  db.connection.query('UPDATE Trip SET Driver_ID=? WHERE TripID=?', values, function(err, results) {
+    if(err) {
+      console.log(err);
+      return res.send(err);
+    } else {
+      res.send(results)
+    }
+  });
+}

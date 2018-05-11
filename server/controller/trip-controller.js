@@ -18,3 +18,7 @@ module.exports.getLastIndex = function(req, res, next) {
 module.exports.userTrips = function(req, res, next) {
   trip.userTrips(req.params.id, res);
 }
+
+module.exports.assignDriver = function(req, res, next) {
+  trip.assignDriver(req.body.tripID, req.body.driverID, res);
+}
