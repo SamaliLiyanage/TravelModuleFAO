@@ -3,11 +3,11 @@ var db = require('../db.js');
 //Trip:::`TripID``Username``Driver_ID``Trip_Type``Requested_Date``Destination``Trip_Date``Start``End`
 //User:::`Username``Full_Name``Password``Role``Mobile_No`
 
-exports.newTrip = function(tripID, userName, tripType, res) {
+exports.newTrip = function(tripID, userName, tripType, tripDate, res) {
   date = new Date();
-  values = [tripID, userName, tripType, date.getFullYear()+"-"+date.getMonth()+"-"+date.getDate()];
+  values = [tripID, userName, tripType, date.getFullYear()+"-"+date.getMonth()+"-"+date.getDate(), tripDate];
 
-  db.connection.query('INSERT INTO Trip(TripID, Username, Trip_Type, Requested_Date) VALUES (?, ?, ?, ?)', values, function(err, results) {
+  db.connection.query('INSERT INTO Trip(TripID, Username, Trip_Type, Requested_Date, Trip_Date) VALUES (?, ?, ?, ?, ?)', values, function(err, results) {
     if(err) {
       console.log(err);
       return res.send(err);
@@ -55,15 +55,21 @@ exports.userTrips = function(userID, res) {
   });
 }
 
-exports.assignDriver = function(tripID, driverID, res) {
-  values = [driverID, tripID];
+exports.assignDriver = function(tripID, driverID, tripStatus, res) {
+  values = [driverID, tripStatus, tripID];
 
-  db.connection.query('UPDATE Trip SET Driver_ID=? WHERE TripID=?', values, function(err, results) {
+  console.log(tripStatus);
+
+  db.connection.query('UPDATE Trip SET Driver_ID=?, Trip_Status=? WHERE TripID=?', values, function(err, results) {
     if(err) {
       console.log(err);
       return res.send(err);
     } else {
-      res.send(results);
+      var temp = {
+        "status": "success",
+        "result": results, 
+      }
+      res.json(temp);
     }
   });
 }
@@ -76,7 +82,11 @@ exports.getTrip = function(tripID, res) {
       console.log(err);
       return res.send(err);
     } else {
-      res.send(result[0]);
+      var temp = {
+        "status": "success",
+        "data": result[0],
+      }
+      res.json(temp);
     }
   });
 }

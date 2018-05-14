@@ -29,6 +29,7 @@ export default class RequestTrip extends React.Component {
       temp: 0,
       tripID: 0,
       rqstrID: this.props.userName,
+      tripDate: null,
       tripType: 0,
       tripIDValid: true,
       ttypeValid: false,
@@ -105,6 +106,7 @@ export default class RequestTrip extends React.Component {
       tripID: this.state.tripID,
       username: this.state.rqstrID,
       tripType: parseInt(this.state.tripType),
+      tripDate: this.state.tripDate,
     })
     .then(response => {
       console.log(response);
@@ -151,6 +153,11 @@ export default class RequestTrip extends React.Component {
         <div className='form-group'>
           <label>Requester:
             <input name="tripRequester" type="text" value={this.state.rqstrID} readOnly='true' />
+          </label>
+        </div>
+        <div className='form-group'>
+          <label>Date of Trip:
+            <input name='tripDate' type="date" value={this.state.tripDate} onChange={this.handleChange} />
           </label>
         </div>
         <div className="form-group">

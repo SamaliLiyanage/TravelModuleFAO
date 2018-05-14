@@ -17,12 +17,14 @@ function Trip(props) {
 
 function TripRow(props) {
   const tableContent = props.tableContent;
+  const tripDate = new Date(tableContent.Trip_Date);
 
   return (
     <tr>
       <td>{tableContent.TripID}</td>
       <td>{tableContent.Username}</td>
       <td><Trip tripType={tableContent.Trip_Type} /></td>
+      <td>{tripDate.getFullYear()+"-"+(tripDate.getMonth()+1)+"-"+tripDate.getDate()}</td>
       <td><TripStatus tripStatus={tableContent.Trip_Status} /></td>
       <td>
         <select value={tableContent.Driver_ID} onChange={props.onChange}>
@@ -62,20 +64,30 @@ export default class ViewTrips extends React.Component {
 
   handleChange(event, i, index) {
     const tableContent = this.state.tableContent.slice();
-    console.log(tableContent[index]);
+    const driverID = event.target.value;
+    var tripStatus = 1;
+
+    if((event.target.value)==="0") {
+      tripStatus = 1;
+    } else {
+      tripStatus = 2;
+    }
+    
     axios.post('/trips/assigndriver', {
       tripID:i,
       driverID: event.target.value,
+      tripStatus: tripStatus,
     })
     .then((response)=> {
-      axios.get('/trips/gettrip/'+i)
-      .then((res)=>{
-        console.log(res.data);
-        tableContent[index] = res.data;
+      if(response.data.status==="success") {
+        tableContent[index].Driver_ID = driverID;
+        tableContent[index].Trip_Status = tripStatus;
         this.setState({
           tableContent: tableContent,
         });
-      });
+      } else {
+        alert("Ooops!!! Try again later...");
+      }
     })
   }
 
@@ -107,6 +119,7 @@ export default class ViewTrips extends React.Component {
             <th>Trip id</th>
             <th>Username</th>
             <th>Trip Type</th>
+            <th>Trip Date</th>
             <th>Trip Status</th>
             <th>Assign Driver</th>
           </tr>
@@ -134,7 +147,7 @@ export default class ViewTrips extends React.Component {
         <Tab eventKey={2} title="Field Trips">
           {this.renderTable(this.state.tableContent, 2)}
         </Tab>
-        <Tab eventKey={3} title="Field One Days">
+        <Tab eventKey={3} title="Field Day Trip">
           {this.renderTable(this.state.tableContent, 3)}
         </Tab>
         <Tab eventKey={4} title="Airport Trips">
