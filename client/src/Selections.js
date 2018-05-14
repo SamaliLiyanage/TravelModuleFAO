@@ -23,6 +23,7 @@ export function DriverName(props) {
         case '1': return "Driver 1";
         case '2': return "Driver 2";
         case '3': return "Driver 3";
+        case 'cab': return "Cab Assigned"
         default: return "Unassigned";
     }
 }
@@ -33,6 +34,7 @@ export function TripStatus(props) {
         case 2: return "Assigned";
         case 3: return "Completed";
         case 4: return "Cancelled";
+        case 5: return "Cab Assigned";
         default: break;
     }
 }

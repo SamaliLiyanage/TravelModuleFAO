@@ -5,7 +5,7 @@ var db = require('../db.js');
 
 exports.newTrip = function(tripID, userName, tripType, tripDate, res) {
   date = new Date();
-  values = [tripID, userName, tripType, date.getFullYear()+"-"+date.getMonth()+"-"+date.getDate(), tripDate];
+  values = [tripID, userName, tripType, date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate(), tripDate];
 
   db.connection.query('INSERT INTO Trip(TripID, Username, Trip_Type, Requested_Date, Trip_Date) VALUES (?, ?, ?, ?, ?)', values, function(err, results) {
     if(err) {

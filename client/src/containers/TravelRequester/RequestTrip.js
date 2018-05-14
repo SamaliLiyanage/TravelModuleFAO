@@ -49,9 +49,9 @@ export default class RequestTrip extends React.Component {
     var idx = "";
 
     if(date.getMonth().toString().length===1){
-      month = '0'+date.getMonth().toString();
+      month = '0'+(date.getMonth()+1).toString();
     }else{
-      month = date.getMonth().toString();
+      month = (date.getMonth()+1).toString();
     }
 
     if(date.getDate().toString().length===1){

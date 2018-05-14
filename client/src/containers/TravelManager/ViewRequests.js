@@ -24,6 +24,7 @@ function TripRow(props) {
           <option value="1">Driver 1</option>
           <option value="2">Driver 2</option>
           <option value="3">Driver 3</option>
+          <option value="cab">Cab</option>
         </select>
       </td>
     </tr>
@@ -61,6 +62,8 @@ export default class ViewTrips extends React.Component {
 
     if((event.target.value)==="0") {
       tripStatus = 1;
+    } else if((event.target.value)==="cab") {
+      tripStatus = 5;
     } else {
       tripStatus = 2;
     }
