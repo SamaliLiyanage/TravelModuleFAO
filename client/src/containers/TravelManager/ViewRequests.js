@@ -2,28 +2,20 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/css/bootstrap-theme.css';
 import axios from 'axios';
-import { TripStatus } from '../../Selections';
+import { TripTypes, TripStatus } from '../../Selections';
 import {Tabs, Tab} from 'react-bootstrap';
-
-function Trip(props) {
-  switch(props.tripType) {
-    case 1: return "Day Trip";
-    case 2: return "Field Trip";
-    case 3: return "Field Day Trip";
-    case 4: return "Airport";
-    default: break;
-  }
-}
 
 function TripRow(props) {
   const tableContent = props.tableContent;
   const tripDate = new Date(tableContent.Trip_Date);
+  const reqDate = new Date(tableContent.Requested_Date);
 
   return (
     <tr>
       <td>{tableContent.TripID}</td>
       <td>{tableContent.Username}</td>
-      <td><Trip tripType={tableContent.Trip_Type} /></td>
+      <td>{reqDate.getFullYear()+"-"+(reqDate.getMonth()+1)+"-"+reqDate.getDate()}</td>
+      <td><TripTypes tripType={tableContent.Trip_Type} /></td>
       <td>{tripDate.getFullYear()+"-"+(tripDate.getMonth()+1)+"-"+tripDate.getDate()}</td>
       <td><TripStatus tripStatus={tableContent.Trip_Status} /></td>
       <td>
@@ -118,6 +110,7 @@ export default class ViewTrips extends React.Component {
           <tr>
             <th>Trip id</th>
             <th>Username</th>
+            <th>Requested Date</th>
             <th>Trip Type</th>
             <th>Trip Date</th>
             <th>Trip Status</th>
