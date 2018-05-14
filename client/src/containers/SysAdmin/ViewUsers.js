@@ -4,16 +4,6 @@ import 'bootstrap/dist/css/bootstrap-theme.css';
 import axios from 'axios';
 import {UserTypes} from '../../Selections';
 
-function Role(props) {
-  switch(props.role) {
-    case 1: return "System Administrator";
-    case 2: return "Travel Manager";
-    case 3: return "Driver";
-    case 4: return "Requester";
-    default: break;
-  }
-}
-
 function UserRows(props) {
   const tableContent = props.tableContent;
   return (

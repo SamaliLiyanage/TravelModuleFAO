@@ -11,6 +11,7 @@ import RequestTrip from './containers/TravelRequester/RequestTrip';
 import RequestTripSuccess from './containers/TravelRequester/RequestTripSuccess';
 import ViewRequests from './containers/TravelRequester/ViewTrips';
 import ViewTrips from './containers/TravelManager/ViewRequests';
+import TabbedRequest from './containers/TravelManager/ViewReqTabs';
 
 export default ({ childProps }) =>
   <Switch>
@@ -23,5 +24,6 @@ export default ({ childProps }) =>
     <AppliedRoute path='/viewtrips' exact component={ViewTrips} props={childProps} />
     <AppliedRoute path='/success/:tripid' exact component={RequestTripSuccess} props={childProps} />
     <AppliedRoute path='/viewrequests' exact component={ViewRequests} props={childProps}/>
+    <AppliedRoute path='/viewtabs' exact component={TabbedRequest} />
     <Route component={NotFound} />
   </Switch>;
