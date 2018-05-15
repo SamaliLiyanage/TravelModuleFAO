@@ -2,7 +2,8 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/css/bootstrap-theme.css';
 import axios from 'axios';
-import {UserTypes} from '../../Selections';
+import { UserTypes } from '../../Selections';
+import { Table } from 'react-bootstrap';
 
 function UserRows(props) {
   const tableContent = props.tableContent;
@@ -23,36 +24,36 @@ export default class ViewUsers extends React.Component {
 
     this.state = {
       tableContent: [],
-      clicked:false,
+      clicked: false,
     };
   }
 
   componentDidMount() {
-    if(this.props.isAuthenticated===false) this.props.history.push('/login');
+    if (this.props.isAuthenticated === false) this.props.history.push('/login');
 
     axios('/users/all')
-    .then(res => {
-      this.setState({
-        tableContent: res.data
-      });
-    })
+      .then(res => {
+        this.setState({
+          tableContent: res.data
+        });
+      })
   }
 
   handleClick(username) {
-    this.props.history.push('/edituser/'+username);
+    this.props.history.push('/edituser/' + username);
   }
 
   renderRows(tableContents) {
     const content = tableContents.map((item, index) => {
-      return (<UserRows tableContent={item} name={index} onClick={()=>this.handleClick(item.Username)} />);
+      return (<UserRows tableContent={item} name={index} onClick={() => this.handleClick(item.Username)} />);
     });
     return content;
   }
 
   render() {
-    return(
+    return (
       <div className="container">
-        <table>
+        <Table striped bordered condensed hover>
           <thead>
             <tr>
               <th>Full Name</th>
@@ -64,7 +65,7 @@ export default class ViewUsers extends React.Component {
           <tbody>
             {this.renderRows(this.state.tableContent)}
           </tbody>
-        </table>
+        </Table>
       </div>
     )
   }

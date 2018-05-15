@@ -1,7 +1,5 @@
 import React, { Component } from "react";
-import { Button, FormGroup, FormControl, ControlLabel } from "react-bootstrap";
-import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap/dist/css/bootstrap-theme.css';
+import { Form, Col, Button, FormGroup, FormControl, ControlLabel } from "react-bootstrap";
 import axios from 'axios';
 
 export default class Login extends Component {
@@ -56,35 +54,21 @@ export default class Login extends Component {
 
   render() {
     return (
-      <div className="Login">
-        <form onSubmit={this.handleSubmit}>
-          <FormGroup controlId="username" bsSize="large">
-            <ControlLabel>Username</ControlLabel>
-            <FormControl
-              autoFocus
-              type="email"
-              value={this.state.username}
-              onChange={this.handleChange}
-            />
+      <Form horizontal onSubmit={this.handleSubmit}>
+          <FormGroup controlId="username" >
+            <Col sm={2} smOffset={2}><ControlLabel>Username</ControlLabel></Col>
+            <Col sm={4}>
+              <FormControl autoFocus type="email" value={this.state.username} onChange={this.handleChange} />
+            </Col>
           </FormGroup>
-          <FormGroup controlId="password" bsSize="large">
-            <ControlLabel>Password</ControlLabel>
-            <FormControl
-              value={this.state.password}
-              onChange={this.handleChange}
-              type="password"
-            />
+          <FormGroup controlId="password" >
+            <Col sm={2} smOffset={2}><ControlLabel>Password</ControlLabel></Col>
+            <Col sm={4}>
+              <FormControl value={this.state.password} onChange={this.handleChange} type="password" />
+            </Col>
           </FormGroup>
-          <Button
-            block
-            bsSize="large"
-            disabled={!this.validateForm()}
-            type="submit"
-          >
-            Login
-          </Button>
-        </form>
-      </div>
+          <Button disabled={!this.validateForm()} type="submit"> Login </Button>
+        </Form>
     );
   }
 }
