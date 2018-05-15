@@ -30,13 +30,14 @@ exports.allTrips = function(res) {
 
 exports.getLastIndex = function(res) {
   date = new Date();
-  value = [date.getFullYear()+"-"+date.getMonth()+"-"+date.getDate()];
+  value = [date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()];
   
   db.connection.query('SELECT Count(TripID) AS TripCount FROM Trip WHERE Requested_Date=?', value, function(err, results) {
     if(err) {
       console.log(err);
       return res.send(err);
     } else {
+      console.log(results);
       res.send(results[0]);
     }
   })
@@ -57,8 +58,6 @@ exports.userTrips = function(userID, res) {
 
 exports.assignDriver = function(tripID, driverID, tripStatus, res) {
   values = [driverID, tripStatus, tripID];
-
-  console.log(tripStatus);
 
   db.connection.query('UPDATE Trip SET Driver_ID=?, Trip_Status=? WHERE TripID=?', values, function(err, results) {
     if(err) {

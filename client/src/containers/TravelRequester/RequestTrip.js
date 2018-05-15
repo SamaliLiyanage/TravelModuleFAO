@@ -112,7 +112,6 @@ export default class RequestTrip extends React.Component {
       tripDate: this.state.tripDate,
     })
       .then(response => {
-        console.log(response);
         this.props.history.push('/success/' + this.state.tripID);
       })
       .catch(function (error) {
