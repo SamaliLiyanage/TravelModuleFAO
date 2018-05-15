@@ -18,7 +18,7 @@ exports.newTrip = function(tripID, userName, tripType, tripDate, res) {
 }
 
 exports.allTrips = function(res) {
-  db.connection.query('SELECT * FROM Trip', function(err, results) {
+  db.connection.query('SELECT * FROM Trip ORDER BY Requested_Date DESC', function(err, results) {
     if(err) {
       console.log(err);
       return res.send(err);

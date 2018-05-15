@@ -1,6 +1,4 @@
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap/dist/css/bootstrap-theme.css';
 import axios from 'axios';
 import {Form, Col, FormGroup, ControlLabel, FormControl, Button} from 'react-bootstrap';
 
@@ -111,42 +109,44 @@ export default class UserForm extends React.Component {
     this.setState({formValid: this.state.rnValid && this.state.unValid && this.state.pwValid && this.state.rlValid});
   }
 
-  componenetDidMount() {
-    console.log("Painful");
-    if(this.props.isAuthenticated===false){ 
-      this.props.history.push('/login');
-      console.log("Are we here?????");
-    } else {
-      console.log("No :(");
-    }
+  getValidationState(fieldState) {
+    if (fieldState) return 'success'
+    else return 'error'
+  }
+
+  componentDidMount() {
+   if(this.props.isAuthenticated===false) this.props.history.push('/login');
   }
 
   render() {
     let fieldNames = ['Name', 'Username', 'Password', 'Role'] ;
     return (
       <Form horizontal onSubmit={this.handleSubmit}>
-        <FormGroup controlId="realName">
+        <FormGroup controlId="realName" validationState={this.getValidationState(this.state.rnValid)}>
           <Col componentClass={ControlLabel} smOffset={2} sm={2}> Name: </Col> 
           <Col sm={4}>
             <FormControl type="text" value={this.state.realName} onChange={this.handleChange} />
+            <FormControl.Feedback />
           </Col>
         </FormGroup>
 
-        <FormGroup controlId="userName">     
+        <FormGroup controlId="userName" validationState={this.getValidationState(this.state.unValid)}>     
           <Col componentClass={ControlLabel} smOffset={2} sm={2}> Username: </Col>
           <Col sm={4}>
             <FormControl type="text" value={this.state.userName} onChange={this.handleChange} />
+            <FormControl.Feedback />
           </Col>
         </FormGroup>
 
-        <FormGroup controlId="passWord">     
+        <FormGroup controlId="passWord" validationState={this.getValidationState(this.state.pwValid)}>     
           <Col componentClass={ControlLabel} smOffset={2} sm={2}> Password: </Col>
           <Col sm={4}>
             <FormControl type="password" value={this.state.passWord} onChange={this.handleChange} />
+            <FormControl.Feedback />
           </Col>
         </FormGroup>
 
-        <FormGroup controlId="role">     
+        <FormGroup controlId="role" validationState={this.getValidationState(this.state.rlValid)}>     
           <Col componentClass={ControlLabel} smOffset={2} sm={2}> Role: </Col>
           <Col sm={4}>
             <FormControl componentClass="select" placeholder={this.state.role} onChange={this.handleChange}>
@@ -156,10 +156,15 @@ export default class UserForm extends React.Component {
               <option value="3">Driver</option>
               <option value="4">Requester</option>
             </FormControl>
+            <FormControl.Feedback />
           </Col>
         </FormGroup>
-
-        <Button name="submit" type="submit" disabled={!this.state.formValid}>Add User</Button>
+        
+        <FormGroup>
+          <Col>
+            <Button name="submit" type="submit" disabled={!this.state.formValid}>Add User</Button>
+          </Col>
+        </FormGroup>
         <div className="panel panel-default">
           <FormErrors formErrors={this.state.formErrors} fieldNames={fieldNames}/>
         </div>

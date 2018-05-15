@@ -1,6 +1,4 @@
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap/dist/css/bootstrap-theme.css';
 import axios from 'axios';
 import { Form, Col, FormControl, FormGroup, ControlLabel, Button } from 'react-bootstrap';
 
@@ -155,35 +153,41 @@ export default class RequestTrip extends React.Component {
     this.setState({formValid: this.state.ttypeValid && this.state.tripDtValid});
   }
 
+  getValidationState(fieldState) {
+    if (fieldState) return 'success'
+    else return 'error'
+  }
+
   render() {
     const fieldNames=['Trip Date', 'Trip Type'];
 
     return (
       <Form horizontal onSubmit={this.handleSubmit}>
         <FormGroup controlId="tripID">
-          <Col sm={2} smOffset={2}><ControlLabel>Trip Number:</ControlLabel></Col>
+          <Col sm={2} smOffset={2} componentClass={ControlLabel}>Trip Number:</Col>
           <Col sm={4}><FormControl type="text" value={this.state.tripID} readOnly='true' /></Col>
         </FormGroup>
 
         <FormGroup controlId="tripRequester">
-          <Col sm={2} smOffset={2}><ControlLabel>Requester:</ControlLabel></Col>
+          <Col sm={2} smOffset={2} componentClass={ControlLabel}>Requester:</Col>
           <Col sm={4}><FormControl type="text" value={this.state.rqstrID} readOnly='true' /></Col>
         </FormGroup>
 
-        <FormGroup controlId="tripDate">
-          <Col sm={2} smOffset={2}><ControlLabel>Date of Trip:</ControlLabel></Col>
-          <Col sm={4}><FormControl type="date" value={this.state.tripDate} onChange={this.handleChange} /></Col>
+        <FormGroup controlId="tripDate" validationState={this.getValidationState(this.state.tripDtValid)}>
+          <Col sm={2} smOffset={2} componentClass={ControlLabel}>Date of Trip:</Col>
+          <Col sm={4}><FormControl type="date" value={this.state.tripDate} onChange={this.handleChange} /><FormControl.Feedback /></Col>
         </FormGroup>
 
-        <FormGroup controlId="tripType">
-          <Col sm={2} smOffset={2}><ControlLabel>Trip Type: </ControlLabel></Col>
-          <Col sm={4}><FormControl componentClass="select" placeholder={this.state.tripType} onChange={this.handleChange}>
+        <FormGroup controlId="tripType" validationState={this.getValidationState(this.state.ttypeValid)}>
+          <Col sm={2} smOffset={2} componentClass={ControlLabel}>Trip Type: </Col>
+          <Col sm={4}><FormControl componentClass="select" value={this.state.tripType} onChange={this.handleChange}>
             <option value="0">Select type</option>
             <option value="1">Day trip</option>
             <option value="2">Field trip</option>
             <option value="3">Field day trip</option>
             <option value="4">Airport</option>
-          </FormControl></Col>
+          </FormControl>
+          <FormControl.Feedback /></Col>
         </FormGroup>
 
         <Button name="submit" type="submit" disabled={!this.state.formValid}>Send Request</Button>

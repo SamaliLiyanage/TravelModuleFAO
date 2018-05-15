@@ -1,9 +1,7 @@
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap/dist/css/bootstrap-theme.css';
 import axios from 'axios';
 import { TripTypes, TripStatus } from '../../Selections';
-import { Table, Tabs, Tab } from 'react-bootstrap';
+import { Table, Tabs, Tab, Form, FormControl, FormGroup } from 'react-bootstrap';
 
 function TripRow(props) {
   const tableContent = props.tableContent;
@@ -19,13 +17,15 @@ function TripRow(props) {
       <td>{tripDate.getFullYear() + "-" + (tripDate.getMonth() + 1) + "-" + tripDate.getDate()}</td>
       <td><TripStatus tripStatus={tableContent.Trip_Status} /></td>
       <td>
-        <select value={tableContent.Driver_ID} onChange={props.onChange}>
+        <FormGroup controlId={tableContent.TripID}>
+        <FormControl componentClass="select" value={tableContent.Driver_ID} onChange={props.onChange}>
           <option value="0">Unassigned</option>
           <option value="1">Driver 1</option>
           <option value="2">Driver 2</option>
           <option value="3">Driver 3</option>
           <option value="cab">Cab</option>
-        </select>
+        </FormControl>
+        </FormGroup>
       </td>
     </tr>
   );
