@@ -60,7 +60,7 @@ export default class UserForm extends React.Component {
         userName: this.state.userName,
         realName: this.state.realName,
         passWord: this.state.passWord,
-        role: parseInt(this.state.role),
+        role: parseInt(this.state.role, 10),
       })
       .then(function (response) {
         console.log("Response", response);

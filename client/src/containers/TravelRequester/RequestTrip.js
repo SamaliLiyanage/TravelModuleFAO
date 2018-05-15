@@ -15,6 +15,10 @@ function FormErrors(props) {
           return(
             <p key={i}>{fieldName} {formErrors[i]}</p>
           );
+        } else {
+          return(
+            <p></p>
+          );
         }
       })}
     </div>
@@ -106,7 +110,7 @@ export default class RequestTrip extends React.Component {
     axios.post('/trips/new', {
       tripID: this.state.tripID,
       username: this.state.rqstrID,
-      tripType: parseInt(this.state.tripType),
+      tripType: parseInt(this.state.tripType, 10),
       tripDate: this.state.tripDate,
     })
       .then(response => {
