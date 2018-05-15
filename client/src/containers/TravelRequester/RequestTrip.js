@@ -2,23 +2,23 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/css/bootstrap-theme.css';
 import axios from 'axios';
+import { Form, Col, FormControl, FormGroup, ControlLabel, Button } from 'react-bootstrap';
 
 function FormErrors(props) {
   let formErrors = props.formErrors;
+  let fieldNames = props.fieldNames;
 
-  if(formErrors.length > 0){
-    return(
-      <div className='formErrors'>
-        <p>Trip type {formErrors}</p>
-      </div>
-    );
-  } else {
-    return(
-      <div className='formErrors'>
-        <p></p>
-      </div>
-    );
-  }
+  return(
+    <div className='formErrors'>
+      {fieldNames.map((fieldName, i)=>{
+        if(formErrors[i].length>0) {
+          return(
+            <p key={i}>{fieldName} {formErrors[i]}</p>
+          );
+        }
+      })}
+    </div>
+  );
 }
 
 export default class RequestTrip extends React.Component {
@@ -31,9 +31,10 @@ export default class RequestTrip extends React.Component {
       rqstrID: this.props.userName,
       tripDate: null,
       tripType: 0,
-      tripIDValid: true,
       ttypeValid: false,
-      formErrors: ['', '']
+      tripDtValid: false,
+      formErrors: ['', ''],
+      formValid:false
     }
 
     this.handleChange = this.handleChange.bind(this);
@@ -48,27 +49,27 @@ export default class RequestTrip extends React.Component {
     var dates = "";
     var idx = "";
 
-    if(date.getMonth().toString().length===1){
-      month = '0'+(date.getMonth()+1).toString();
-    }else{
-      month = (date.getMonth()+1).toString();
+    if (date.getMonth().toString().length === 1) {
+      month = '0' + (date.getMonth() + 1).toString();
+    } else {
+      month = (date.getMonth() + 1).toString();
     }
 
-    if(date.getDate().toString().length===1){
-      dates = '0'+date.getDate().toString();
-    }else{
+    if (date.getDate().toString().length === 1) {
+      dates = '0' + date.getDate().toString();
+    } else {
       dates = date.getDate().toString();
     }
 
-    if(nextidx.toString().length===1){
-      idx = '00'+nextidx;
-    }else if (nextidx.toString().length===2) {
-      idx = '0'+nextidx;
-    }else{
+    if (nextidx.toString().length === 1) {
+      idx = '00' + nextidx;
+    } else if (nextidx.toString().length === 2) {
+      idx = '0' + nextidx;
+    } else {
       idx = nextidx;
     };
 
-    const index = date.getFullYear().toString().substring(2,4)+""+month+""+dates+""+idx;
+    const index = date.getFullYear().toString().substring(2, 4) + "" + month + "" + dates + "" + idx;
 
     this.setState({
       tripID: index,
@@ -76,26 +77,26 @@ export default class RequestTrip extends React.Component {
   }
 
   componentDidMount() {
-    if(this.props.isAuthenticated===false) {
+    if (this.props.isAuthenticated === false) {
       this.props.history.push('/login');
-    }else if(this.props.userType===1) {
+    } else if (this.props.userType === 1) {
       this.props.history.push('/viewusers');
     }
 
     axios.get('/trips/lastindex')
-    .then(res => {
-      this.generateTripID(res.data.TripCount);
-    });
+      .then(res => {
+        this.generateTripID(res.data.TripCount);
+      });
   }
 
   handleChange(event) {
     const target = event.target;
     const value = target.value;
-    const name = target.name;
+    const id = target.id;
 
     this.setState(
-      {[name]: value},
-      () => {this.validateField(name, value)}
+      { [id]: value },
+      () => { this.validateField(id, value) }
     );
   }
 
@@ -108,28 +109,32 @@ export default class RequestTrip extends React.Component {
       tripType: parseInt(this.state.tripType),
       tripDate: this.state.tripDate,
     })
-    .then(response => {
-      console.log(response);
-      this.props.history.push('/success/'+this.state.tripID);
-    })
-    .catch(function(error) {
-      console.log(error);
-    })
+      .then(response => {
+        console.log(response);
+        this.props.history.push('/success/' + this.state.tripID);
+      })
+      .catch(function (error) {
+        console.log(error);
+      })
   }
 
   validateField(fieldName, value) {
     let fieldErrors = this.state.formErrors;
-    let tripIDValid = this.state.tripIDValid;
     let ttypeValid = this.state.ttypeValid;
+    let tripDtValid = this.state.tripDtValid;
 
-    switch(fieldName) {
-      case 'tripID':
-        tripIDValid = (/^[0-9]+$/).test(value);
-        fieldErrors[0] = tripIDValid ? '': ' is invalid';
-        break;
+    let getToday = new Date();
+    let today = new Date(getToday.getFullYear()+"-"+(getToday.getMonth()+1)+"-"+getToday.getDate());
+
+    switch (fieldName) {
       case 'tripType':
         ttypeValid = !((/^0$/).test(value));
-        fieldErrors[1] = ttypeValid ? '': ' is not selected';
+        fieldErrors[0] = ttypeValid ? '' : ' is not selected';
+        break;
+      case 'tripDate':
+        var thisDate = new Date(value);
+        tripDtValid = today.getTime()<=thisDate.getTime();
+        fieldErrors[1] = tripDtValid ? '' : ' is not valid';
         break;
       default:
         break;
@@ -137,47 +142,52 @@ export default class RequestTrip extends React.Component {
 
     this.setState({
       formErrors: fieldErrors,
-      tripIDValid: tripIDValid,
-      ttypeValid: ttypeValid
-    });
+      ttypeValid: ttypeValid,
+      tripDtValid: tripDtValid
+    }, this.validateForm);
+  }
+
+  validateForm(){
+    this.setState({formValid: this.state.ttypeValid && this.state.tripDtValid});
   }
 
   render() {
+    const fieldNames=['Trip Date', 'Trip Type'];
+
     return (
-      <form onSubmit={this.handleSubmit}>
-        <div className='form-group'>
-          <label>Trip Number:
-            <input name="tripID" type="text" value={this.state.tripID} readOnly='true' />
-          </label>
-        </div>
-        <div className='form-group'>
-          <label>Requester:
-            <input name="tripRequester" type="text" value={this.state.rqstrID} readOnly='true' />
-          </label>
-        </div>
-        <div className='form-group'>
-          <label>Date of Trip:
-            <input name='tripDate' type="date" value={this.state.tripDate} onChange={this.handleChange} />
-          </label>
-        </div>
-        <div className="form-group">
-          <label>
-            <select name="tripType" value={this.state.tripType} onChange={this.handleChange}>
-              <option value="0">Select type</option>
-              <option value="1">Day trip</option>
-              <option value="2">Field trip</option>
-              <option value="3">Field day trip</option>
-              <option value="4">Airport</option>
-            </select>
-          </label>
-        </div>
+      <Form horizontal onSubmit={this.handleSubmit}>
+        <FormGroup controlId="tripID">
+          <Col sm={2} smOffset={2}><ControlLabel>Trip Number:</ControlLabel></Col>
+          <Col sm={4}><FormControl type="text" value={this.state.tripID} readOnly='true' /></Col>
+        </FormGroup>
+
+        <FormGroup controlId="tripRequester">
+          <Col sm={2} smOffset={2}><ControlLabel>Requester:</ControlLabel></Col>
+          <Col sm={4}><FormControl type="text" value={this.state.rqstrID} readOnly='true' /></Col>
+        </FormGroup>
+
+        <FormGroup controlId="tripDate">
+          <Col sm={2} smOffset={2}><ControlLabel>Date of Trip:</ControlLabel></Col>
+          <Col sm={4}><FormControl type="date" value={this.state.tripDate} onChange={this.handleChange} /></Col>
+        </FormGroup>
+
+        <FormGroup controlId="tripType">
+          <Col sm={2} smOffset={2}><ControlLabel>Trip Type: </ControlLabel></Col>
+          <Col sm={4}><FormControl componentClass="select" placeholder={this.state.tripType} onChange={this.handleChange}>
+            <option value="0">Select type</option>
+            <option value="1">Day trip</option>
+            <option value="2">Field trip</option>
+            <option value="3">Field day trip</option>
+            <option value="4">Airport</option>
+          </FormControl></Col>
+        </FormGroup>
+
+        <Button name="submit" type="submit" disabled={!this.state.formValid}>Send Request</Button>
+
         <div>
-          <input name="submit" type="submit" value="Request" disabled={!this.state.ttypeValid}/>
+          <FormErrors formErrors={this.state.formErrors} fieldNames={fieldNames} />
         </div>
-        <div>
-          <FormErrors formErrors={this.state.formErrors[1]} />
-        </div>
-      </form>
+      </Form>
     );
   }
 }

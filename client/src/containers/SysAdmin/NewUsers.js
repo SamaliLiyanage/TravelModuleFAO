@@ -2,6 +2,7 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/css/bootstrap-theme.css';
 import axios from 'axios';
+import {Form, Col, FormGroup, ControlLabel, FormControl, Button} from 'react-bootstrap';
 
 function FormErrors (props){
   let formErrors = props.formErrors;
@@ -43,11 +44,11 @@ export default class UserForm extends React.Component {
   handleChange(event) {
     const target = event.target;
     const value = target.value;
-    const name = target.name;
+    const id = target.id;
 
     this.setState(
-      {[name]: value},
-      () => {this.validateField(name,value)}
+      {[id]: value},
+      () => {this.validateField(id,value)}
     );
   }
 
@@ -123,40 +124,46 @@ export default class UserForm extends React.Component {
   render() {
     let fieldNames = ['Name', 'Username', 'Password', 'Role'] ;
     return (
-      <form onSubmit={this.handleSubmit}>
-        <div className="form-group">
-          <label> Name: 
-            <input name="realName" type="text" value={this.state.realName} onChange={this.handleChange} />
-          </label>
-        </div>
-        <div className="form-group">     
-          <label> Username: 
-            <input name="userName" type="text" value={this.state.userName} onChange={this.handleChange} />
-          </label>
-        </div>
-        <div className="form-group">     
-          <label> Password: 
-            <input name="passWord" type="password" value={this.state.passWord} onChange={this.handleChange} />
-          </label>
-        </div>
-        <div className="form-group">     
-          <label> Role: 
-            <select name="role" value={this.state.role} onChange={this.handleChange}>
+      <Form horizontal onSubmit={this.handleSubmit}>
+        <FormGroup controlId="realName">
+          <Col componentClass={ControlLabel} smOffset={2} sm={2}> Name: </Col> 
+          <Col sm={4}>
+            <FormControl type="text" value={this.state.realName} onChange={this.handleChange} />
+          </Col>
+        </FormGroup>
+
+        <FormGroup controlId="userName">     
+          <Col componentClass={ControlLabel} smOffset={2} sm={2}> Username: </Col>
+          <Col sm={4}>
+            <FormControl type="text" value={this.state.userName} onChange={this.handleChange} />
+          </Col>
+        </FormGroup>
+
+        <FormGroup controlId="passWord">     
+          <Col componentClass={ControlLabel} smOffset={2} sm={2}> Password: </Col>
+          <Col sm={4}>
+            <FormControl type="password" value={this.state.passWord} onChange={this.handleChange} />
+          </Col>
+        </FormGroup>
+
+        <FormGroup controlId="role">     
+          <Col componentClass={ControlLabel} smOffset={2} sm={2}> Role: </Col>
+          <Col sm={4}>
+            <FormControl componentClass="select" placeholder={this.state.role} onChange={this.handleChange}>
               <option value="0">Select role</option>
               <option value="1">System Admin</option>
               <option value="2">Travel Manager</option>
               <option value="3">Driver</option>
               <option value="4">Requester</option>
-            </select>
-          </label>
-        </div>
-        <div>
-          <input name="submit" type="submit" value="Add User" disabled={!this.state.formValid}/>
-        </div>
+            </FormControl>
+          </Col>
+        </FormGroup>
+
+        <Button name="submit" type="submit" disabled={!this.state.formValid}>Add User</Button>
         <div className="panel panel-default">
           <FormErrors formErrors={this.state.formErrors} fieldNames={fieldNames}/>
         </div>
-      </form>
+      </Form>
     );
   }
 }
