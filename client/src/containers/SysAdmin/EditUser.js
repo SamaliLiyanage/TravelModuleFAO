@@ -2,19 +2,20 @@ import React from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/css/bootstrap-theme.css';
+import { Form, FormControl, FormGroup, ControlLabel, Col, Button } from 'react-bootstrap';
 
 function FormErrors(props) {
   let formErrors = props.formErrors;
   let fieldNames = props.fieldNames;
 
-  return(
+  return (
     <div className='formErrors'>
       {fieldNames.map((fieldName, i) => {
-        if(formErrors[i].length > 0){
+        if (formErrors[i].length > 0) {
           return (
             <p key={i}>{fieldName} {formErrors[i]}</p>
           );
-        }else{
+        } else {
           return '';
         }
       })}
@@ -56,35 +57,35 @@ export default class EditUser extends React.Component {
       userName: this.state.userName,
       realName: this.state.realName,
       passWord: this.state.passWord,
-      role: parseInt(this.state.role),
+      role: parseInt(this.state.role, 10),
     })
-    .then(function (response) {
-      console.log("Response start", response, "Response end");
-      authenticate.history.push('/viewusers');
-    })
-    .catch(function (error) {
-      console.log("Error start ", error, "Error end");
-    })
+      .then(function (response) {
+        console.log("Response start", response, "Response end");
+        authenticate.history.push('/viewusers');
+      })
+      .catch(function (error) {
+        console.log("Error start ", error, "Error end");
+      })
   }
 
   handleChange(event) {
     const target = event.target;
     const value = target.value;
-    const name = target.name;
+    const id = target.id;
 
-    this.setState (
-      {[name]:value},
-      () => {this.validateField(name, value)}
+    this.setState(
+      { [id]: value },
+      () => { this.validateField(id, value) }
     );
   }
 
   handleClick(event) {
     console.log("click");
-    axios.delete('/users/'+this.state.id)
-    .then(response => {
-      console.log(response);
-      this.props.history.push('/viewusers');
-    })
+    axios.delete('/users/' + this.state.id)
+      .then(response => {
+        console.log(response);
+        this.props.history.push('/viewusers');
+      })
   }
 
   validateField(fieldName, value) {
@@ -94,22 +95,22 @@ export default class EditUser extends React.Component {
     let pwValid = this.state.pwValid;
     let rlValid = this.state.rlValid;
 
-    switch(fieldName) {
+    switch (fieldName) {
       case 'realName':
         rnValid = (/^(?:([a-zA-Z ]+))$/).test(value);
-        fieldValidationErrors[0] = rnValid ? '': ' is invalid';
+        fieldValidationErrors[0] = rnValid ? '' : ' is invalid';
         break;
       case 'userName':
         unValid = (/^([\w]+)@fao(\.)org$/).test(value);
-        fieldValidationErrors[1] = unValid ? '': ' is invalaid';
+        fieldValidationErrors[1] = unValid ? '' : ' is invalaid';
         break;
       case 'passWord':
-        pwValid = (value.length >=6);
-        fieldValidationErrors[2] = pwValid ? '': ' is too short';
+        pwValid = (value.length >= 6);
+        fieldValidationErrors[2] = pwValid ? '' : ' is too short';
         break;
       case 'role':
         rlValid = !((/^0$/).test(value));
-        fieldValidationErrors[3] = rlValid ? '': ' is not selected';
+        fieldValidationErrors[3] = rlValid ? '' : ' is not selected';
         break;
       default:
         break;
@@ -125,66 +126,71 @@ export default class EditUser extends React.Component {
   }
 
   validateForm() {
-    this.setState({formValid: this.state.rnValid && this.state.unValid && this.state.pwValid && this.state.rlValid});
+    this.setState({ formValid: this.state.rnValid && this.state.unValid && this.state.pwValid && this.state.rlValid });
   }
 
   componentDidMount() {
-    if(this.props.isAuthenticated === false) this.props.history.push('/login');
+    if (this.props.isAuthenticated === false) this.props.history.push('/login');
 
-    axios.get('/users/'+this.state.id)
-    .then( res => {
-      console.log(res);
-      this.setState({
-        user: res.data[0],
-        realName: res.data[0].Full_Name,
-        userName: res.data[0].Username,
-        passWord: res.data[0].Password,
-        role: res.data[0].Role
+    axios.get('/users/' + this.state.id)
+      .then(res => {
+        console.log(res);
+        this.setState({
+          user: res.data[0],
+          realName: res.data[0].Full_Name,
+          userName: res.data[0].Username,
+          passWord: res.data[0].Password,
+          role: res.data[0].Role
+        });
       });
-    });
   }
 
   render() {
     let fieldNames = ['Name', 'Username', 'Password', 'Role'];
 
     return (
-      <div className="Edit">
-        <form onSubmit={this.handleSubmit}>
-          <div className="form-group">
-            <label> Name:
-              <input name="realName" type="text" value={this.state.realName} onChange={this.handleChange} />
-            </label>
-          </div>
-          <div className="form-group">
-            <label> Username:
-              <input name="userName" type="text" value={this.state.userName} onChange={this.handleChange} />
-            </label>
-          </div>
-          <div className="form-group">
-            <label> Password:
-              <input name="passWord" type="password" value={this.state.passWord} onChange={this.handleChange} />
-            </label>
-          </div>
-          <div className="form-group">
-            <label>
-              <select name="role" value={this.state.role} onChange={this.handleChange}>
-                <option value="0">Select role</option>
-                <option value="1">System Admin</option>
-                <option value="2">Travel Manager</option>
-                <option value="3">Driver</option>
-                <option value="4">Requester</option>
-              </select>
-            </label>
-          </div>
-          <div>
-            <input name="submit" type="submit" value="Edit" disabled={!this.state.formValid}/>
-            <input name="delete" type="button" value="Delete" onClick={this.handleClick} />
-          </div>
-          <div>
-            <FormErrors formErrors={this.state.formErrors} fieldNames={fieldNames} />
-          </div>
-        </form>
-      </div>
+      <Form horizontal onSubmit={this.handleSubmit}>
+        <FormGroup controlId="realName">
+          <Col componentclass={ControlLabel} smOffset={2} sm={2}> Name: </Col>
+          <Col sm={4}>
+            <FormControl type="text" value={this.state.realName} onChange={this.handleChange} />
+          </Col>
+        </FormGroup>
+
+        <FormGroup controlId="userName">
+          <Col componentclass={ControlLabel} smOffset={2} sm={2}> Username:</Col>
+          <Col sm={4}>
+            <FormControl type="text" value={this.state.userName} onChange={this.handleChange} />
+          </Col>
+        </FormGroup>
+
+        <FormGroup controlId="passWord">
+          <Col componentclass={ControlLabel} smOffset={2} sm={2}> Password:</Col>
+          <Col sm={4}>
+            <FormControl type="password" value={this.state.passWord} onChange={this.handleChange} />
+          </Col>
+        </FormGroup>
+
+        <FormGroup controlId="role">
+          <Col componentclass={ControlLabel} smOffset={2} sm={2}> Role: </Col>
+          <Col sm={4}>
+            <FormControl componentClass="select" placeholder={this.state.role} onChange={this.handleChange}>
+              <option value="0">Select role</option>
+              <option value="1">System Admin</option>
+              <option value="2">Travel Manager</option>
+              <option value="3">Driver</option>
+              <option value="4">Requester</option>
+            </FormControl>
+          </Col>
+        </FormGroup>
+
+        <Button name="submit" type="submit" disabled={!this.state.formValid}>Edit</Button>
+        <Button name="delete" type="button" bsStyle="danger" onClick={this.handleClick}>Delete</Button>
+
+        <div>
+          <FormErrors formErrors={this.state.formErrors} fieldNames={fieldNames} />
+        </div>
+      </Form>
     );
   }
 

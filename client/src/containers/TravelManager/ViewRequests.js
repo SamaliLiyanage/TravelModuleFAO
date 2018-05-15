@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/css/bootstrap-theme.css';
 import axios from 'axios';
 import { TripTypes, TripStatus } from '../../Selections';
-import {Tabs, Tab} from 'react-bootstrap';
+import { Table, Tabs, Tab } from 'react-bootstrap';
 
 function TripRow(props) {
   const tableContent = props.tableContent;
@@ -14,9 +14,9 @@ function TripRow(props) {
     <tr>
       <td>{tableContent.TripID}</td>
       <td>{tableContent.Username}</td>
-      <td>{reqDate.getFullYear()+"-"+(reqDate.getMonth()+1)+"-"+reqDate.getDate()}</td>
+      <td>{reqDate.getFullYear() + "-" + (reqDate.getMonth() + 1) + "-" + reqDate.getDate()}</td>
       <td><TripTypes tripType={tableContent.Trip_Type} /></td>
-      <td>{tripDate.getFullYear()+"-"+(tripDate.getMonth()+1)+"-"+tripDate.getDate()}</td>
+      <td>{tripDate.getFullYear() + "-" + (tripDate.getMonth() + 1) + "-" + tripDate.getDate()}</td>
       <td><TripStatus tripStatus={tableContent.Trip_Status} /></td>
       <td>
         <select value={tableContent.Driver_ID} onChange={props.onChange}>
@@ -40,19 +40,19 @@ export default class ViewTrips extends React.Component {
       tableContent: [],
     }
 
-    this.handleChange= this.handleChange.bind(this);
-    this.handleSelect= this.handleSelect.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSelect = this.handleSelect.bind(this);
   }
 
   componentDidMount() {
-    if(this.props.isAuthenticated===false) this.props.history.push('/login');
+    if (this.props.isAuthenticated === false) this.props.history.push('/login');
 
     axios.get('/trips/all')
-    .then(res => {
-      this.setState({
-        tableContent: res.data
-      });
-    })
+      .then(res => {
+        this.setState({
+          tableContent: res.data
+        });
+      })
   }
 
   handleChange(event, i, index) {
@@ -60,30 +60,30 @@ export default class ViewTrips extends React.Component {
     const driverID = event.target.value;
     var tripStatus = 1;
 
-    if((event.target.value)==="0") {
+    if ((event.target.value) === "0") {
       tripStatus = 1;
-    } else if((event.target.value)==="cab") {
+    } else if ((event.target.value) === "cab") {
       tripStatus = 5;
     } else {
       tripStatus = 2;
     }
-    
+
     axios.post('/trips/assigndriver', {
-      tripID:i,
+      tripID: i,
       driverID: event.target.value,
       tripStatus: tripStatus,
     })
-    .then((response)=> {
-      if(response.data.status==="success") {
-        tableContent[index].Driver_ID = driverID;
-        tableContent[index].Trip_Status = tripStatus;
-        this.setState({
-          tableContent: tableContent,
-        });
-      } else {
-        alert("Ooops!!! Try again later...");
-      }
-    })
+      .then((response) => {
+        if (response.data.status === "success") {
+          tableContent[index].Driver_ID = driverID;
+          tableContent[index].Trip_Status = tripStatus;
+          this.setState({
+            tableContent: tableContent,
+          });
+        } else {
+          alert("Ooops!!! Try again later...");
+        }
+      })
   }
 
   handleSelect(key) {
@@ -92,11 +92,11 @@ export default class ViewTrips extends React.Component {
 
   renderRows(tableContents, type) {
     const content = tableContents.map((item, index) => {
-      if(type===0){
-        return (<TripRow key={item.TripID} tableContent={item} onChange={(e)=>this.handleChange(e, item.TripID, index)} />);               
+      if (type === 0) {
+        return (<TripRow key={item.TripID} tableContent={item} onChange={(e) => this.handleChange(e, item.TripID, index)} />);
       } else {
-        if(type===item.Trip_Type){
-          return (<TripRow key={item.TripID} tableContent={item} onChange={(e)=>this.handleChange(e, item.TripID, index)} />);        
+        if (type === item.Trip_Type) {
+          return (<TripRow key={item.TripID} tableContent={item} onChange={(e) => this.handleChange(e, item.TripID, index)} />);
         } else {
           return null
         }
@@ -106,9 +106,9 @@ export default class ViewTrips extends React.Component {
     return content;
   }
 
-  renderTable(tableContents, type){
-    return(
-      <table>
+  renderTable(tableContents, type) {
+    return (
+      <Table striped bordered condensed hover>
         <thead>
           <tr>
             <th>Trip id</th>
@@ -123,12 +123,12 @@ export default class ViewTrips extends React.Component {
         <tbody>
           {this.renderRows(tableContents, type)}
         </tbody>
-      </table>
+      </Table>
     );
   }
 
   render() {
-    return(
+    return (
       <Tabs
         activeKey={this.state.key}
         onSelect={this.handleSelect}

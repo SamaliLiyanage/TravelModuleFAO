@@ -3,8 +3,8 @@ import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/css/bootstrap-theme.css';
 
 export default class RequestTripSuccess extends React.Component {
-    componentDidMount(){
-        if(this.props.isAuthenticated===false) this.props.history.push('/login');
+    componentDidMount() {
+        if (this.props.isAuthenticated === false) this.props.history.push('/login');
     }
 
     render() {
