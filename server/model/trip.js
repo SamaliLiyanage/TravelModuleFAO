@@ -37,7 +37,6 @@ exports.getLastIndex = function(res) {
       console.log(err);
       return res.send(err);
     } else {
-      console.log(results);
       res.send(results[0]);
     }
   })

@@ -45,7 +45,22 @@ export default class TabbedRequest extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.isAuthenticated === false) this.props.history.push('/login');
+    const authenticate = this.props;
+
+    axios.get('/loggedin')
+    .then(res => {
+      if(res.data==""){
+        authenticate.userHasAuthenticated(false, null, null);
+        authenticate.history.push('/login')
+      } else {
+        authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
+        if(res.data.Role===1) {
+          authenticate.history.push('/viewusers');
+        } else if (res.data.Role===4) {
+          authenticate.history.push('/requesttrip');
+        } 
+      }
+    })
 
     axios.get('/trips/all')
       .then(res => {
@@ -153,27 +168,27 @@ export default class TabbedRequest extends React.Component {
         <Row className="clearfix">
           <Col>
             <Nav bsStyle="tabs">
-              <NavDropdown eventKey={0} title="All Trips" id="all-trips">
+              <NavDropdown eventKey={0} title="All Trips" >
                 <MenuItem eventKey={0.1}>All</MenuItem>
                 <MenuItem eventKey={0.2}>Assigned</MenuItem>
                 <MenuItem eventKey={0.3}>Unassigned</MenuItem>
                 </NavDropdown>
-              <NavDropdown eventKey={1} title="Day Trips" id="day-trips">
+              <NavDropdown eventKey={1} title="Day Trips" >
                 <MenuItem eventKey={1.1}>All</MenuItem>
                 <MenuItem eventKey={1.2}>Assigned</MenuItem>
                 <MenuItem eventKey={1.3}>Unassigned</MenuItem>
                 </NavDropdown>
-              <NavDropdown eventKey={2} title="Field Trips" id="field-trips">
+              <NavDropdown eventKey={2} title="Field Trips" >
                 <MenuItem eventKey={2.1}>All</MenuItem>
                 <MenuItem eventKey={2.2}>Assigned</MenuItem>
                 <MenuItem eventKey={2.3}>Unassigned</MenuItem>
               </NavDropdown>
-              <NavDropdown eventKey={3} title="Field Day Trips" id="field-day-trips">
+              <NavDropdown eventKey={3} title="Field Day Trips" >
                 <MenuItem eventKey={3.1}>All</MenuItem>
                 <MenuItem eventKey={3.2}>Assigned</MenuItem>
                 <MenuItem eventKey={3.3}>Unassigned</MenuItem>
               </NavDropdown>
-              <NavDropdown eventKey={4} title="Airport Trips" id="airport-trips">
+              <NavDropdown eventKey={4} title="Airport Trips">
                 <MenuItem eventKey={4.1}>All</MenuItem>
                 <MenuItem eventKey={4.2}>Assigned</MenuItem>
                 <MenuItem eventKey={4.3}>Unassigned</MenuItem>                

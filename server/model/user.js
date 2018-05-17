@@ -73,3 +73,14 @@ exports.deleteUser = function(userName, res) {
     }
   });
 }
+
+exports.isLoggedIn = function(res) {
+  db.connection.query('SELECT * FROM User', function(err, results, fields) {
+    if(err) {
+      console.log(err);
+      return res.send(err);
+    }else{
+      res.send(JSON.stringify(results));
+    }
+  });
+}

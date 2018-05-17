@@ -8,8 +8,11 @@ var user = require('../model/user');
 }*/
 
 module.exports = function (app, passport) {
-  //console.log("Somewhere:::: ",passport);
   app.post('/login', passport.authenticate('local-login'), function(req, res) {
     res.redirect('/users/'+req.user.Username);
   });
+
+  app.get('/loggedin', function (req, res) {
+    res.send(req.user);
+  })
 }

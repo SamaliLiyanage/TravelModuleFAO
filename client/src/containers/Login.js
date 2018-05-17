@@ -13,7 +13,23 @@ export default class Login extends Component {
   }
 
   componentDidMount() {
-    console.log(this.props.isAuthenticated);
+    const authenticate = this.props;
+    axios.get('/loggedin')
+    .then(function (res){
+      if(res.data=="") {
+        authenticate.userHasAuthenticated(false, null, null);
+        authenticate.history.push('/login');
+      } else {
+        authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
+        if(res.data.Role===1) {
+          authenticate.history.push('/viewusers');
+        } else if (res.data.Role===4) {
+          authenticate.history.push('/requesttrip');
+        } else if (res.data.Role===2) {
+          authenticate.history.push('/viewtrips');
+        }
+      }
+    })
   }
 
   validateForm() {
@@ -35,7 +51,7 @@ export default class Login extends Component {
         password: this.state.password,
       })
       .then(function (res) {
-        //console.log("HERE::::", res)
+        //console.log(res.data)
         if(res.data.length === 1){
           authenticate.userHasAuthenticated(true, res.data[0].Username, res.data[0].Role);
           if((res.data[0].Role)===1) {

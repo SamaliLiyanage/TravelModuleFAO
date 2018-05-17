@@ -115,7 +115,23 @@ export default class UserForm extends React.Component {
   }
 
   componentDidMount() {
-   if(this.props.isAuthenticated===false) this.props.history.push('/login');
+    const authenticate = this.props;
+
+    axios.get('/loggedin')
+    .then(res => {
+      console.log(res, authenticate)
+      if(res.data==""){
+        authenticate.userHasAuthenticated(false, null, null);
+        authenticate.history.push('/login')
+      } else {
+        authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
+        if (res.data.Role===4) {
+          authenticate.history.push('/requesttrip');
+        } else if (res.data.Role===2) {
+          authenticate.history.push('/viewtrips');
+        }
+      }
+    })
   }
 
   render() {

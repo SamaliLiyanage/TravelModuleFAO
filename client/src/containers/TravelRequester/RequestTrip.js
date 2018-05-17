@@ -15,7 +15,7 @@ function FormErrors(props) {
           );
         } else {
           return(
-            <p></p>
+            null
           );
         }
       })}
@@ -31,7 +31,7 @@ export default class RequestTrip extends React.Component {
       temp: 0,
       tripID: 0,
       rqstrID: this.props.userName,
-      tripDate: null,
+      tripDate: new Date(),
       tripType: 0,
       ttypeValid: false,
       tripDtValid: false,
@@ -79,11 +79,22 @@ export default class RequestTrip extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.isAuthenticated === false) {
-      this.props.history.push('/login');
-    } else if (this.props.userType === 1) {
-      this.props.history.push('/viewusers');
-    }
+    const authenticate = this.props;
+    
+    axios.get('/loggedin')
+    .then(res => {
+      if(res.data==""){
+        authenticate.userHasAuthenticated(false, null, null);
+        authenticate.history.push('/login')
+      } else {
+        authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
+        if(res.data.Role===1) {
+          authenticate.history.push('/viewusers');
+        } else if (res.data.Role===2) {
+          authenticate.history.push('/viewtrips');
+        }
+      }
+    })
 
     axios.get('/trips/lastindex')
       .then(res => {

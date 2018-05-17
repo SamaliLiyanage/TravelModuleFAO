@@ -33,7 +33,22 @@ export default class ViewRequests extends React.Component {
     }
 
     componentDidMount() {
-        if (this.props.isAuthenticated === false) this.props.history.push('/login');
+        const authenticate = this.props;
+
+        axios.get('/loggedin')
+        .then(res => {
+        if(res.data==""){
+            authenticate.userHasAuthenticated(false, null, null);
+            authenticate.history.push('/login')
+        } else {
+            authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
+            if(res.data.Role===1) {
+            authenticate.history.push('/viewusers');
+            } else if (res.data.Role===2) {
+            authenticate.history.push('/viewtrips');
+            }
+        }
+        })
 
         axios.get('trips/all/' + this.props.userName)
             .then(res => {
@@ -45,7 +60,7 @@ export default class ViewRequests extends React.Component {
 
     renderRows(tableContents) {
         const content = tableContents.map((item, index) => {
-            return (<TripRows rowContent={item} />);
+            return (<TripRows key={index} rowContent={item} />);
         });
 
         return content;
