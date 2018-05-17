@@ -12,6 +12,10 @@ export default class Login extends Component {
     };
   }
 
+  componentDidMount() {
+    console.log(this.props.isAuthenticated);
+  }
+
   validateForm() {
     return this.state.username.length > 0 && this.state.password.length > 0;
   }
@@ -31,6 +35,7 @@ export default class Login extends Component {
         password: this.state.password,
       })
       .then(function (res) {
+        //console.log("HERE::::", res)
         if(res.data.length === 1){
           authenticate.userHasAuthenticated(true, res.data[0].Username, res.data[0].Role);
           if((res.data[0].Role)===1) {

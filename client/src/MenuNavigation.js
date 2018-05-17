@@ -26,6 +26,9 @@ function SetMenu(props) {
                     <LinkContainer to='/viewtrips'>
                         <NavItem>View Trips</NavItem>
                     </LinkContainer>
+                    <LinkContainer to='/viewschedules'>
+                        <NavItem>Driver Schedules</NavItem>
+                    </LinkContainer>
                     <NavItem onClick={props.onClick}>Log Out</NavItem>
                 </Fragment>
             );

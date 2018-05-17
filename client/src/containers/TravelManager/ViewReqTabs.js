@@ -47,12 +47,10 @@ export default class TabbedRequest extends React.Component {
   componentDidMount() {
     //if (this.props.isAuthenticated === false) this.props.history.push('/login');
 
-    axios.get('/trips/all')
-      .then(res => {
-        this.setState({
-          tableContent: res.data
-        });
-      })
+    axios.post('/mails/send')
+      .then(
+        //console.log('Hi!')
+      )
   }
 
   handleChange(event, i, index) {

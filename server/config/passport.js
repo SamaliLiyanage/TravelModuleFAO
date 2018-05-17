@@ -5,7 +5,8 @@ var LocalStrategy = require('passport-local').Strategy;
 module.exports = function(passport) {
 
   passport.serializeUser(function(user, done) {
-    done(null, user.id);
+    //console.log(user);
+    done(null, user.Username);
   });
 
   passport.deserializeUser(function(id, done) {
@@ -15,18 +16,23 @@ module.exports = function(passport) {
   });
 
   passport.use('local-login', new LocalStrategy({
-    usernameField : 'email',
+    usernameField : 'username',
     passwordField : 'password',
     passReqToCallback : true
-  }, function(req, email, password, done) {
+  }, function(req, username, password, done) {
        console.log("passport.use / local -login");
-       db.connection.query('SELECT * FROM User WHERE Username = ?', email, function(err, rows){
+       db.connection.query('SELECT * FROM User WHERE Username = ?', username, function(err, rows){
+         //console.log("username ::::", rows);
          if(err) return done(err);
-         if(!rows.length) {
-           return done(null, false, req.flash('loginMessage', 'No user found.'));
+         if(!(rows.length===1)) {
+           //console.log("Here !!!!!");
+           return done(null, false);
          }
-         if(!(rows[0].password == password))
-           return done(null, false, req.flash('loginMessage', 'Oops! Wrong password.'));
+         if(!(rows[0].Password == password)){
+          //console.log("Here 2!!!!!");
+          return done(null, false, {message: 'Incorrect password'});
+         }
+         //console.log("Here 3!!!!!", rows[0]);            
          return done(null, rows[0]);
        });
      }));

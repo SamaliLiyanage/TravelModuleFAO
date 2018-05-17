@@ -17,7 +17,7 @@ function TripRow(props) {
       <td>{tripDate.getFullYear() + "-" + (tripDate.getMonth() + 1) + "-" + tripDate.getDate()}</td>
       <td><TripStatus tripStatus={tableContent.Trip_Status} /></td>
       <td>
-        <FormGroup controlId={tableContent.TripID}>
+        <FormGroup controlId={tableContent.TripID} bsSize="small">
         <FormControl componentClass="select" value={tableContent.Driver_ID} onChange={props.onChange}>
           <option value="0">Unassigned</option>
           <option value="1">Driver 1</option>
@@ -127,7 +127,7 @@ export default class TabbedRequest extends React.Component {
       <Table striped bordered condensed hover>
         <thead>
           <tr>
-            <th>Trip id 22222</th>
+            <th>Trip ID</th>
             <th>Username</th>
             <th>Requested Date</th>
             <th>Trip Type</th>
