@@ -1,7 +1,5 @@
 import React from 'react';
 import axios from 'axios';
-import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap/dist/css/bootstrap-theme.css';
 import { Form, FormControl, FormGroup, ControlLabel, Col, Button } from 'react-bootstrap';
 
 function FormErrors(props) {
@@ -129,12 +127,31 @@ export default class EditUser extends React.Component {
     this.setState({ formValid: this.state.rnValid && this.state.unValid && this.state.pwValid && this.state.rlValid });
   }
 
+  getValidationState(fieldState) {
+    if (fieldState) return 'success'
+    else return 'error'
+  }
+
   componentDidMount() {
-    if (this.props.isAuthenticated === false) this.props.history.push('/login');
+    const authenticate = this.props;
+
+    axios.get('/loggedin')
+    .then(res => {
+      if(res.data==""){
+        authenticate.userHasAuthenticated(false, null, null);
+        authenticate.history.push('/login')
+      } else {
+        authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
+        if (res.data.Role===4) {
+          authenticate.history.push('/requesttrip');
+        } else if (res.data.Role===2) {
+          authenticate.history.push('/viewtrips');
+        }
+      }
+    })
 
     axios.get('/users/' + this.state.id)
       .then(res => {
-        console.log(res);
         this.setState({
           user: res.data[0],
           realName: res.data[0].Full_Name,
@@ -150,31 +167,31 @@ export default class EditUser extends React.Component {
 
     return (
       <Form horizontal onSubmit={this.handleSubmit}>
-        <FormGroup controlId="realName">
-          <Col componentclass={ControlLabel} smOffset={2} sm={2}> Name: </Col>
+        <FormGroup controlId="realName" validationState={this.getValidationState(this.state.rnValid)}>
+          <Col componentClass={ControlLabel} smOffset={2} sm={2}> Name: </Col>
           <Col sm={4}>
             <FormControl type="text" value={this.state.realName} onChange={this.handleChange} />
           </Col>
         </FormGroup>
 
-        <FormGroup controlId="userName">
-          <Col componentclass={ControlLabel} smOffset={2} sm={2}> Username:</Col>
+        <FormGroup controlId="userName" validationState={this.getValidationState(this.state.unValid)}>
+          <Col componentClass={ControlLabel} smOffset={2} sm={2}> Username:</Col>
           <Col sm={4}>
             <FormControl type="text" value={this.state.userName} onChange={this.handleChange} />
           </Col>
         </FormGroup>
 
-        <FormGroup controlId="passWord">
-          <Col componentclass={ControlLabel} smOffset={2} sm={2}> Password:</Col>
+        <FormGroup controlId="passWord" validationState={this.getValidationState(this.state.pwValid)}>
+          <Col componentClass={ControlLabel} smOffset={2} sm={2}> Password:</Col>
           <Col sm={4}>
             <FormControl type="password" value={this.state.passWord} onChange={this.handleChange} />
           </Col>
         </FormGroup>
 
-        <FormGroup controlId="role">
-          <Col componentclass={ControlLabel} smOffset={2} sm={2}> Role: </Col>
+        <FormGroup controlId="role" validationState={this.getValidationState(this.state.rlValid)}>
+          <Col componentClass={ControlLabel} smOffset={2} sm={2}> Role: </Col>
           <Col sm={4}>
-            <FormControl componentClass="select" placeholder={this.state.role} onChange={this.handleChange}>
+            <FormControl componentClass="select" value={this.state.role} onChange={this.handleChange}>
               <option value="0">Select role</option>
               <option value="1">System Admin</option>
               <option value="2">Travel Manager</option>
@@ -184,8 +201,14 @@ export default class EditUser extends React.Component {
           </Col>
         </FormGroup>
 
-        <Button name="submit" type="submit" disabled={!this.state.formValid}>Edit</Button>
-        <Button name="delete" type="button" bsStyle="danger" onClick={this.handleClick}>Delete</Button>
+        <FormGroup>
+          <Col sm={1} smOffset={4}>
+            <Button name="submit" type="submit" disabled={!this.state.formValid}>Edit</Button>
+          </Col>
+          <Col  sm={1}>
+            <Button name="delete" type="button" bsStyle="danger" onClick={this.handleClick}>Delete</Button>
+          </Col>
+        </FormGroup>
 
         <div>
           <FormErrors formErrors={this.state.formErrors} fieldNames={fieldNames} />

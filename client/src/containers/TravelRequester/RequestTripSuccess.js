@@ -1,10 +1,24 @@
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap/dist/css/bootstrap-theme.css';
+import axios from 'axios';
 
 export default class RequestTripSuccess extends React.Component {
     componentDidMount() {
-        if (this.props.isAuthenticated === false) this.props.history.push('/login');
+        const authenticate = this.props;
+
+        axios.get('/loggedin')
+        .then(res => {
+        if(res.data==""){
+            authenticate.userHasAuthenticated(false, null, null);
+            authenticate.history.push('/login')
+        } else {
+            authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
+            if(res.data.Role===1) {
+            authenticate.history.push('/viewusers');
+            } else if (res.data.Role===2) {
+            authenticate.history.push('/viewtrips');
+            }
+        }
+        })
     }
 
     render() {

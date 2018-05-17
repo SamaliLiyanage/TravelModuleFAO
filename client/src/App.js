@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Nav, Navbar } from 'react-bootstrap';
 import './App.css';
 import { Link, withRouter } from 'react-router-dom';
+import axios from 'axios';
 import Routes from './Routes';
 import MenuNavigation from './MenuNavigation';
 
@@ -26,8 +27,13 @@ class App extends Component {
   }
 
   handleLogout = event => {
-    this.userHasAuthenticated(false, null, null);
-    this.props.history.push('/login');
+    axios.get('/logout')
+    .then ( res => {
+      if(res.data==="success") {
+        this.userHasAuthenticated(false, null, null);
+        this.props.history.push('/login');
+      }
+    })
   }
 
   render() {

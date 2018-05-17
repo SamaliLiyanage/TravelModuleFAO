@@ -24,3 +24,10 @@ module.exports.updateUser = function (req, res, next) {
 module.exports.deleteUser = function (req, res, next) {
   user.deleteUser(req.params.id, res);
 }
+
+//Check if a user is logged in
+module.exports.isLogged = function (req, res, next) {
+  console.log("SOMEWHERE :", req.isAuthenticated());
+  res.json({hello:"Hello"});
+  //user.isLoggedIn(res);
+}

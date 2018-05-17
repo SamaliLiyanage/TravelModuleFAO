@@ -8,7 +8,6 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-
 var app = express();
 var router = express.Router();
 
@@ -44,12 +43,19 @@ app.use(function(req, res, next) {
   next()
 });
 
-//var indexRouter = require('./api/auth')(app, passport);
 require('./api/auth')(app, passport);
+app.get('/logout',function (req, res) {
+  if(req.user==null) {
+    res.send("logged out");
+  } else { 
+    req.logout();    
+    res.send("success");
+  }
+})
+
 var usersRouter = require('./api/users-api');
 var tripsRouter = require('./api/trip-api');
 
-//app.use('/login', indexRouter);
 app.use('/users', usersRouter);
 app.use('/trips', tripsRouter);
 

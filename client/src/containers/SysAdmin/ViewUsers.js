@@ -29,7 +29,22 @@ export default class ViewUsers extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.isAuthenticated === false) this.props.history.push('/login');
+    const authenticate = this.props;
+
+    axios.get('/loggedin')
+    .then(res => {
+      if(res.data==null){
+        authenticate.userHasAuthenticated(false, null, null);
+        authenticate.history.push('/login')
+      } else {
+        authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
+        if (res.data.Role===4) {
+          authenticate.history.push('/requesttrip');
+        } else if (res.data.Role===2) {
+          authenticate.history.push('/viewtrips');
+        }
+      }
+    })
 
     axios('/users/all')
       .then(res => {
@@ -45,7 +60,7 @@ export default class ViewUsers extends React.Component {
 
   renderRows(tableContents) {
     const content = tableContents.map((item, index) => {
-      return (<UserRows tableContent={item} name={index} onClick={() => this.handleClick(item.Username)} />);
+      return (<UserRows tableContent={item} key={index} name={index} onClick={() => this.handleClick(item.Username)} />);
     });
     return content;
   }

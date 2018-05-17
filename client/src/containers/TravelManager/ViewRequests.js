@@ -1,9 +1,7 @@
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap/dist/css/bootstrap-theme.css';
 import axios from 'axios';
 import { TripTypes, TripStatus } from '../../Selections';
-import { Table, Tabs, Tab } from 'react-bootstrap';
+import { Table, Tab, FormControl, FormGroup, Nav, Row, Col, NavDropdown, MenuItem } from 'react-bootstrap';
 
 function TripRow(props) {
   const tableContent = props.tableContent;
@@ -19,24 +17,26 @@ function TripRow(props) {
       <td>{tripDate.getFullYear() + "-" + (tripDate.getMonth() + 1) + "-" + tripDate.getDate()}</td>
       <td><TripStatus tripStatus={tableContent.Trip_Status} /></td>
       <td>
-        <select value={tableContent.Driver_ID} onChange={props.onChange}>
+        <FormGroup controlId={tableContent.TripID} bsSize="small">
+        <FormControl componentClass="select" value={tableContent.Driver_ID} onChange={props.onChange}>
           <option value="0">Unassigned</option>
           <option value="1">Driver 1</option>
           <option value="2">Driver 2</option>
           <option value="3">Driver 3</option>
           <option value="cab">Cab</option>
-        </select>
+        </FormControl>
+        </FormGroup>
       </td>
     </tr>
   );
 }
 
-export default class ViewTrips extends React.Component {
+export default class TabbedRequest extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      key: 0,
+      key: 0.1,
       tableContent: [],
     }
 
@@ -45,7 +45,22 @@ export default class ViewTrips extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.isAuthenticated === false) this.props.history.push('/login');
+    const authenticate = this.props;
+
+    axios.get('/loggedin')
+    .then(res => {
+      if(res.data==""){
+        authenticate.userHasAuthenticated(false, null, null);
+        authenticate.history.push('/login')
+      } else {
+        authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
+        if(res.data.Role===1) {
+          authenticate.history.push('/viewusers');
+        } else if (res.data.Role===4) {
+          authenticate.history.push('/requesttrip');
+        } 
+      }
+    })
 
     axios.get('/trips/all')
       .then(res => {
@@ -90,13 +105,29 @@ export default class ViewTrips extends React.Component {
     this.setState({ key });
   }
 
-  renderRows(tableContents, type) {
+  renderRows(tableContents, type, assigned) {
     const content = tableContents.map((item, index) => {
       if (type === 0) {
-        return (<TripRow key={item.TripID} tableContent={item} onChange={(e) => this.handleChange(e, item.TripID, index)} />);
+        if (assigned==="all"){
+          return (<TripRow key={item.TripID} tableContent={item} onChange={(e) => this.handleChange(e, item.TripID, index)} />);
+        } else if ((assigned==="assigned") && !(item.Trip_Status===1)) {
+          return (<TripRow key={item.TripID} tableContent={item} onChange={(e) => this.handleChange(e, item.TripID, index)} />);          
+        } else if ((assigned==="unassigned") && (item.Trip_Status===1)) {
+          return (<TripRow key={item.TripID} tableContent={item} onChange={(e) => this.handleChange(e, item.TripID, index)} />);                    
+        } else {
+          return null
+        }
       } else {
         if (type === item.Trip_Type) {
-          return (<TripRow key={item.TripID} tableContent={item} onChange={(e) => this.handleChange(e, item.TripID, index)} />);
+          if (assigned==="all") {
+            return (<TripRow key={item.TripID} tableContent={item} onChange={(e) => this.handleChange(e, item.TripID, index)} />);
+          } else if ((assigned==="assigned") && !(item.Trip_Status===1)) {
+            return (<TripRow key={item.TripID} tableContent={item} onChange={(e) => this.handleChange(e, item.TripID, index)} />);                    
+          } else if ((assigned==="unassigned") && (item.Trip_Status===1)) {
+            return (<TripRow key={item.TripID} tableContent={item} onChange={(e) => this.handleChange(e, item.TripID, index)} />);                    
+          } else {
+            return null
+          }
         } else {
           return null
         }
@@ -106,12 +137,12 @@ export default class ViewTrips extends React.Component {
     return content;
   }
 
-  renderTable(tableContents, type) {
+  renderTable(tableContents, type, assigned) {
     return (
       <Table striped bordered condensed hover>
         <thead>
           <tr>
-            <th>Trip id</th>
+            <th>Trip ID</th>
             <th>Username</th>
             <th>Requested Date</th>
             <th>Trip Type</th>
@@ -121,7 +152,7 @@ export default class ViewTrips extends React.Component {
           </tr>
         </thead>
         <tbody>
-          {this.renderRows(tableContents, type)}
+          {this.renderRows(tableContents, type, assigned)}
         </tbody>
       </Table>
     );
@@ -129,27 +160,62 @@ export default class ViewTrips extends React.Component {
 
   render() {
     return (
-      <Tabs
+      <Tab.Container
         activeKey={this.state.key}
         onSelect={this.handleSelect}
         id="request-view"
       >
-        <Tab eventKey={0} title="All Trips">
-          {this.renderTable(this.state.tableContent, 0)}
-        </Tab>
-        <Tab eventKey={1} title="Day Trips">
-          {this.renderTable(this.state.tableContent, 1)}
-        </Tab>
-        <Tab eventKey={2} title="Field Trips">
-          {this.renderTable(this.state.tableContent, 2)}
-        </Tab>
-        <Tab eventKey={3} title="Field Day Trip">
-          {this.renderTable(this.state.tableContent, 3)}
-        </Tab>
-        <Tab eventKey={4} title="Airport Trips">
-          {this.renderTable(this.state.tableContent, 4)}
-        </Tab>
-      </Tabs>
+        <Row className="clearfix">
+          <Col>
+            <Nav bsStyle="tabs">
+              <NavDropdown eventKey={0} title="All Trips" >
+                <MenuItem eventKey={0.1}>All</MenuItem>
+                <MenuItem eventKey={0.2}>Assigned</MenuItem>
+                <MenuItem eventKey={0.3}>Unassigned</MenuItem>
+                </NavDropdown>
+              <NavDropdown eventKey={1} title="Day Trips" >
+                <MenuItem eventKey={1.1}>All</MenuItem>
+                <MenuItem eventKey={1.2}>Assigned</MenuItem>
+                <MenuItem eventKey={1.3}>Unassigned</MenuItem>
+                </NavDropdown>
+              <NavDropdown eventKey={2} title="Field Trips" >
+                <MenuItem eventKey={2.1}>All</MenuItem>
+                <MenuItem eventKey={2.2}>Assigned</MenuItem>
+                <MenuItem eventKey={2.3}>Unassigned</MenuItem>
+              </NavDropdown>
+              <NavDropdown eventKey={3} title="Field Day Trips" >
+                <MenuItem eventKey={3.1}>All</MenuItem>
+                <MenuItem eventKey={3.2}>Assigned</MenuItem>
+                <MenuItem eventKey={3.3}>Unassigned</MenuItem>
+              </NavDropdown>
+              <NavDropdown eventKey={4} title="Airport Trips">
+                <MenuItem eventKey={4.1}>All</MenuItem>
+                <MenuItem eventKey={4.2}>Assigned</MenuItem>
+                <MenuItem eventKey={4.3}>Unassigned</MenuItem>                
+              </NavDropdown>
+            </Nav>
+          </Col>
+            <Tab.Content animation>
+              <Tab.Pane eventKey={0.1}>{this.renderTable(this.state.tableContent, 0, "all")}</Tab.Pane>              
+              <Tab.Pane eventKey={0.2}>{this.renderTable(this.state.tableContent, 0, "assigned")}</Tab.Pane>
+              <Tab.Pane eventKey={0.3}>{this.renderTable(this.state.tableContent, 0, "unassigned")}</Tab.Pane>
+              <Tab.Pane eventKey={1.1}>{this.renderTable(this.state.tableContent, 1, "all")}</Tab.Pane>              
+              <Tab.Pane eventKey={1.2}>{this.renderTable(this.state.tableContent, 1, "assigned")}</Tab.Pane>
+              <Tab.Pane eventKey={1.3}>{this.renderTable(this.state.tableContent, 1, "unassigned")}</Tab.Pane>
+              <Tab.Pane eventKey={2.1}>{this.renderTable(this.state.tableContent, 2, "all")}</Tab.Pane>              
+              <Tab.Pane eventKey={2.2}>{this.renderTable(this.state.tableContent, 2, "assigned")}</Tab.Pane>
+              <Tab.Pane eventKey={2.3}>{this.renderTable(this.state.tableContent, 2, "unassigned")}</Tab.Pane>
+              <Tab.Pane eventKey={3.1}>{this.renderTable(this.state.tableContent, 3, "all")}</Tab.Pane>              
+              <Tab.Pane eventKey={3.2}>{this.renderTable(this.state.tableContent, 3, "assigned")}</Tab.Pane>
+              <Tab.Pane eventKey={3.3}>{this.renderTable(this.state.tableContent, 3, "unassigned")}</Tab.Pane>
+              <Tab.Pane eventKey={4.1}>{this.renderTable(this.state.tableContent, 4, "all")}</Tab.Pane>              
+              <Tab.Pane eventKey={4.2}>{this.renderTable(this.state.tableContent, 4, "assigned")}</Tab.Pane>
+              <Tab.Pane eventKey={4.3}>{this.renderTable(this.state.tableContent, 4, "unassigned")}</Tab.Pane>
+            </Tab.Content>
+          <Col>
+          </Col>
+        </Row>
+      </Tab.Container>
     );
 
   }
