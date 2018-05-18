@@ -3,11 +3,11 @@ var db = require('../db.js');
 //Trip:::`TripID``Username``Driver_ID``Trip_Type``Requested_Date``Destination``Trip_Date``Start``End`
 //User:::`Username``Full_Name``Password``Role``Mobile_No`
 
-exports.newTrip = function(tripID, userName, tripType, tripDate, res) {
+exports.newTrip = function(tripID, userName, tripType, tripDate, tripTime, destination, tripPurpose, res) {
   date = new Date();
-  values = [tripID, userName, tripType, date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate(), tripDate];
+  values = [tripID, userName, tripType, date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate(), tripDate, tripTime, destination, tripPurpose];
 
-  db.connection.query('INSERT INTO Trip(TripID, Username, Trip_Type, Requested_Date, Trip_Date) VALUES (?, ?, ?, ?, ?)', values, function(err, results) {
+  db.connection.query('INSERT INTO Trip(TripID, Username, Trip_Type, Requested_Date, Trip_Date, Trip_Time, Destination, Purpose) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', values, function(err, results) {
     if(err) {
       console.log(err);
       return res.send(err);

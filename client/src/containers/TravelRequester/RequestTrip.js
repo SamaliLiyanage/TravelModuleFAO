@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import { Form, Col, FormControl, FormGroup, ControlLabel, Button } from 'react-bootstrap';
+import { Form, Col, FormControl, FormGroup, ControlLabel, Button, Checkbox } from 'react-bootstrap';
 
 function FormErrors(props) {
   let formErrors = props.formErrors;
@@ -30,17 +30,27 @@ export default class RequestTrip extends React.Component {
     this.state = {
       temp: 0,
       tripID: 0,
-      rqstrID: this.props.userName,
+      rqstrID: null,
       tripDate: new Date(),
+      tripTime: "--:--",
       tripType: 0,
+      destination: null,
+      tripPurpose: null,
+      fthrRemarks: "",
       ttypeValid: false,
       tripDtValid: false,
-      formErrors: ['', ''],
+      tripTmValid: false,
+      destValid: false,
+      prpsValid: false,
+      destDisabled: false,
+      remarksAdded: false,
+      formErrors: ['', '', '', '', '', ''],
       formValid:false
     }
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleClick = this.handleClick.bind(this);
     this.generateTripID = this.generateTripID.bind(this);
   }
 
@@ -93,19 +103,53 @@ export default class RequestTrip extends React.Component {
         } else if (res.data.Role===2) {
           authenticate.history.push('/viewtrips');
         }
+        this.setState({
+          rqstrID: res.data.Username,
+        });
       }
     })
 
     axios.get('/trips/lastindex')
-      .then(res => {
-        this.generateTripID(res.data.TripCount);
-      });
+    .then(res => {
+      this.generateTripID(res.data.TripCount);
+    });
+  }
+
+  handleClick(event) {
+    const remarksAdded = this.state.remarksAdded;
+    const formErrors = this.state.formErrors;
+    if (remarksAdded===false) {
+      formErrors[5]= ' will first cause your request be sent first to the Administrator.';
+    } else {
+      formErrors[5] = '';
+    }
+
+    this.setState({
+      remarksAdded: !(remarksAdded),
+      formErrors: formErrors
+    })
   }
 
   handleChange(event) {
     const target = event.target;
     const value = target.value;
     const id = target.id;
+
+    if (id==="tripType") {
+      if(value==="4"){
+        this.setState({
+          destination: "Airport",
+          destDisabled: true,
+          destValid: true
+        });
+      } else {
+        this.setState({
+          destination: "",
+          destDisabled: false,
+          destValid:false
+        });
+      }
+    }
 
     this.setState(
       { [id]: value },
@@ -121,6 +165,9 @@ export default class RequestTrip extends React.Component {
       username: this.state.rqstrID,
       tripType: parseInt(this.state.tripType, 10),
       tripDate: this.state.tripDate,
+      tripTime: this.state.tripTime,
+      destination: this.state.destination,
+      tripPurpose: this.state.tripPurpose,
     })
       .then(response => {
         this.props.history.push('/success/' + this.state.tripID);
@@ -134,6 +181,9 @@ export default class RequestTrip extends React.Component {
     let fieldErrors = this.state.formErrors;
     let ttypeValid = this.state.ttypeValid;
     let tripDtValid = this.state.tripDtValid;
+    let tripTmValid = this.state.tripTmValid;
+    let destValid = this.state.destValid;
+    let prpsValid = this.state.prpsValid;
 
     let getToday = new Date();
     let today = new Date(getToday.getFullYear()+"-"+(getToday.getMonth()+1)+"-"+getToday.getDate());
@@ -148,6 +198,18 @@ export default class RequestTrip extends React.Component {
         tripDtValid = today.getTime()<=thisDate.getTime();
         fieldErrors[1] = tripDtValid ? '' : ' is not valid';
         break;
+      case 'tripTime':
+        tripTmValid = this.validateTime(value, getToday.getHours(), getToday.getMinutes(), this.state.tripDate, today);
+        fieldErrors[2] = tripTmValid ? '' : ' is not valid';
+        break;
+      case 'destination':
+        destValid = value.length>0;
+        fieldErrors[3] = destValid ? '' : ' cannot be empty';
+        break;
+      case 'tripPurpose':
+        prpsValid = value.length>0;
+        fieldErrors[4] = prpsValid ? '' : ' cannot be empty'
+        break;
       default:
         break;
     }
@@ -155,12 +217,33 @@ export default class RequestTrip extends React.Component {
     this.setState({
       formErrors: fieldErrors,
       ttypeValid: ttypeValid,
-      tripDtValid: tripDtValid
+      tripDtValid: tripDtValid,
+      tripTmValid: tripTmValid,
+      destValid: destValid,
+      prpsValid: prpsValid,
     }, this.validateForm);
   }
 
+  validateTime(timeString, hour, minute, tripRawDate, today){
+    var tripDate = new Date(tripRawDate);
+    var date = new Date(tripDate.getFullYear()+"-"+(tripDate.getMonth()+1)+"-"+tripDate.getDate());
+    if(today.getTime()===date.getTime()){
+      if(parseInt(timeString.substring(0,2), 10)===hour){
+        if(parseInt(timeString.substring(3), 10)<minute){
+          return false;
+        }
+        return true;
+      } else if (parseInt(timeString.substring(0,2), 10)<hour){
+        return false;
+      } else {
+        return true;
+      }
+    }
+    return true;
+  }
+
   validateForm(){
-    this.setState({formValid: this.state.ttypeValid && this.state.tripDtValid});
+    this.setState({formValid: this.state.ttypeValid && this.state.tripDtValid && this.state.tripTmValid});
   }
 
   getValidationState(fieldState) {
@@ -169,7 +252,7 @@ export default class RequestTrip extends React.Component {
   }
 
   render() {
-    const fieldNames=['Trip Date', 'Trip Type'];
+    const fieldNames=['Trip Date', 'Trip Type', 'Trip Time', 'Destination', 'Trip Purpose', 'Further Remarks'];
 
     return (
       <Form horizontal onSubmit={this.handleSubmit}>
@@ -183,11 +266,6 @@ export default class RequestTrip extends React.Component {
           <Col sm={4}><FormControl type="text" value={this.state.rqstrID} readOnly='true' /></Col>
         </FormGroup>
 
-        <FormGroup controlId="tripDate" validationState={this.getValidationState(this.state.tripDtValid)}>
-          <Col sm={2} smOffset={2} componentClass={ControlLabel}>Date of Trip:</Col>
-          <Col sm={4}><FormControl type="date" value={this.state.tripDate} onChange={this.handleChange} /><FormControl.Feedback /></Col>
-        </FormGroup>
-
         <FormGroup controlId="tripType" validationState={this.getValidationState(this.state.ttypeValid)}>
           <Col sm={2} smOffset={2} componentClass={ControlLabel}>Trip Type: </Col>
           <Col sm={4}><FormControl componentClass="select" value={this.state.tripType} onChange={this.handleChange}>
@@ -198,6 +276,34 @@ export default class RequestTrip extends React.Component {
             <option value="4">Airport</option>
           </FormControl>
           <FormControl.Feedback /></Col>
+        </FormGroup>
+
+        <FormGroup controlId="tripDate" validationState={this.getValidationState(this.state.tripDtValid)}>
+          <Col sm={2} smOffset={2} componentClass={ControlLabel}>Date of Trip:</Col>
+          <Col sm={4}><FormControl type="date" value={this.state.tripDate} onChange={this.handleChange} /><FormControl.Feedback /></Col>
+        </FormGroup>
+
+        <FormGroup controlId="tripTime" validationState={this.getValidationState(this.state.tripTmValid)}>
+          <Col sm={2} smOffset={2} componentClass={ControlLabel}>Time of Trip:</Col>          
+          <Col sm={4}><FormControl type="time" value={this.state.tripTime} onChange={this.handleChange} /><FormControl.Feedback /></Col>
+        </FormGroup>
+
+        <FormGroup controlId="destination" validationState={this.getValidationState(this.state.destValid)}>
+          <Col sm={2} smOffset={2} componentClass={ControlLabel}>Destination:</Col>
+          <Col sm={4}><FormControl type="text" value={this.state.destination} onChange={this.handleChange} readOnly={this.state.destDisabled} /><FormControl.Feedback /></Col>
+        </FormGroup>
+
+        <FormGroup controlId="tripPurpose" validationState={this.getValidationState(this.state.prpsValid)}>
+          <Col sm={2} smOffset={2} componentClass={ControlLabel}>Purpose of Travel:</Col>
+          <Col sm={4}><FormControl type="text" value={this.state.tripPurpose} onChange={this.handleChange} /><FormControl.Feedback /></Col>
+        </FormGroup>
+
+        <FormGroup controlId="remarksAdded">
+          <Col sm={2} smOffset={4}><Checkbox inline checked={this.state.remarksAdded} onClick={this.handleClick}>Further Remarks:</Checkbox></Col>
+        </FormGroup>
+
+        <FormGroup controlId="fthrRemarks">
+          <Col sm={4} smOffset={4}><FormControl type="textarea" rows={5} value={this.state.fthrRemarks} readOnly={!(this.state.remarksAdded)} onChange={this.handleChange} /></Col>
         </FormGroup>
 
         <Button name="submit" type="submit" disabled={!this.state.formValid}>Send Request</Button>

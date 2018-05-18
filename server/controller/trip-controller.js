@@ -2,9 +2,8 @@ var trip = require('../model/trip');
 var nodemailer = require('nodemailer');
 
 //Insert details on new trip
-
 module.exports.newTrip = function(req, res, next) {
-  trip.newTrip(req.body.tripID, req.body.username, req.body.tripType, req.body.tripDate, res);
+  trip.newTrip(req.body.tripID, req.body.username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.destination, req.body.tripPurpose, res);
 
   var transporter = nodemailer.createTransport({
     service: 'Gmail',
@@ -28,6 +27,9 @@ module.exports.newTrip = function(req, res, next) {
     html: '<ul><li>Trip ID:'+req.body.tripID+
     '</li><li>Username: '+req.body.username+
     '</li><li>Trip Date: '+req.body.tripDate+
+    '</li><li>Trip Time: '+req.body.tripTime+
+    '</li><li>Destination: '+req.body.destination+
+    '</li><li>Purpose: '+req.body.tripPurpose+
     '</li></ul>',
   }
 
