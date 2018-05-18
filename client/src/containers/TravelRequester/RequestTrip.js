@@ -168,6 +168,7 @@ export default class RequestTrip extends React.Component {
       tripTime: this.state.tripTime,
       destination: this.state.destination,
       tripPurpose: this.state.tripPurpose,
+      furtherRmrks: this.state.fthrRemarks,
     })
       .then(response => {
         this.props.history.push('/success/' + this.state.tripID);

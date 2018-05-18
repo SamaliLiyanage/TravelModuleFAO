@@ -17,6 +17,19 @@ exports.newTrip = function(tripID, userName, tripType, tripDate, tripTime, desti
   })
 }
 
+exports.addFurtherComments = function(tripID, furtherRemarks){
+  values=[tripID, furtherRemarks];
+  
+  db.connection.query('INSERT INTO FurtherRemark(TripID, Remark) VALUES (?, ?)', values, function (err, results) {
+    if(err) {
+      console.log(err);
+      return err;
+    } else {
+      return results;
+    }
+  })
+}
+
 exports.allTrips = function(res) {
   db.connection.query('SELECT * FROM Trip ORDER BY Requested_Date DESC', function(err, results) {
     if(err) {
@@ -45,7 +58,7 @@ exports.getLastIndex = function(res) {
 exports.userTrips = function(userID, res) {
   value = [userID];
 
-  db.connection.query('SELECT * FROM Trip WHERE Username=?', value, function(err, results) {
+  db.connection.query('SELECT * FROM Trip WHERE Username=? ORDER BY Requested_Date DESC', value, function(err, results) {
     if(err) {
       console.log(err);
       return res.send(err);

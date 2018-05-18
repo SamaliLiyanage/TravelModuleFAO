@@ -4,6 +4,9 @@ var nodemailer = require('nodemailer');
 //Insert details on new trip
 module.exports.newTrip = function(req, res, next) {
   trip.newTrip(req.body.tripID, req.body.username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.destination, req.body.tripPurpose, res);
+  if (!(req.body.furtherRmrks==="")){
+    trip.addFurtherComments(req.body.tripID, req.body.furtherRmrks);
+  }
 
   var transporter = nodemailer.createTransport({
     service: 'Gmail',
