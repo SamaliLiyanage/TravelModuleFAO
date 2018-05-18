@@ -15,6 +15,9 @@ function TripRow(props) {
       <td>{reqDate.getFullYear() + "-" + (reqDate.getMonth() + 1) + "-" + reqDate.getDate()}</td>
       <td><TripTypes tripType={tableContent.Trip_Type} /></td>
       <td>{tripDate.getFullYear() + "-" + (tripDate.getMonth() + 1) + "-" + tripDate.getDate()}</td>
+      <td>{tableContent.Trip_Time}</td>
+      <td>{tableContent.Destination}</td>
+      <td>{tableContent.Purpose}</td>
       <td><TripStatus tripStatus={tableContent.Trip_Status} /></td>
       <td>
         <FormGroup controlId={tableContent.TripID} bsSize="small">
@@ -147,6 +150,9 @@ export default class TabbedRequest extends React.Component {
             <th>Requested Date</th>
             <th>Trip Type</th>
             <th>Trip Date</th>
+            <th>Trip Time</th>
+            <th>Destination</th>
+            <th>Purpose</th>
             <th>Trip Status</th>
             <th>Assign Driver</th>
           </tr>
