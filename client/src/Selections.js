@@ -4,6 +4,7 @@ export function UserTypes(props) {
         case 2: return "Travel Manager";
         case 3: return "Driver";
         case 4: return "Requester";
+        case 5: return "Travel Admin";
         default: break;
       }
 }
@@ -14,7 +15,7 @@ export function TripTypes(props) {
         case 2: return "Field Trip";
         case 3: return "Field Day Trip";
         case 4: return "Airport";
-        default: break;
+        default: return "Undefined";
       }
 }
 
@@ -35,6 +36,7 @@ export function TripStatus(props) {
         case 3: return "Completed";
         case 4: return "Cancelled";
         case 5: return "Cab Assigned";
+        case 6: return "Awaiting Approval";
         default: break;
     }
 }
