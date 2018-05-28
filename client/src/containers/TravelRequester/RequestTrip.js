@@ -1,17 +1,36 @@
 import React from 'react';
 import axios from 'axios';
-import { Form, Col, FormControl, FormGroup, ControlLabel, Button, Checkbox } from 'react-bootstrap';
+import { Form, Col, FormControl, FormGroup, ControlLabel, Button, Checkbox, Alert } from 'react-bootstrap';
+
+function TimeWarning(props) {
+  const today = new Date(props.date);
+  if (today.getDay()<5) {
+    if (today.getHours()>=8 && today.getHours()<16) {
+      return (null);
+    } else {
+      return (<div className="col-md-6 col-md-offset-3">
+      <Alert bsStyle="warning">Please note that your requests placed outside office hours may not be processed in time or may not be seen by the driver</Alert>
+    </div>);
+    }
+  } else {
+    return (<div className="col-md-6 col-md-offset-3">
+    <Alert bsStyle="warning">Please note that your requests placed outside office hours may not be processed in time or may not be seen by the driver</Alert>
+  </div>);
+  }
+}
 
 function FormErrors(props) {
   let formErrors = props.formErrors;
   let fieldNames = props.fieldNames;
 
   return(
-    <div className='formErrors'>
+    <div className='formErrors row' >
       {fieldNames.map((fieldName, i)=>{
         if(formErrors[i].length>0) {
           return(
-            <p key={i}>{fieldName} {formErrors[i]}</p>
+            <div className='col-md-3' > 
+              <Alert bsStyle="danger"><p key={i}>{fieldName} {formErrors[i]}</p></Alert>
+            </div>
           );
         } else {
           return(
@@ -244,7 +263,7 @@ export default class RequestTrip extends React.Component {
   }
 
   validateForm(){
-    this.setState({formValid: this.state.ttypeValid && this.state.tripDtValid && this.state.tripTmValid});
+    this.setState({formValid: this.state.ttypeValid && this.state.tripDtValid && this.state.tripTmValid && this.state.destValid && this.state.prpsValid });
   }
 
   getValidationState(fieldState) {
@@ -253,7 +272,7 @@ export default class RequestTrip extends React.Component {
   }
 
   render() {
-    const fieldNames=['Trip Date', 'Trip Type', 'Trip Time', 'Destination', 'Trip Purpose', 'Further Remarks'];
+    const fieldNames=['Trip Type', 'Trip Date', 'Trip Time', 'Destination', 'Trip Purpose', 'Further Remarks'];
 
     return (
       <Form horizontal onSubmit={this.handleSubmit}>
@@ -310,6 +329,7 @@ export default class RequestTrip extends React.Component {
         <Button name="submit" type="submit" disabled={!this.state.formValid}>Send Request</Button>
 
         <div>
+          <TimeWarning date={new Date()} />
           <FormErrors formErrors={this.state.formErrors} fieldNames={fieldNames} />
         </div>
       </Form>

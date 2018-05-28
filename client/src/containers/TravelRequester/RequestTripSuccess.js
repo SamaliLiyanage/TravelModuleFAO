@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import { Alert } from 'react-bootstrap';
 
 export default class RequestTripSuccess extends React.Component {
     componentDidMount() {
@@ -23,7 +24,9 @@ export default class RequestTripSuccess extends React.Component {
 
     render() {
         return (
-            <p>Your Trip Request with Trip ID: {this.props.match.params.tripid} has been sent to the travel manager.</p>
+            <div className='col-md-10 col-md-offset-1'>
+                <Alert bsStyle='success'>Your Trip Request with Trip ID: {this.props.match.params.tripid} has been sent to the travel manager.</Alert>
+            </div>
         );
     }
 }

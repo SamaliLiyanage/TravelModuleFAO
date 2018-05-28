@@ -1,6 +1,4 @@
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap/dist/css/bootstrap-theme.css';
 import axios from 'axios';
 import { TripTypes, DriverName, TripStatus } from '../../Selections';
 import { Table } from 'react-bootstrap';
