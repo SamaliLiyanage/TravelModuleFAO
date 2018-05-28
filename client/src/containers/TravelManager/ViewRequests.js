@@ -1,18 +1,42 @@
 import React from 'react';
 import axios from 'axios';
 import { TripTypes, TripStatus } from '../../Selections';
-import { Table, Tab, FormControl, FormGroup, Nav, Row, Col, NavDropdown, MenuItem } from 'react-bootstrap';
+import { Table, Tab, FormControl, FormGroup, Nav, Row, Col, NavDropdown, MenuItem, Button } from 'react-bootstrap';
+
+function DriverAssignment (props) {
+  const today = new Date();
+  const tripDate = new Date(props.tripDate);
+  var marginBottom = {margin:0};
+
+  if (today < tripDate) {
+    return (
+      <FormGroup controlId={props.TripID} bsSize="small" style={marginBottom} >
+        <FormControl componentClass="select" value={props.Driver_ID} onChange={props.onChange} disabled={props.approved}>
+          <option value="0">Unassigned</option>
+          <option value="1">Driver 1</option>
+          <option value="2">Driver 2</option>
+          <option value="3">Driver 3</option>
+          <option value="cab">Cab</option>
+        </FormControl>
+      </FormGroup>
+    );
+  } else {
+    return (
+      <Button bsStyle="danger" disabled="true">Expired</Button>
+    );
+  }
+}
 
 function TripRow(props) {
   const tableContent = props.tableContent;
   const tripDate = new Date(tableContent.Trip_Date);
   const reqDate = new Date(tableContent.Requested_Date);
+  const approved = (tableContent.Trip_Status===6) ? true: false;
 
   return (
     <tr>
       <td>{tableContent.TripID}</td>
       <td>{tableContent.Username}</td>
-      <td>{reqDate.getFullYear() + "-" + (reqDate.getMonth() + 1) + "-" + reqDate.getDate()}</td>
       <td><TripTypes tripType={tableContent.Trip_Type} /></td>
       <td>{tripDate.getFullYear() + "-" + (tripDate.getMonth() + 1) + "-" + tripDate.getDate()}</td>
       <td>{tableContent.Trip_Time}</td>
@@ -20,15 +44,7 @@ function TripRow(props) {
       <td>{tableContent.Purpose}</td>
       <td><TripStatus tripStatus={tableContent.Trip_Status} /></td>
       <td>
-        <FormGroup controlId={tableContent.TripID} bsSize="small">
-        <FormControl componentClass="select" value={tableContent.Driver_ID} onChange={props.onChange}>
-          <option value="0">Unassigned</option>
-          <option value="1">Driver 1</option>
-          <option value="2">Driver 2</option>
-          <option value="3">Driver 3</option>
-          <option value="cab">Cab</option>
-        </FormControl>
-        </FormGroup>
+        <DriverAssignment tripDate= {tripDate} TripID={tableContent.TripID} Driver_ID={tableContent.Driver_ID} onChange={props.onChange} approved={approved} />
       </td>
     </tr>
   );
@@ -147,7 +163,6 @@ export default class TabbedRequest extends React.Component {
           <tr>
             <th>Trip ID</th>
             <th>Username</th>
-            <th>Requested Date</th>
             <th>Trip Type</th>
             <th>Trip Date</th>
             <th>Trip Time</th>

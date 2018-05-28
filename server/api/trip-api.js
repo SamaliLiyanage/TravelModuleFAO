@@ -8,5 +8,7 @@ router.get('/lastindex', tripController.getLastIndex);
 router.get('/all/:id', tripController.userTrips);
 router.post('/assigndriver', tripController.assignDriver);
 router.get('/gettrip/:tripID', tripController.getTrip);
+router.get('/allfthrrq', tripController.getAllFurtherRequests);
+router.post('/approval', tripController.setApproval);
 
 module.exports = router;

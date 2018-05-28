@@ -6,6 +6,9 @@ module.exports.newTrip = function(req, res, next) {
   trip.newTrip(req.body.tripID, req.body.username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.destination, req.body.tripPurpose, res);
   if (!(req.body.furtherRmrks==="")){
     trip.addFurtherComments(req.body.tripID, req.body.furtherRmrks);
+    trip.changeStatus(req.body.tripID, 6, response => {
+      //res.send(response);
+    })
   }
 
   var transporter = nodemailer.createTransport({
@@ -102,4 +105,20 @@ module.exports.assignDriver = function(req, res, next) {
 
 module.exports.getTrip = function(req, res, next) { 
   trip.getTrip(req.params.tripID, res);
+}
+
+module.exports.getAllFurtherRequests = function (req, res) {
+  trip.getFurtherComments(response => {
+    res.send(response);
+  })
+}
+
+module.exports.setApproval = function (req, res) {
+  trip.changeComments(req.body.tripID, req.body.comment, response => {
+    //console.log(response)
+    res.send(response);
+  })
+  trip.changeStatus(req.body.tripID, 1, response => {
+    //console.log(response);
+  })
 }
