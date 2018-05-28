@@ -23,7 +23,7 @@ class App extends Component {
       userName: username,
       userType: type,
     });
-    //console.log("Inside userhasauthentiated", authenticated);
+    //console.log("Inside userhasauthentiated", authenticated, username, type);
   }
 
   handleLogout = event => {

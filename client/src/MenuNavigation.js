@@ -50,6 +50,15 @@ function SetMenu(props) {
                     <NavItem onClick={props.onClick}>Log Out</NavItem>
                 </Fragment>
             );
+        } else if(userType===5){
+            return(
+                <Fragment>
+                    <LinkContainer to='/viewfrequests'>
+                        <NavItem>View Requests</NavItem>
+                    </LinkContainer>
+                    <NavItem onClick={props.onClick}>Log Out</NavItem>
+                </Fragment>
+            );
         }
     } else {
         return(
