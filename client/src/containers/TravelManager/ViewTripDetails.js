@@ -3,6 +3,25 @@ import axios from 'axios';
 import { Form, FormGroup, Col, ControlLabel, FormControl, Button } from 'react-bootstrap';
 import { TripTypes, TripStatus, DriverName } from '../../Selections';
 
+function StatusButton (props) {
+    var type = "info";
+    const tripStatus = props.tripStatus;
+
+    if (tripStatus===1 || tripStatus===6) {
+        type = "warning";
+    } else if (tripStatus===2 || tripStatus===5) {
+        type = "info";
+    } else if (tripStatus===3) {        
+        type = "success";
+    } else if (tripStatus===4) {    
+        type = "danger";
+    }
+
+    return (        
+        <Button bsStyle={type} disabled><TripStatus tripStatus={tripStatus} /></Button>
+    );
+}
+
 function FurtherRemarks (props) {
     var content = null;
     if (props.exists) {
@@ -134,7 +153,32 @@ export default class ViewTripDetails extends React.Component {
     }
 
     handleChange (event, tripID) {
-        console.log(event, tripID, event.target.value);
+        const driverID = event.target.value;
+        var tripStatus;
+        var tripInfo = this.state.tripInfo;
+
+        if (driverID === "0") {
+            tripStatus = 1;
+        } else if (driverID === "cab") {
+            tripStatus = 5;
+        } else {
+            tripStatus = 2;
+        }
+
+        axios.post('/trips/assigndriver', {
+            tripID: tripID,
+            driverID: driverID,
+            tripStatus: tripStatus
+        })
+        .then (res => {
+            if (res.data.status === "success") {
+                tripInfo.Driver_ID = driverID;
+                tripInfo.Trip_Status = tripStatus;
+                this.setState ({
+                    tripInfo: tripInfo,
+                })
+            }
+        })
     }
 
     render () {
@@ -143,8 +187,6 @@ export default class ViewTripDetails extends React.Component {
         const requestedDate = new Date(this.state.tripInfo.Requested_Date);
         const requestedDateString = requestedDate.getFullYear()+"-"+(requestedDate.getMonth()+1)+"-"+requestedDate.getDate();
         
-        console.log(this.props.userType);
-
         return (
             <Form horizontal>
                 <FormGroup>
@@ -184,7 +226,7 @@ export default class ViewTripDetails extends React.Component {
                     </Col>
                     <Col componentClass={ControlLabel} sm={2}>Trip Status:</Col>
                     <Col sm={2}>
-                        <FormControl.Static><TripStatus tripStatus={this.state.tripInfo.Trip_Status} /></FormControl.Static>
+                        <StatusButton tripStatus={this.state.tripInfo.Trip_Status} />
                     </Col>
                 </FormGroup>
                 <FormGroup>
@@ -194,7 +236,7 @@ export default class ViewTripDetails extends React.Component {
                     </Col>
                 </FormGroup>
                 <FurtherRemarks exists={this.state.furtherRemarks} remark={this.state.remark} />
-                <Driver tripID={this.state.tripid} driverID={this.state.tripInfo.Driver_ID} tripDate={tripDate} tripStatus={this.state.tripInfo.Trip_Status} onChange={this.handleChange} />                
+                <Driver userType={this.props.userType} tripID={this.state.tripid} driverID={this.state.tripInfo.Driver_ID} tripDate={tripDate} tripStatus={this.state.tripInfo.Trip_Status} onChange={this.handleChange} />                
             </Form>
         );
     }
