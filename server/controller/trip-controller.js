@@ -113,6 +113,12 @@ module.exports.getAllFurtherRequests = function (req, res) {
   })
 }
 
+module.exports.getFurtherRequest = function (req, res) {
+  trip.getFurtherComment(req.params.tripID, response => {
+    res.send(response);
+  })
+}
+
 module.exports.setApproval = function (req, res) {
   trip.changeComments(req.body.tripID, req.body.comment, response => {
     //console.log(response)

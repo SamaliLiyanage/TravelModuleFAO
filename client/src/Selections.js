@@ -37,6 +37,6 @@ export function TripStatus(props) {
         case 4: return "Cancelled";
         case 5: return "Cab Assigned";
         case 6: return "Awaiting Approval";
-        default: break;
+        default: return "Error";
     }
 }

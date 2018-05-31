@@ -121,6 +121,33 @@ exports.getFurtherComments = function (next){
     })
 }
 
+exports.getFurtherComment = function (tripID, next) {
+    db.connection.query ('SELECT Remark FROM FurtherRemark WHERE TripID=?', tripID, function (err, result) {
+        var temp;
+        if (err) {
+            temp = {
+                success: false,
+                exists: false,
+                data: err
+            }
+        } else {
+            if (result.length===0) {
+                temp = {
+                    success: true,
+                    exists: false
+                }
+            } else {
+                temp = {
+                    success: true,
+                    exists: true,
+                    data: result[0].Remark
+                }
+            }
+        }
+        next (temp);
+    })
+}
+
 exports.changeStatus = function (tripID, status, next) {
     values = [status, tripID];
 
