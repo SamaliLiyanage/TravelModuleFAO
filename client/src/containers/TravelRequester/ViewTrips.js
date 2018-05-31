@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import { TripTypes, DriverName, TripStatus } from '../../Selections';
-import { Table } from 'react-bootstrap';
+import { Table, Button } from 'react-bootstrap';
 
 function TripRows(props) {
     const rowContent = props.rowContent;
@@ -18,6 +18,7 @@ function TripRows(props) {
             <td><DriverName driverID={rowContent.Driver_ID} /></td>
             <td>{reqDate.getFullYear() + "-" + (reqDate.getMonth() + 1) + "-" + reqDate.getDate()}</td>
             <td>{rowContent.Destination}</td>
+            <td><Button onClick={(e)=>props.onClick(e, rowContent.TripID)}>Details</Button></td>
         </tr>
     );
 }
@@ -29,6 +30,8 @@ export default class ViewRequests extends React.Component {
         this.state = {
             tableContent: [],
         }
+
+        this.handleClick = this.handleClick.bind(this);
     }
 
     componentDidMount() {
@@ -57,9 +60,13 @@ export default class ViewRequests extends React.Component {
             })
     }
 
+    handleClick(event, tripID) {
+        this.props.history.push('/viewtrip/'+tripID);
+    }
+
     renderRows(tableContents) {
         const content = tableContents.map((item, index) => {
-            return (<TripRows key={index} rowContent={item} />);
+            return (<TripRows key={index} rowContent={item} onClick={this.handleClick} />);
         });
 
         return content;
@@ -79,6 +86,7 @@ export default class ViewRequests extends React.Component {
                             <th>Driver ID</th>
                             <th>Requested Date</th>
                             <th>Destination</th>
+                            <th>Details</th>
                         </tr>
                     </thead>
                     <tbody>
