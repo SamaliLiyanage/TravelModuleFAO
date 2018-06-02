@@ -83,7 +83,7 @@ module.exports.assignDriver = function(req, res, next) {
   
   if (req.body.driverID==='cab') {
     text = 'A cab has been assigned to your trip with Trip ID: ' + req.body.tripID;
-  } else {
+  } else if (req.body.driverID!='0') {
     text = 'Driver '+req.body.driverID+ ' has been assigned to your trip with Trip ID: ' + req.body.tripID;
   }
 
@@ -94,13 +94,15 @@ module.exports.assignDriver = function(req, res, next) {
     text: text,
   }
 
-  transporter.sendMail(mailOptions, function(error, info) {
-    if(error) {
-      console.log(error);
-    } else {
-      console.log('Email sent: '+info.response);
-    }
-  });
+  if (req.body.driverID!='0'){
+    transporter.sendMail(mailOptions, function(error, info) {
+      if(error) {
+        console.log(error);
+      } else {
+        console.log('Email sent: '+info.response);
+      }
+    });
+  }
 }
 
 module.exports.getTrip = function(req, res, next) { 
@@ -120,8 +122,39 @@ module.exports.getFurtherRequest = function (req, res) {
 }
 
 module.exports.setApproval = function (req, res) {
+  var text = null;
+
+  if (req.body.approve===true) {
+    text = "Your further requests for the above trip have been APPROVED by the Travel Administrator.";
+  } else {
+    text = "Your further requests for the above trip have been DENIED by the Travel Administrator.";    
+  }
+
   trip.changeComments(req.body.tripID, req.body.comment, response => {
-    //console.log(response)
+
+    var transporter = nodemailer.createTransport({
+      service: 'Gmail',
+      auth: {
+        user: 'fao.testbed@gmail.com',
+        pass: 'Rand0mm4il!!!'
+      }
+    });
+
+    var mailOptions = {
+      from: 'fao.testbed@gmail.com',
+      to: 'samali.liyanage93@gmail.com',
+      subject: 'Trip Request '+req.body.tripID,
+      text: text,
+    }
+
+    transporter.sendMail(mailOptions, function(error, info) {
+      if(error) {
+        console.log(error);
+      } else {
+        console.log('Email sent: '+info.response);
+      }
+    });
+
     res.send(response);
   })
   trip.changeStatus(req.body.tripID, 1, response => {

@@ -61,6 +61,7 @@ export default class AdminView extends React.Component {
         axios.post('/trips/approval', {
             tripID: tripID,
             comment: "Further Requests have been denied", 
+            approve: false,
         })
         .then((response) => {
             console.log(tableContents);
@@ -77,6 +78,7 @@ export default class AdminView extends React.Component {
         axios.post('/trips/approval', {
             tripID: tripID,
             comment: comment,
+            approve: true,
         })
         .then((response) => {
             console.log(response);
