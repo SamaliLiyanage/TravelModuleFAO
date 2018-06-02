@@ -2,9 +2,14 @@ var trip = require('../model/trip');
 var nodemailer = require('nodemailer');
 
 //Insert details on new trip
-
 module.exports.newTrip = function(req, res, next) {
-  trip.newTrip(req.body.tripID, req.body.username, req.body.tripType, req.body.tripDate, res);
+  trip.newTrip(req.body.tripID, req.body.username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.destination, req.body.tripPurpose, res);
+  if (!(req.body.furtherRmrks==="")){
+    trip.addFurtherComments(req.body.tripID, req.body.furtherRmrks);
+    trip.changeStatus(req.body.tripID, 6, response => {
+      //res.send(response);
+    })
+  }
 
   var transporter = nodemailer.createTransport({
     service: 'Gmail',
@@ -28,6 +33,9 @@ module.exports.newTrip = function(req, res, next) {
     html: '<ul><li>Trip ID:'+req.body.tripID+
     '</li><li>Username: '+req.body.username+
     '</li><li>Trip Date: '+req.body.tripDate+
+    '</li><li>Trip Time: '+req.body.tripTime+
+    '</li><li>Destination: '+req.body.destination+
+    '</li><li>Purpose: '+req.body.tripPurpose+
     '</li></ul>',
   }
 
@@ -97,4 +105,26 @@ module.exports.assignDriver = function(req, res, next) {
 
 module.exports.getTrip = function(req, res, next) { 
   trip.getTrip(req.params.tripID, res);
+}
+
+module.exports.getAllFurtherRequests = function (req, res) {
+  trip.getFurtherComments(response => {
+    res.send(response);
+  })
+}
+
+module.exports.getFurtherRequest = function (req, res) {
+  trip.getFurtherComment(req.params.tripID, response => {
+    res.send(response);
+  })
+}
+
+module.exports.setApproval = function (req, res) {
+  trip.changeComments(req.body.tripID, req.body.comment, response => {
+    //console.log(response)
+    res.send(response);
+  })
+  trip.changeStatus(req.body.tripID, 1, response => {
+    //console.log(response);
+  })
 }

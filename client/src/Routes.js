@@ -13,6 +13,8 @@ import ViewRequests from './containers/TravelRequester/ViewTrips';
 import ViewTrips from './containers/TravelManager/ViewRequests';
 import DriverSchedule from './containers/TravelManager/ViewSchedules';
 import TabbedRequest from './containers/TravelManager/ViewReqTabs';
+import AdminView from './containers/Adminstrator/ViewFthrRemarks';
+import ViewTripDetails from './containers/TravelManager/ViewTripDetails';
 
 export default ({ childProps }) =>
   <Switch>
@@ -27,5 +29,7 @@ export default ({ childProps }) =>
     <AppliedRoute path='/viewrequests' exact component={ViewRequests} props={childProps} />
     <AppliedRoute path='/viewschedules' exact component={DriverSchedule} props={childProps} />
     <AppliedRoute path='/viewtabs' exact component={TabbedRequest} />
+    <AppliedRoute path='/viewfrequests' exact component={AdminView} props={childProps} />
+    <AppliedRoute path='/viewtrip/:tripid' exact component={ViewTripDetails} props={childProps} />
     <Route component={NotFound} />
   </Switch>;

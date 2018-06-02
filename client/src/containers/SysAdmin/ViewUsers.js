@@ -33,7 +33,7 @@ export default class ViewUsers extends React.Component {
 
     axios.get('/loggedin')
     .then(res => {
-      if(res.data==null){
+      if(res.data==""){
         authenticate.userHasAuthenticated(false, null, null);
         authenticate.history.push('/login')
       } else {

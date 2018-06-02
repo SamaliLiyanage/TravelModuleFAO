@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import { Form, FormControl, FormGroup, ControlLabel, Col, Button } from 'react-bootstrap';
+import { Form, FormControl, FormGroup, ControlLabel, Col, Button, Alert } from 'react-bootstrap';
 
 function FormErrors(props) {
   let formErrors = props.formErrors;
@@ -11,7 +11,7 @@ function FormErrors(props) {
       {fieldNames.map((fieldName, i) => {
         if (formErrors[i].length > 0) {
           return (
-            <p key={i}>{fieldName} {formErrors[i]}</p>
+            <Alert bsStyle="danger"><p key={i}>{fieldName} {formErrors[i]}</p></Alert>
           );
         } else {
           return '';
@@ -197,6 +197,7 @@ export default class EditUser extends React.Component {
               <option value="2">Travel Manager</option>
               <option value="3">Driver</option>
               <option value="4">Requester</option>
+              <option value="5">Travel Admin</option>
             </FormControl>
           </Col>
         </FormGroup>
