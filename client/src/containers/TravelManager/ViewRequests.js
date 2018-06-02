@@ -39,10 +39,22 @@ function TripRow(props) {
     const tableContent = props.tableContent;
     const tripDate = new Date(tableContent.Trip_Date);
     const reqDate = new Date(tableContent.Requested_Date);
+    const driver_ID = tableContent.Driver_ID;
     const approved = (tableContent.Trip_Status === 6) ? true : false;
+    const today = new Date();
+
+    var warningDate = new Date (tableContent.Trip_Date);
+    warningDate.setDate(warningDate.getDate()+1);
+
+    //#e47c79 ::: notice color
+    var bgcolor = {};
+
+    if (((today >= tripDate) && (today<warningDate))&&(driver_ID === null || driver_ID === "0")){
+        bgcolor = {background: '#e47c79' }
+    }
 
     return (
-        <tr>
+        <tr style={bgcolor}>
             <td>{tableContent.TripID}</td>
             <td>{tableContent.Username}</td>
             <td><TripTypes tripType={tableContent.Trip_Type} /></td>
@@ -52,7 +64,7 @@ function TripRow(props) {
             <td><TripStatus tripStatus={tableContent.Trip_Status} /></td>
             <td><ViewDetails onClick={props.onClick} tripID={tableContent.TripID} /></td>
             <td>
-                <DriverAssignment tripDate={tripDate} TripID={tableContent.TripID} Driver_ID={tableContent.Driver_ID} onChange={props.onChange} approved={approved} />
+                <DriverAssignment tripDate={warningDate} TripID={tableContent.TripID} Driver_ID={tableContent.Driver_ID} onChange={props.onChange} approved={approved} />
             </td>
         </tr>
     );

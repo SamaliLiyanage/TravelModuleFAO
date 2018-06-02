@@ -44,7 +44,10 @@ function Driver (props) {
     var disabled = false;
     const today = new Date();
 
-    if (props.tripDate <= today) {
+    var warningDate = new Date (props.tripDate);
+    warningDate.setDate(warningDate.getDate()+1);
+
+    if (today >= warningDate) {
         if(props.driverID==="0"){
             content = (
                 <FormGroup>
