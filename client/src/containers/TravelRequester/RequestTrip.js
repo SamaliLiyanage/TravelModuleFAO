@@ -4,17 +4,19 @@ import { Form, Col, FormControl, FormGroup, ControlLabel, Button, Checkbox, Aler
 
 function TimeWarning(props) {
   const today = new Date(props.date);
+  var colors = {color: "#a94442", 'font-weight': 'bold'};
+
   if (today.getDay()<5) {
     if (today.getHours()>=8 && today.getHours()<16) {
       return (null);
     } else {
       return (<div className="col-md-6 col-md-offset-3">
-      <Alert bsStyle="warning">Please note that your requests placed outside office hours may not be processed in time or may not be seen by the driver</Alert>
+      <Alert bsStyle="warning"> <div style={colors}>Please note that your requests placed outside office hours may not be seen on time. Will be attended the next working day.</div></Alert>
     </div>);
     }
   } else {
     return (<div className="col-md-6 col-md-offset-3">
-    <Alert bsStyle="warning">Please note that your requests placed outside office hours may not be processed in time or may not be seen by the driver</Alert>
+    <Alert bsStyle="warning"><div style={colors}>Please note that your requests placed outside office hours may not be seen on time. Will be attended the next working day.</div></Alert>
   </div>);
   }
 }
