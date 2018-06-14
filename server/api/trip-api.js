@@ -11,6 +11,6 @@ router.get('/gettrip/:tripID', tripController.getTrip);
 router.get('/allfthrrq', tripController.getAllFurtherRequests);
 router.get('/frexists/:tripID', tripController.getFurtherRequest);
 router.post('/approval', tripController.setApproval);
-router.get('/testmobile/:message', tripController.testMobile);
+router.post('/testmobile', tripController.sendMobileResponse, tripController.testMobile);
 
 module.exports = router;

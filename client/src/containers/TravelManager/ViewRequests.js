@@ -3,6 +3,7 @@ import axios from 'axios';
 import { TripTypes, TripStatus, DriverName } from '../../Selections';
 import { Table, Tab, FormControl, FormGroup, Nav, Row, Col, NavDropdown, MenuItem, Button } from 'react-bootstrap';
 
+
 function DriverAssignment(props) {
     const today = new Date();
     const tripDate = new Date(props.tripDate);
@@ -13,9 +14,9 @@ function DriverAssignment(props) {
             <FormGroup controlId={props.TripID} bsSize="small" style={marginBottom} >
                 <FormControl componentClass="select" value={props.Driver_ID} onChange={props.onChange} disabled={props.approved}>
                     <option value="0">Unassigned</option>
-                    <option value="1">Driver 1</option>
-                    <option value="2">Driver 2</option>
-                    <option value="3">Driver 3</option>
+                    <option value="1">Anthony</option>
+                    <option value="2">Ruchira</option>
+                    <option value="3">Dinesh</option>
                     <option value="cab">Cab</option>
                 </FormControl>
             </FormGroup>
@@ -77,6 +78,7 @@ export default class TabbedRequest extends React.Component {
         this.state = {
             key: 0.1,
             tableContent: [],
+            driver: [],
         }
 
         this.handleChange = this.handleChange.bind(this);
@@ -88,26 +90,33 @@ export default class TabbedRequest extends React.Component {
         const authenticate = this.props;
 
         axios.get('/loggedin')
-            .then(res => {
-                if (res.data == "") {
-                    authenticate.userHasAuthenticated(false, null, null);
-                    authenticate.history.push('/login')
-                } else {
-                    authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
-                    if (res.data.Role === 1) {
-                        authenticate.history.push('/viewusers');
-                    } else if (res.data.Role === 4) {
-                        authenticate.history.push('/requesttrip');
-                    }
+        .then(res => {
+            if (res.data == "") {
+                authenticate.userHasAuthenticated(false, null, null);
+                authenticate.history.push('/login')
+            } else {
+                authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
+                if (res.data.Role === 1) {
+                    authenticate.history.push('/viewusers');
+                } else if (res.data.Role === 4) {
+                    authenticate.history.push('/requesttrip');
                 }
-            })
+            }
+        })
 
         axios.get('/trips/all')
-            .then(res => {
-                this.setState({
-                    tableContent: res.data
-                });
+        .then(res => {
+            this.setState({
+                tableContent: res.data
+            });
+        })
+
+        axios.get('/users/Role/3')
+        .then(res => {
+            this.setState({
+                driver: res
             })
+        })
     }
 
     handleChange(event, i, index) {

@@ -21,9 +21,9 @@ export function TripTypes(props) {
 
 export function DriverName(props) {
     switch(props.driverID) {
-        case '1': return "Driver 1";
-        case '2': return "Driver 2";
-        case '3': return "Driver 3";
+        case '1': return "Anthony";
+        case '2': return "Ruchira";
+        case '3': return "Dinesh";
         case 'cab': return "Cab Assigned"
         default: return "Unassigned";
     }

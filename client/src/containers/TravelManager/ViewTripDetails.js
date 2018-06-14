@@ -74,9 +74,9 @@ function Driver (props) {
                     <Col componentClass={ControlLabel} smOffset={1} sm={2}>Driver:</Col>
                     <Col componentClass="select" value={props.driverID} onChange={(e) => props.onChange (e, props.tripID)} sm={2} disabled={disabled}>
                         <option value="0">Unassigned</option>
-                        <option value="1">Driver 1</option>
-                        <option value="2">Driver 2</option>
-                        <option value="3">Driver 3</option>
+                        <option value="1">Anthony</option>
+                        <option value="2">Ruchira</option>
+                        <option value="3">Dinesh</option>
                         <option value="cab">Cab</option>
                     </Col>
                 </FormGroup>

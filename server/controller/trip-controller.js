@@ -13,6 +13,16 @@ const netConfig = {
   path: '/sms/send'
 }
 
+function DriverName(driverNo) {
+  if (driverNo==='1') {
+    return 'Anthony';
+  } else if (driverNo==='2') {
+    return 'Ruchira';
+  } else if (driverNo==='3') {
+    return 'Dinesh';
+  }
+}
+
 //Insert details on new trip
 module.exports.newTrip = function(req, res, next) {
   trip.newTrip(req.body.tripID, req.body.username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.destination, req.body.tripPurpose, res);
@@ -112,8 +122,8 @@ module.exports.assignDriver = function(req, res, next) {
     smsMessage = "A cab has been assigned to your trip with Trip ID: "+req.body.tripID;  
     text = 'A cab has been assigned to your trip with Trip ID: ' + req.body.tripID;
   } else if (req.body.driverID!='0') {
-    smsMessage = "Driver "+req.body.driverID+" has been assigned to your trip with Trip ID: "+req.body.tripID;  
-    text = 'Driver '+req.body.driverID+ ' has been assigned to your trip with Trip ID: ' + req.body.tripID;
+    smsMessage = DriverName(req.body.driverID)+" has been assigned to your trip with Trip ID: "+req.body.tripID;  
+    text = DriverName(req.body.driverID)+ ' has been assigned to your trip with Trip ID: ' + req.body.tripID;
   }
 
   var mailOptions = {
@@ -199,7 +209,7 @@ module.exports.setApproval = function (req, res) {
       }
     });
 
-    tapApi.sms.requestCreator(smsConfig).single('0772434145', smsMessage, function (mtReq) {
+    tapApi.sms.requestCreator(smsConfig).single('tel:94772434145', smsMessage, function (mtReq) {
       tapApi.transport.createRequest(netConfig, mtReq, function (request) {
         tapApi.transport.httpClient(request, function () {
           console.log("Mt request send to subscriber " + mtReq.destinationAddresses);
@@ -215,9 +225,16 @@ module.exports.setApproval = function (req, res) {
   })
 }
 
+//Send mobile response 
+module.exports.sendMobileResponse = function (req, res, next) {
+  res.send(tapApi.sms.successResponse);
+  next();
+}
+
 //testing
 module.exports.testMobile = function (req, res) {
-  tapApi.sms.requestCreator({applicationId : "APP_000101", password : "password"}).single('0772434145', req.params.message, function (mtReq) {
+  //console.log(req.body);
+  tapApi.sms.requestCreator({applicationId : "APP_000101", password : "password"}).single('tel:94772434145', "Thank you", function (mtReq) {
     tapApi.transport.createRequest({hostname: '127.0.0.1', port: 7000, path: '/sms/send'}, mtReq, function (request) {
       tapApi.transport.httpClient(request, function () {
         console.log("Mt request send to subscriber" + mtReq.destinationAddresses);
