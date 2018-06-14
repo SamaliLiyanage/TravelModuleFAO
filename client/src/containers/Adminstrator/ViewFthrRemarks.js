@@ -3,6 +3,12 @@ import axios from 'axios';
 import { Table, Button, FormGroup } from 'react-bootstrap';
 import { TripStatus } from '../../Selections'
 
+function ViewDetails (props) {
+    return (
+        <Button onClick={(e) => props.onDetails(e, props.tripID)}>Details</Button>
+    )
+}
+
 function ApprovalButton (props) {
     const tripStatus = props.tripStatus;
     const tripID = props.tripID;
@@ -29,6 +35,7 @@ function TableRow (props) {
             <td>{rowContent.Destination}</td>
             <td>{rowContent.Remark}</td>
             <td><TripStatus tripStatus={rowContent.Trip_Status} /></td>
+            <td><ViewDetails tripID={rowContent.TripID} onDetails={props.onDetails} /></td>
             <td><ApprovalButton tripStatus={rowContent.Trip_Status} tripID={rowContent.TripID} onClick={props.onClick} onSubmit={props.onSubmit} comment={rowContent.Remark} index={props.index} /></td>
         </tr> 
     )
@@ -38,7 +45,7 @@ function TableRender (props) {
     const tableContents = props.tableContents;
 
     const content = tableContents.map((rowContent, index) => {
-        return <TableRow key={index} rowContent = {rowContent} onClick={props.onClick} onSubmit={props.onSubmit} index={index} />
+        return <TableRow key={index} rowContent = {rowContent} onClick={props.onClick} onSubmit={props.onSubmit} onDetails={props.onDetails} index={index} />
     })
 
     return content;
@@ -54,6 +61,7 @@ export default class AdminView extends React.Component {
 
         this.handleDeny = this.handleDeny.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleDetails = this.handleDetails.bind(this);
     }
 
     handleDeny (event, tripID, index) {
@@ -89,13 +97,16 @@ export default class AdminView extends React.Component {
                     tableContents: tableContents,
                 })
             }
-        })
-        
+        })        
+    }
+
+    handleDetails (event, tripID) {
+        this.props.history.push('/viewtrip/'+tripID);
     }
 
     componentWillMount () {
         const infor = this.props;
-        console.log("Hello");
+        //console.log("Hello");
 
         axios.get('/loggedin')
         .then(res => {
@@ -138,11 +149,12 @@ export default class AdminView extends React.Component {
                         <th>Destination</th>
                         <th>Further Remarks</th>
                         <th>Driver Assignment</th>
+                        <th>Details</th>
                         <th>Approved</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <TableRender tableContents={this.state.tableContents} onClick={this.handleDeny} onSubmit={this.handleSubmit} />
+                    <TableRender tableContents={this.state.tableContents} onClick={this.handleDeny} onSubmit={this.handleSubmit} onDetails={this.handleDetails} />
                 </tbody>
             </Table>
         );
