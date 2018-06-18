@@ -28,7 +28,7 @@ export default ({ childProps }) =>
     <AppliedRoute path='/success/:tripid' exact component={RequestTripSuccess} props={childProps} />
     <AppliedRoute path='/viewrequests' exact component={ViewRequests} props={childProps} />
     <AppliedRoute path='/viewschedules' exact component={DriverSchedule} props={childProps} />
-    <AppliedRoute path='/viewtabs/:message' exact component={TabbedRequest} />
+    <AppliedRoute path='/viewtabs' exact component={TabbedRequest} />
     <AppliedRoute path='/viewfrequests' exact component={AdminView} props={childProps} />
     <AppliedRoute path='/viewtrip/:tripid' exact component={ViewTripDetails} props={childProps} />
     <Route component={NotFound} />
