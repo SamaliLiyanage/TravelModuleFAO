@@ -81,8 +81,12 @@ module.exports.newTrip = function(req, res, next) {
 
   tapApi.sms.requestCreator(smsConfig).single('0772434145', smsMessage, function (mtReq) {
     tapApi.transport.createRequest(netConfig, mtReq, function (request) {
-      tapApi.transport.httpClient(request, function () {
-        console.log("Mt request send to subscriber " + mtReq.destinationAddresses);
+      tapApi.transport.httpClient(request, function (error) {
+        if(error) {
+          console.log(error);
+        } else {
+          console.log("Mt request send to subscriber " + mtReq.destinationAddresses);
+        }
       })
     })
   })
