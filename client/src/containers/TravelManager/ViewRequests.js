@@ -1,21 +1,23 @@
 import React from 'react';
 import axios from 'axios';
 import { TripTypes, TripStatus, DriverName } from '../../Selections';
-import { Table, Tab, FormControl, FormGroup, Nav, Row, Col, NavDropdown, MenuItem, Button } from 'react-bootstrap';
+import { Table, Tab, FormControl, FormGroup, Nav, Row, Col, NavDropdown, MenuItem, Button, Pagination } from 'react-bootstrap';
+
 
 function DriverAssignment(props) {
     const today = new Date();
     const tripDate = new Date(props.tripDate);
-    var marginBottom = { margin: 0 };
+    const marginBottom = { margin: 0, height: '20pt' };
+    const padding = {paddingTop:'0pt', paddingBottom: '0pt'} 
 
     if (today < tripDate) {
         return (
             <FormGroup controlId={props.TripID} bsSize="small" style={marginBottom} >
-                <FormControl componentClass="select" value={props.Driver_ID} onChange={props.onChange} disabled={props.approved}>
+                <FormControl style={padding} componentClass="select" value={props.Driver_ID} onChange={(e) => props.onChange(e, props.TripID, props.index)} disabled={props.approved}>
                     <option value="0">Unassigned</option>
-                    <option value="1">Driver 1</option>
-                    <option value="2">Driver 2</option>
-                    <option value="3">Driver 3</option>
+                    <option value="1">Anthony</option>
+                    <option value="2">Ruchira</option>
+                    <option value="3">Dinesh</option>
                     <option value="cab">Cab</option>
                 </FormControl>
             </FormGroup>
@@ -23,7 +25,7 @@ function DriverAssignment(props) {
     } else {
         if (props.Driver_ID === null || props.Driver_ID === "0") {
             return (
-                <Button bsStyle="danger" disabled>Expired</Button>
+                <Button style={padding} bsStyle="danger" disabled>Expired</Button>
             );
         } else {
             return (<DriverName driverID={props.Driver_ID} />);
@@ -32,13 +34,13 @@ function DriverAssignment(props) {
 }
 
 function ViewDetails(props) {
-    return (<Button onClick={(e) => props.onClick(e, props.tripID)} >Details</Button>)
+    const padding = {paddingTop:'2pt', paddingBottom: '2pt'} 
+    return (<Button style={padding} onClick={(e) => props.onClick(e, props.tripID)} >Details</Button>)
 }
 
 function TripRow(props) {
     const tableContent = props.tableContent;
     const tripDate = new Date(tableContent.Trip_Date);
-    const reqDate = new Date(tableContent.Requested_Date);
     const driver_ID = tableContent.Driver_ID;
     const approved = (tableContent.Trip_Status === 6) ? true : false;
     const today = new Date();
@@ -64,9 +66,109 @@ function TripRow(props) {
             <td><TripStatus tripStatus={tableContent.Trip_Status} /></td>
             <td><ViewDetails onClick={props.onClick} tripID={tableContent.TripID} /></td>
             <td>
-                <DriverAssignment tripDate={warningDate} TripID={tableContent.TripID} Driver_ID={tableContent.Driver_ID} onChange={props.onChange} approved={approved} />
+                <DriverAssignment tripDate={warningDate} TripID={tableContent.TripID} Driver_ID={tableContent.Driver_ID} onChange={props.onChange} approved={approved} index={props.index} />
             </td>
         </tr>
+    );
+}
+
+function TableRow(props) {
+    //PORPS::: tableContents, onChange, onClick
+    const tableContents = props.tableContents;
+  
+    const content = tableContents.map((item, index) => {
+        return (<TripRow key={item.item.TripID} tableContent={item.item} onChange={props.onChange} index={item.index} onClick={props.onClick} />);
+    });
+    
+    return content;
+}
+
+function TableRender(props) {
+    //PROPS:: tableContents, onChange, onClick
+    const tableContents = props.tableContents;
+
+    return (
+        <Table striped bordered condensed hover responsive >
+            <thead>
+            <tr className="table-danger">
+                <th>Trip ID</th>
+                <th>Username</th>
+                <th>Trip Type</th>
+                <th>Trip Date</th>
+                <th>Trip Time</th>
+                <th>Destination</th>
+                <th>Trip Status</th>
+                <th>Details</th>
+                <th>Assign Driver</th>
+            </tr>
+            </thead>
+            <tbody>
+                <TableRow tableContents={tableContents} onChange={props.onChange} onClick={props.onClick} />
+            </tbody>
+        </Table>
+    );
+}
+
+function PaginationHandler(props) {
+    //PROPS:: active, size, onPage
+    let active = props.active;
+    let pager = [];
+    const pageLimit = Math.ceil(props.size/10);
+
+    for (let i=0; i<pageLimit; i++){
+        pager.push(
+            <Pagination.Item key={i} active={i===active} onClick={(e)=>{props.onPage(e, i)}} >{i+1}</Pagination.Item>
+        );
+    }
+
+    return (pager);
+}
+
+function Paginator(props) {
+    //PROPS:: tableContents, type, assigned, onChange, onClick, active, onPage, currentPage
+    const tableContents = props.tableContents;
+    const type = props.type;
+    const assigned = props.assigned;
+
+    const pageContent = tableContents.map((item, index) => {
+        if (type === 0) {
+            if (assigned==="all"){
+              return ({item, index});
+            } else if ((assigned==="assigned") && !(item.Trip_Status===1)) {
+              return ({item, index});          
+            } else if ((assigned==="unassigned") && (item.Trip_Status===1)) {
+              return ({item, index});                    
+            } else {
+              return (null)
+            }
+        } else {
+            if (type === item.Trip_Type) {
+              if (assigned==="all") {
+                return ({item, index});
+              } else if ((assigned==="assigned") && !(item.Trip_Status===1)) {
+                return ({item, index});                    
+              } else if ((assigned==="unassigned") && (item.Trip_Status===1)) {
+                return ({item, index});                    
+              } else {
+                return (null)
+              }
+            } else {
+              return (null)
+            }
+        }
+    });
+
+    const pageContentFinal = pageContent.filter((item, index) => {
+        return item!==null;
+    })
+
+    return (
+        <div>
+            <TableRender tableContents={pageContentFinal.slice(10*props.currentPage,10*props.currentPage+10)||pageContentFinal.slice(10*props.currentPage)} onChange={props.onChange} onClick={props.onClick} />
+            <Pagination>
+                <PaginationHandler active={props.active} size={pageContentFinal.length} onPage={props.onPage} />
+            </Pagination>
+        </div>
     );
 }
 
@@ -77,37 +179,39 @@ export default class TabbedRequest extends React.Component {
         this.state = {
             key: 0.1,
             tableContent: [],
+            currentPage: 0
         }
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
         this.handleClick = this.handleClick.bind(this);
+        this.handlePage = this.handlePage.bind(this);
     }
 
     componentDidMount() {
         const authenticate = this.props;
-
+        
         axios.get('/loggedin')
-            .then(res => {
-                if (res.data == "") {
-                    authenticate.userHasAuthenticated(false, null, null);
-                    authenticate.history.push('/login')
-                } else {
-                    authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
-                    if (res.data.Role === 1) {
-                        authenticate.history.push('/viewusers');
-                    } else if (res.data.Role === 4) {
-                        authenticate.history.push('/requesttrip');
-                    }
+        .then(res => {
+            if (res.data == "") {
+                authenticate.userHasAuthenticated(false, null, null);
+                authenticate.history.push('/login')
+            } else {
+                authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
+                if (res.data.Role === 1) {
+                    authenticate.history.push('/viewusers');
+                } else if (res.data.Role === 4) {
+                    authenticate.history.push('/requesttrip');
                 }
-            })
+            }
+        })
 
         axios.get('/trips/all')
-            .then(res => {
-                this.setState({
-                    tableContent: res.data
-                });
-            })
+        .then(res => {
+            this.setState({
+                tableContent: res.data
+            });
+        })
     }
 
     handleChange(event, i, index) {
@@ -142,66 +246,20 @@ export default class TabbedRequest extends React.Component {
     }
 
     handleSelect(key) {
-        this.setState({ key });
+        this.setState({ 
+            key: key, 
+            currentPage: 0
+        });
     }
 
     handleClick(event, tripID) {
         this.props.history.push('/viewtrip/'+tripID);
     }
 
-    renderRows(tableContents, type, assigned, onClick) {
-        const content = tableContents.map((item, index) => {
-            if (type === 0) {
-                if (assigned === "all") {
-                    return (<TripRow key={item.TripID} tableContent={item} onChange={(e) => this.handleChange(e, item.TripID, index)} onClick={onClick} />);
-                } else if ((assigned === "assigned") && !(item.Trip_Status === 1 || item.Trip_Status===6)) {
-                    return (<TripRow key={item.TripID} tableContent={item} onChange={(e) => this.handleChange(e, item.TripID, index)} onClick={onClick} />);
-                } else if ((assigned === "unassigned") && (item.Trip_Status === 1 || item.Trip_Status===6)) {
-                    return (<TripRow key={item.TripID} tableContent={item} onChange={(e) => this.handleChange(e, item.TripID, index)} onClick={onClick} />);
-                } else {
-                    return null
-                }
-            } else {
-                if (type === item.Trip_Type) {
-                    if (assigned === "all") {
-                        return (<TripRow key={item.TripID} tableContent={item} onChange={(e) => this.handleChange(e, item.TripID, index)} onClick={onClick} />);
-                    } else if ((assigned === "assigned") && !(item.Trip_Status === 1 || item.Trip_Status===6)) {
-                        return (<TripRow key={item.TripID} tableContent={item} onChange={(e) => this.handleChange(e, item.TripID, index)} onClick={onClick} />);
-                    } else if ((assigned === "unassigned") && (item.Trip_Status === 1 || item.Trip_Status===6)) {
-                        return (<TripRow key={item.TripID} tableContent={item} onChange={(e) => this.handleChange(e, item.TripID, index)} onClick={onClick} />);
-                    } else {
-                        return null
-                    }
-                } else {
-                    return null
-                }
-            }
+    handlePage(event, page) {
+        this.setState({
+            currentPage: page
         });
-
-        return content;
-    }
-
-    renderTable(tableContents, type, assigned, onClick) {
-        return (
-            <Table striped bordered condensed hover responsive>
-                <thead>
-                    <tr className="table-danger">
-                        <th>Trip ID</th>
-                        <th>Username</th>
-                        <th>Trip Type</th>
-                        <th>Trip Date</th>
-                        <th>Trip Time</th>
-                        <th>Destination</th>
-                        <th>Trip Status</th>
-                        <th>Details</th>
-                        <th>Assign Driver</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {this.renderRows(tableContents, type, assigned, onClick)}
-                </tbody>
-            </Table>
-        );
     }
 
     render() {
@@ -242,24 +300,22 @@ export default class TabbedRequest extends React.Component {
                         </Nav>
                     </Col>
                     <Tab.Content animation>
-                        <Tab.Pane eventKey={0.1}>{this.renderTable(this.state.tableContent, 0, "all", this.handleClick)}</Tab.Pane>
-                        <Tab.Pane eventKey={0.2}>{this.renderTable(this.state.tableContent, 0, "assigned", this.handleClick)}</Tab.Pane>
-                        <Tab.Pane eventKey={0.3}>{this.renderTable(this.state.tableContent, 0, "unassigned", this.handleClick)}</Tab.Pane>
-                        <Tab.Pane eventKey={1.1}>{this.renderTable(this.state.tableContent, 1, "all", this.handleClick)}</Tab.Pane>
-                        <Tab.Pane eventKey={1.2}>{this.renderTable(this.state.tableContent, 1, "assigned", this.handleClick)}</Tab.Pane>
-                        <Tab.Pane eventKey={1.3}>{this.renderTable(this.state.tableContent, 1, "unassigned", this.handleClick)}</Tab.Pane>
-                        <Tab.Pane eventKey={2.1}>{this.renderTable(this.state.tableContent, 2, "all", this.handleClick)}</Tab.Pane>
-                        <Tab.Pane eventKey={2.2}>{this.renderTable(this.state.tableContent, 2, "assigned", this.handleClick)}</Tab.Pane>
-                        <Tab.Pane eventKey={2.3}>{this.renderTable(this.state.tableContent, 2, "unassigned", this.handleClick)}</Tab.Pane>
-                        <Tab.Pane eventKey={3.1}>{this.renderTable(this.state.tableContent, 3, "all", this.handleClick)}</Tab.Pane>
-                        <Tab.Pane eventKey={3.2}>{this.renderTable(this.state.tableContent, 3, "assigned", this.handleClick)}</Tab.Pane>
-                        <Tab.Pane eventKey={3.3}>{this.renderTable(this.state.tableContent, 3, "unassigned", this.handleClick)}</Tab.Pane>
-                        <Tab.Pane eventKey={4.1}>{this.renderTable(this.state.tableContent, 4, "all", this.handleClick)}</Tab.Pane>
-                        <Tab.Pane eventKey={4.2}>{this.renderTable(this.state.tableContent, 4, "assigned", this.handleClick)}</Tab.Pane>
-                        <Tab.Pane eventKey={4.3}>{this.renderTable(this.state.tableContent, 4, "unassigned", this.handleClick)}</Tab.Pane>
+                        <Tab.Pane eventKey={0.1}><Paginator tableContents={this.state.tableContent} type={0} assigned={"all"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
+                        <Tab.Pane eventKey={0.2}><Paginator tableContents={this.state.tableContent} type={0} assigned={"assigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
+                        <Tab.Pane eventKey={0.3}><Paginator tableContents={this.state.tableContent} type={0} assigned={"unassigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
+                        <Tab.Pane eventKey={1.1}><Paginator tableContents={this.state.tableContent} type={1} assigned={"all"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
+                        <Tab.Pane eventKey={1.2}><Paginator tableContents={this.state.tableContent} type={1} assigned={"assigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
+                        <Tab.Pane eventKey={1.3}><Paginator tableContents={this.state.tableContent} type={1} assigned={"unassigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
+                        <Tab.Pane eventKey={2.1}><Paginator tableContents={this.state.tableContent} type={2} assigned={"all"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
+                        <Tab.Pane eventKey={2.2}><Paginator tableContents={this.state.tableContent} type={2} assigned={"assigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
+                        <Tab.Pane eventKey={2.3}><Paginator tableContents={this.state.tableContent} type={2} assigned={"unassigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
+                        <Tab.Pane eventKey={3.1}><Paginator tableContents={this.state.tableContent} type={3} assigned={"all"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
+                        <Tab.Pane eventKey={3.2}><Paginator tableContents={this.state.tableContent} type={3} assigned={"assigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
+                        <Tab.Pane eventKey={3.3}><Paginator tableContents={this.state.tableContent} type={3} assigned={"unassigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
+                        <Tab.Pane eventKey={4.1}><Paginator tableContents={this.state.tableContent} type={4} assigned={"all"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
+                        <Tab.Pane eventKey={4.2}><Paginator tableContents={this.state.tableContent} type={4} assigned={"assigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
+                        <Tab.Pane eventKey={4.3}><Paginator tableContents={this.state.tableContent} type={4} assigned={"unassigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
                     </Tab.Content>
-                    <Col>
-                    </Col>
                 </Row>
             </Tab.Container>
         );

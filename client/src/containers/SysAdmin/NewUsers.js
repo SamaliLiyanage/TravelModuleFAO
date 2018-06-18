@@ -26,11 +26,13 @@ export default class UserForm extends React.Component {
       realName: '',
       userName: '',
       passWord: '',
+      telePhone: null,
       role: 0,
-      formErrors: ['', '', '', ''],
+      formErrors: ['', '', '', '', ''],
       rnValid: false,
       unValid: false,
       pwValid: false,
+      tpValid: false,
       rlValid: false,
       formValid: false
     }
@@ -58,14 +60,15 @@ export default class UserForm extends React.Component {
         userName: this.state.userName,
         realName: this.state.realName,
         passWord: this.state.passWord,
+        telePhone: this.state.telePhone,
         role: parseInt(this.state.role, 10),
       })
       .then(function (response) {
-        console.log("Response", response);
+        //console.log("Response", response);
         authenticate.history.push('/viewusers');
       })
       .catch(function (error) {
-        console.log("Response", error);
+        //console.log("Response", error);
       })
   }
 
@@ -74,6 +77,7 @@ export default class UserForm extends React.Component {
     let rnValid = this.state.rnValid;
     let unValid = this.state.unValid;
     let pwValid = this.state.pwValid;
+    let tpValid = this.state.tpValid;
     let rlValid = this.state.rlValid;
 
     switch(fieldName) {
@@ -89,9 +93,13 @@ export default class UserForm extends React.Component {
         pwValid = (value.length >=6);
         fieldValidationErrors[2] = pwValid ? '': ' is too short';
         break;
+      case 'telePhone':
+        tpValid = !(value.length < 10);
+        fieldValidationErrors[3] = tpValid ? '': ' is invalid';
+        break;
       case 'role':
         rlValid = !((/^0$/).test(value));
-        fieldValidationErrors[3] = rlValid ? '': ' is not selected';
+        fieldValidationErrors[4] = rlValid ? '': ' is not selected';
         break;
       default:
         break;
@@ -101,12 +109,13 @@ export default class UserForm extends React.Component {
       rnValid: rnValid,
       unValid: unValid,
       pwValid: pwValid,
+      tpValid: tpValid,
       rlValid: rlValid
     }, this.validateForm);
   }
 
   validateForm(){
-    this.setState({formValid: this.state.rnValid && this.state.unValid && this.state.pwValid && this.state.rlValid});
+    this.setState({formValid: this.state.rnValid && this.state.unValid && this.state.pwValid && this.state.tpValid && this.state.rlValid});
   }
 
   getValidationState(fieldState) {
@@ -135,7 +144,7 @@ export default class UserForm extends React.Component {
   }
 
   render() {
-    let fieldNames = ['Name', 'Username', 'Password', 'Role'] ;
+    let fieldNames = ['Name', 'Username', 'Password', 'Telephone', 'Role'] ;
     return (
       <Form horizontal onSubmit={this.handleSubmit}>
         <FormGroup controlId="realName" validationState={this.getValidationState(this.state.rnValid)}>
@@ -158,6 +167,14 @@ export default class UserForm extends React.Component {
           <Col componentClass={ControlLabel} smOffset={2} sm={2}> Password: </Col>
           <Col sm={4}>
             <FormControl type="password" value={this.state.passWord} onChange={this.handleChange} />
+            <FormControl.Feedback />
+          </Col>
+        </FormGroup>
+
+        <FormGroup controlId="telePhone" validationState={this.getValidationState(this.state.tpValid)}>
+          <Col componentClass={ControlLabel} smOffset={2} sm={2}> Telephone: </Col>
+          <Col sm={4}>
+            <FormControl type="text" value={this.state.telePhone} onChange={this.handleChange} />
             <FormControl.Feedback />
           </Col>
         </FormGroup>

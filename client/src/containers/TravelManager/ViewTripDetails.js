@@ -3,6 +3,24 @@ import axios from 'axios';
 import { Form, FormGroup, Col, ControlLabel, FormControl, Button } from 'react-bootstrap';
 import { TripTypes, TripStatus, DriverName } from '../../Selections';
 
+function ApprovalButton (props) {
+    if (props.userType===5){
+        return (
+            (props.tripStatus===6)?
+                <FormGroup>
+                    <Col componentClass={ControlLabel} smOffset={1} sm={2}>Approval:</Col>
+                    <Col sm={3}>
+                        <Button onClick={(e)=>props.onApprove(e, props.tripID, props.remark, true)}>Approve</Button>
+                        <Button bsStyle="danger" onClick={(e)=>props.onApprove(e, props.tripID, "Further remarks have been denied", true)}>Deny</Button>
+                    </Col>
+                </FormGroup>:
+                null
+        );
+    } else {
+        return null;
+    }
+}
+
 function StatusButton (props) {
     var type = "info";
     const tripStatus = props.tripStatus;
@@ -74,14 +92,14 @@ function Driver (props) {
                     <Col componentClass={ControlLabel} smOffset={1} sm={2}>Driver:</Col>
                     <Col componentClass="select" value={props.driverID} onChange={(e) => props.onChange (e, props.tripID)} sm={2} disabled={disabled}>
                         <option value="0">Unassigned</option>
-                        <option value="1">Driver 1</option>
-                        <option value="2">Driver 2</option>
-                        <option value="3">Driver 3</option>
+                        <option value="1">Anthony</option>
+                        <option value="2">Ruchira</option>
+                        <option value="3">Dinesh</option>
                         <option value="cab">Cab</option>
                     </Col>
                 </FormGroup>
             );
-        } else {
+        } else if (props.userType!=5) {
             content = (
                 <FormGroup>
                     <Col componentClass={ControlLabel} smOffset={1} sm={2}>Driver:</Col>
@@ -109,6 +127,7 @@ export default class ViewTripDetails extends React.Component {
         }
 
         this.handleChange = this.handleChange.bind(this);
+        this.handleApproval = this.handleApproval.bind(this);
     }
 
     componentWillMount () {
@@ -125,9 +144,9 @@ export default class ViewTripDetails extends React.Component {
                     auth.history.push('/viewusers');
                 } /*else if (res.data.Role===4) {
                     auth.history.push('/requesttrip');
-                }*/ else if (res.data.Role===5) {
+                } else if (res.data.Role===5) {
                     auth.history.push('/viewfrequests');
-                }
+                }*/
             }
         })
     }
@@ -179,6 +198,25 @@ export default class ViewTripDetails extends React.Component {
                 tripInfo.Trip_Status = tripStatus;
                 this.setState ({
                     tripInfo: tripInfo,
+                })
+            }
+        })
+    }
+
+    handleApproval (event, tripID, comment, approve) {
+        var tripInfo = this.state.tripInfo;
+
+        axios.post('/trips/approval', {
+            approve: approve,
+            comment: comment,
+            tripID: tripID
+        })
+        .then(response => {
+            if (response.data.success) {
+                tripInfo.Trip_Status = 1;
+               this.setState({
+                    remark: comment,
+                    tripInfo: tripInfo
                 })
             }
         })
@@ -240,6 +278,7 @@ export default class ViewTripDetails extends React.Component {
                 </FormGroup>
                 <FurtherRemarks exists={this.state.furtherRemarks} remark={this.state.remark} />
                 <Driver userType={this.props.userType} tripID={this.state.tripid} driverID={this.state.tripInfo.Driver_ID} tripDate={tripDate} tripStatus={this.state.tripInfo.Trip_Status} onChange={this.handleChange} />                
+                <ApprovalButton userType={this.props.userType} tripStatus={this.state.tripInfo.Trip_Status} remark={this.state.remark} tripID={this.state.tripid} onApprove={this.handleApproval} />
             </Form>
         );
     }
