@@ -12,7 +12,6 @@ module.exports.getUsers = function (req, res, next) {
 
 //Get all users of given role
 module.exports.getUsersFilter = function (req, res, next) {
-  console.log(req.params);
   if(req.params.fieldName==='Role'){
     user.getUsersRole(req.params.fieldValue, response => {
       if(response.status==="success") res.send(response.result);

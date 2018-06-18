@@ -2,7 +2,7 @@ var db = require('../db.js');
 
 exports.addUser = function(userName, fullName, passWord, telePhone, role, res) {
   var values = [userName, fullName, passWord, telePhone, role];
-  console.log(values);
+  //console.log(values);
   db.connection.query('INSERT INTO User (Username, Full_Name, Password, Mobile_No, Role) VALUES (?, ?, ?, ?, ?)', values, function(err, results) {
     if(err) {
       console.log(err);
@@ -40,7 +40,6 @@ exports.getUsersRole = function(fieldValue, next) {
 
   db.connection.query('SELECT * FROM User WHERE Role=?', value, function(err, results) {
     var temp;
-    console.log(results);
 
     if(err) {
       temp = {
