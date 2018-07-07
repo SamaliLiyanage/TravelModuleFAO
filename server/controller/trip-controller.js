@@ -25,7 +25,20 @@ function DriverName(driverNo) {
 
 //Insert details on new trip
 module.exports.newTrip = function(req, res, next) {
-  trip.newTrip(req.body.tripID, req.body.username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.destination, req.body.tripPurpose, res);
+  let results;
+
+  trip.newTrip(req.body.tripID, req.body.username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.tripPurpose, (response)=>{
+    results = {trip: response};
+    res.send(results);
+  });
+  trip.addDestinations(req.body.tripID, req.body.destinations, req.body.destinationTowns, response => {
+    //console.log(response);
+  });
+  if(parseInt(req.body.budgetingEntity, 10)===2) {
+    trip.setBudgetingEntity(req.body.tripID, req.body.projectNumber, response => {
+      //console.log(response);
+    })
+  }
   if (!(req.body.furtherRmrks==="")){
     trip.addFurtherComments(req.body.tripID, req.body.furtherRmrks);
     trip.changeStatus(req.body.tripID, 6, response => {
@@ -233,6 +246,51 @@ module.exports.setApproval = function (req, res) {
 module.exports.sendMobileResponse = function (req, res, next) {
   res.send(tapApi.sms.successResponse);
   next();
+}
+
+//Trip start and end
+module.exports.setTripStatus = function (req, res) {
+  const message = req.body.message;
+  var state, tripID, mileage;
+
+  [state, tripID, mileage] = message.split(" ");
+  state = state.substr(0,1).toUpperCase()+state.slice(1).toLowerCase();
+
+  trip.getTripStatus(tripID, response => {
+    if(state==='Start') {
+      if((response.End===null) && (response.Start===null)) {
+        trip.setTripStatus(tripID, state, mileage, 3, resp => {
+          console.log(resp);
+          res.send(resp);
+        })
+      } else {
+        res.send({status: 'fail'});
+      }
+    } else if(state==='End') {
+      if((response.Start!==null) && (response.End===null)){
+        trip.setTripStatus(tripID, state, mileage, 4, resp => {
+          console.log(resp);
+          res.send(resp);
+        })
+      } else {
+        res.send({status: 'fail'});
+      }
+    } else {
+      res.send({status: 'fail'});
+    }
+  })
+} 
+
+module.exports.getDestinations = function (req, res) {
+  trip.getDestinations (req.params.tripID, response => {
+    res.send(response);
+  })
+}
+
+module.exports.getBudgetEntity = function (req, res) {
+  trip.getBudgetingEntity (req.params.tripID, response => {
+    res.send(response);
+  })
 }
 
 //testing

@@ -17,7 +17,6 @@ function TripRows(props) {
             <td>{rowContent.Trip_Time}</td>
             <td><DriverName driverID={rowContent.Driver_ID} /></td>
             <td>{reqDate.getFullYear() + "-" + (reqDate.getMonth() + 1) + "-" + reqDate.getDate()}</td>
-            <td>{rowContent.Destination}</td>
             <td><Button onClick={(e)=>props.onClick(e, rowContent.TripID)}>Details</Button></td>
         </tr>
     );
@@ -85,7 +84,6 @@ export default class ViewRequests extends React.Component {
                             <th>Trip Time</th>
                             <th>Driver ID</th>
                             <th>Requested Date</th>
-                            <th>Destination</th>
                             <th>Details</th>
                         </tr>
                     </thead>
