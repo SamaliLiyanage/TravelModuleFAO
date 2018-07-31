@@ -29,9 +29,9 @@ function StatusButton (props) {
         type = "warning";
     } else if (tripStatus===2 || tripStatus===5) {
         type = "info";
-    } else if (tripStatus===3) {        
+    } else if (tripStatus===3 || tripStatus===4) {        
         type = "success";
-    } else if (tripStatus===4) {    
+    } else if (tripStatus===7) {    
         type = "danger";
     }
 
@@ -114,6 +114,45 @@ function Driver (props) {
     return content;
 }
 
+function BudgetingEntity (props) {
+    //PROPS::: budgetingEntity, projectNumber
+    const budgetingEntity = props.budgetingEntity;
+    const projectNumber = props.projectNumber;
+
+    return (
+        (budgetingEntity===2) ? 
+        <div>
+            <Col sm={3}>
+                <FormControl.Static>Project Funded</FormControl.Static>
+            </Col>
+            <Col componentClass={ControlLabel} sm={2}>Project:</Col>
+            <Col sm={2}>
+                <FormControl.Static>{projectNumber}</FormControl.Static>
+            </Col>
+        </div>:
+        <div>
+            <Col sm={4}>
+                <FormControl.Static>Regular Program Funded</FormControl.Static>
+            </Col>
+        </div>
+    );
+}
+
+function Destinations (props) {
+    //PROPS::: destinations
+    const destinations = props.destinations;
+    console.log("Inside",destinations);
+    const content = destinations.map((dest, index) => {
+        return (
+            <Col sm={2}>
+                <FormControl.Static>{(index+1)+") "+dest.Destination+", "+dest.Destination_Town}</FormControl.Static>
+            </Col>
+        )
+    })
+
+    return content;
+}
+
 export default class ViewTripDetails extends React.Component {
 
     constructor (props) {
@@ -124,6 +163,9 @@ export default class ViewTripDetails extends React.Component {
             tripInfo: [],
             furtherRemarks: false,
             remark: "",
+            budgetingEntity: 1,
+            projectNumber: null,
+            destinations: []
         }
 
         this.handleChange = this.handleChange.bind(this);
@@ -169,6 +211,25 @@ export default class ViewTripDetails extends React.Component {
                 this.setState({
                     furtherRemarks: true,
                     remark:res.data.data
+                })
+            }
+        })
+
+        axios.get('/trips/bentity/'+this.state.tripid)
+        .then(res=>{
+            if(res.data.exists===true) {
+                this.setState({
+                    budgetingEntity: 2,
+                    projectNumber: res.data.data
+                })
+            }
+        })
+
+        axios.get('/trips/destinations/'+this.state.tripid)
+        .then(res=>{
+            if(res.data.success===true) {
+                this.setState({
+                    destinations: res.data.data
                 })
             }
         })
@@ -255,10 +316,10 @@ export default class ViewTripDetails extends React.Component {
                     <Col sm={3}>
                         <FormControl.Static><TripTypes tripType={this.state.tripInfo.Trip_Type} /></FormControl.Static>
                     </Col>
-                    <Col componentClass={ControlLabel} sm={2}>Destination:</Col>
-                    <Col sm={2}>
-                        <FormControl.Static>{this.state.tripInfo.Destination}</FormControl.Static>
-                    </Col>
+                </FormGroup>
+                <FormGroup>
+                    <Col componentClass={ControlLabel} smOffset={1} sm={2}>Destinations:</Col>
+                    <Destinations destinations={this.state.destinations} />
                 </FormGroup>
                 <FormGroup>
                     <Col componentClass={ControlLabel} smOffset={1} sm={2}>Requested Date:</Col>
@@ -275,6 +336,10 @@ export default class ViewTripDetails extends React.Component {
                     <Col sm={3}>
                         <FormControl.Static>{this.state.tripInfo.Purpose}</FormControl.Static>
                     </Col>
+                </FormGroup>
+                <FormGroup>
+                    <Col componentClass={ControlLabel} smOffset={1} sm={2}>Budgeting Entity:</Col>
+                    <BudgetingEntity budgetingEntity={this.state.budgetingEntity} projectNumber={this.state.projectNumber} />
                 </FormGroup>
                 <FurtherRemarks exists={this.state.furtherRemarks} remark={this.state.remark} />
                 <Driver userType={this.props.userType} tripID={this.state.tripid} driverID={this.state.tripInfo.Driver_ID} tripDate={tripDate} tripStatus={this.state.tripInfo.Trip_Status} onChange={this.handleChange} />                

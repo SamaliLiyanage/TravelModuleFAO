@@ -62,7 +62,6 @@ function TripRow(props) {
             <td><TripTypes tripType={tableContent.Trip_Type} /></td>
             <td>{tripDate.getFullYear() + "-" + (tripDate.getMonth() + 1) + "-" + tripDate.getDate()}</td>
             <td>{tableContent.Trip_Time}</td>
-            <td>{tableContent.Destination}</td>
             <td><TripStatus tripStatus={tableContent.Trip_Status} /></td>
             <td><ViewDetails onClick={props.onClick} tripID={tableContent.TripID} /></td>
             <td>
@@ -96,7 +95,6 @@ function TableRender(props) {
                 <th>Trip Type</th>
                 <th>Trip Date</th>
                 <th>Trip Time</th>
-                <th>Destination</th>
                 <th>Trip Status</th>
                 <th>Details</th>
                 <th>Assign Driver</th>

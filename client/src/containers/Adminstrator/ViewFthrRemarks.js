@@ -32,7 +32,6 @@ function TableRow (props) {
             <td>{rowContent.TripID}</td>
             <td>{rowContent.Username}</td>
             <td>{tripDate.getFullYear()+"-"+(tripDate.getMonth()+1)+"-"+tripDate.getDate()}</td>
-            <td>{rowContent.Destination}</td>
             <td>{rowContent.Remark}</td>
             <td><TripStatus tripStatus={rowContent.Trip_Status} /></td>
             <td><ViewDetails tripID={rowContent.TripID} onDetails={props.onDetails} /></td>
@@ -146,7 +145,6 @@ export default class AdminView extends React.Component {
                         <th>Trip ID</th>
                         <th>Username</th>
                         <th>Trip Date</th>
-                        <th>Destination</th>
                         <th>Further Remarks</th>
                         <th>Driver Assignment</th>
                         <th>Details</th>

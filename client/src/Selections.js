@@ -11,7 +11,7 @@ export function UserTypes(props) {
 
 export function TripTypes(props) {
     switch(props.tripType) {
-        case 1: return "Day Trip";
+        case 1: return "City Trip";
         case 2: return "Field Trip";
         case 3: return "Field Day Trip";
         case 4: return "Airport";
@@ -33,10 +33,11 @@ export function TripStatus(props) {
     switch(props.tripStatus) {
         case 1: return "Pending";
         case 2: return "Assigned";
-        case 3: return "Completed";
-        case 4: return "Cancelled";
+        case 3: return "Started";
+        case 4: return "Completed";
         case 5: return "Cab Assigned";
         case 6: return "Awaiting Approval";
+        case 7: return "Cancelled";
         default: return "Error";
     }
 }
