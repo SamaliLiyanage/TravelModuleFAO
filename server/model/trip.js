@@ -5,11 +5,11 @@ var db = require('../db.js');
 //BudgetProject::: `TripID``Project_No`
 //User:::`Username``Full_Name``Password``Role``Mobile_No`
 
-exports.newTrip = function (tripID, userName, tripType, tripDate, tripTime, tripPurpose, next) {
+exports.newTrip = function (tripID, userName, tripType, tripDate, tripTime, tripDuration, tripPurpose, next) {
     date = new Date();
-    values = [tripID, userName, tripType, date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate(), tripDate, tripTime, tripPurpose];
+    values = [tripID, userName, tripType, date, tripDate, tripTime, tripDuration, tripPurpose];
 
-    db.connection.query('INSERT INTO Trip(TripID, Username, Trip_Type, Requested_Date, Trip_Date, Trip_Time, Purpose) VALUES (?, ?, ?, ?, ?, ?, ?)', values, function (err, results) {
+    db.connection.query('INSERT INTO Trip(TripID, Username, Trip_Type, Requested_Date, Trip_Date, Trip_Time, Duration, Purpose) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', values, function (err, results) {
         if (err) {
             console.log(err);
             next ({
@@ -76,36 +76,40 @@ exports.userTrips = function (userID, res) {
     });
 }
 
-exports.assignDriver = function (tripID, driverID, tripStatus, res) {
+exports.assignDriver = function (tripID, driverID, tripStatus, next) {
     values = [driverID, tripStatus, tripID];
 
     db.connection.query('UPDATE Trip SET Driver_ID=?, Trip_Status=? WHERE TripID=?', values, function (err, results) {
         if (err) {
             console.log(err);
-            return res.send(err);
+            var temp = {
+                "status": "fail",
+                "result": err,
+            }
+            next(temp);
         } else {
             var temp = {
                 "status": "success",
                 "result": results,
             }
-            res.json(temp);
+            next(temp);
         }
     });
 }
 
-exports.getTrip = function (tripID, res) {
+exports.getTrip = function (tripID, next) {
     value = [tripID];
 
     db.connection.query('SELECT * FROM Trip WHERE TripID=?', value, function (err, result) {
         if (err) {
             console.log(err);
-            return res.send(err);
+            next(err);
         } else {
             var temp = {
                 "status": "success",
                 "data": result[0],
             }
-            res.json(temp);
+            next(temp);
         }
     });
 }
@@ -301,4 +305,50 @@ exports.getBudgetingEntity = function (tripID, next) {
         }
         next (temp);
     })
+}
+
+exports.checkDriverAvailability = function (driverID, date, startTime, endTime, next) {
+    const values = [date, driverID, startTime, endTime, startTime, endTime];
+    var temp;
+    db.connection.query('SELECT COUNT(*) AS TripCount FROM (SELECT TripID, Trip_Time, Driver_ID, Duration, DATE_ADD(Trip_Time, INTERVAL Duration HOUR) AS End_Time FROM Trip WHERE Trip_Date=? AND Driver_ID=?) AS T WHERE ((Trip_Time>? AND Trip_Time<?) OR (End_Time>? AND End_Time<?))', values, function(err, results) {
+        if (err) {
+            console.log(err);
+            temp = {
+                status: 'fail'
+            };
+        } else {
+            temp = {
+                status: 'success',
+                result: results[0].TripCount
+            }
+        }
+        next(temp);
+    });
+}
+
+exports.countMonthlyTrips = function (month, type) {
+    return new Promise(function(resolve, reject) {
+        const values = [month, type];
+        var temp;
+        db.connection.query('SELECT Driver_ID, COUNT(*) AS TripCount FROM Trip WHERE Driver_ID!=0 AND MONTH(Trip_Date)=? AND Trip_Type=? GROUP BY Driver_ID', values, function(err, results) {
+            if(err) {
+                console.log(err);
+                temp = {
+                    status: 'fail'
+                };
+                reject(temp);
+            } else {
+                let driverCount = [0, 0, 0];
+                results.forEach(driver => {
+                    driverCount[parseInt(driver.Driver_ID, 10)-1] = parseInt(driver.TripCount, 10);
+                    
+                });
+                temp = {
+                    status: 'success',
+                    result: driverCount
+                };
+                resolve(temp);
+            }
+        })
+    });
 }

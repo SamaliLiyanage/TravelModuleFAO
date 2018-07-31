@@ -11,7 +11,7 @@ export function UserTypes(props) {
 
 export function TripTypes(props) {
     switch(props.tripType) {
-        case 1: return "Day Trip";
+        case 1: return "City Trip";
         case 2: return "Field Trip";
         case 3: return "Field Day Trip";
         case 4: return "Airport";
