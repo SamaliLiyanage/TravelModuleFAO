@@ -326,6 +326,25 @@ exports.checkDriverAvailability = function (driverID, date, startTime, endTime, 
     });
 }
 
+exports.checkDriverFieldAvailability = function (driverID, date, startTime, endDate, next) {
+    const values = [];
+    var temp;
+    db.connection.query('SELECT COUNT(*) AS TripCount FROM Trip WHERE Trip_Date>=? AND Trip_Date<=?', values, function(err, result) {
+        if (err) {
+            console.log(err);
+            temp = {
+                status: 'fail'
+            };
+        } else {
+            temp = {
+                status: 'success',
+                result: result[0].TripCount
+            }
+        }
+        next(temp);
+    })
+}
+
 exports.countMonthlyTrips = function (month, type) {
     return new Promise(function(resolve, reject) {
         const values = [month, type];

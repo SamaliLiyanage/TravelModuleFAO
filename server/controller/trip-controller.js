@@ -200,13 +200,38 @@ module.exports.assignDriver = function(req, res, next) {
       }
     });
 
-    tapApi.sms.requestCreator(smsConfig).single('0772434145', smsMessage, function (mtReq) {
-      tapApi.transport.createRequest(netConfig, mtReq, function (request) {
-        tapApi.transport.httpClient(request, function () {
-          console.log("Mt request send to subscriber " + mtReq.destinationAddresses);
-        })
-      })
-    })
+    var offset = new Date().getTimezoneOffset();
+    var startTimeDate = new Date();
+    startTimeDate.setMinutes(startTimeDate.getMinutes()-offset);
+    var endTimeDate = new Date(startTimeDate);
+    endTimeDate.setMinutes(endTimeDate.getMinutes()+5);
+    var startTime = startTimeDate.getFullYear()+'-'+(startTimeDate.getMonth()+1)+'-'+startTimeDate.getDate()+' '+startTimeDate.getHours()+':'+startTimeDate.getMinutes()+':'+startTimeDate.getSeconds();
+    var endTime = endTimeDate.getFullYear()+'-'+(endTimeDate.getMonth()+1)+'-'+endTimeDate.getDate()+' '+endTimeDate.getHours()+':'+endTimeDate.getMinutes()+':'+endTimeDate.getSeconds()
+
+    const options = {  
+      url: 'https://digitalreachapi.dialog.lk/camp_req.php',
+      headers: {
+        'Content-Type': 'application/json',  
+        'Authorization': '1532927585427',
+        'Accept': 'application/json'        
+      },
+      json: {
+        "msisdn" :"94767434145",
+        "mt_port" : "Demo",
+        "channel" : "1",
+        "s_time" : startTime,
+        "e_time" : endTime,
+        "msg" : smsMessage
+      }
+    };
+
+    request.post(options, function (err, resp, body) {
+      if(err) {
+        console.log(err.body);
+      } else {
+        console.log(resp.body);
+      }
+    });
   }
 }
 
