@@ -64,10 +64,11 @@ export default class AdminView extends React.Component {
     }
 
     handleDeny (event, tripID, index) {
+        const userName = this.props.userName
         const tableContents = this.state.tableContents.slice();
         axios.post('/trips/approval', {
             tripID: tripID,
-            comment: "Further Requests have been denied", 
+            comment: "Further Requests have been denied by ["+userName+"]", 
             approve: false,
         })
         .then((response) => {
@@ -81,10 +82,11 @@ export default class AdminView extends React.Component {
     }
 
     handleSubmit (event, tripID, comment, index) {
+        const userName = this.props.userName;
         const tableContents = this.state.tableContents.slice();
         axios.post('/trips/approval', {
             tripID: tripID,
-            comment: comment,
+            comment: comment+" [Approved by "+userName+"]",
             approve: true,
         })
         .then((response) => {

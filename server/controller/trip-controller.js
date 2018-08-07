@@ -2,6 +2,7 @@ var trip = require('../model/trip');
 var nodemailer = require('nodemailer');
 var tapApi = require('tap-telco-api');
 var request = require('request');
+var cron = require('node-cron');
 
 const smsConfig = {
   applicationId: "APP_000101",
@@ -107,7 +108,7 @@ module.exports.newTrip = function(req, res, next) {
     url: 'https://digitalreachapi.dialog.lk/camp_req.php',
     headers: {
       'Content-Type': 'application/json',  
-      'Authorization': '1532927585427',
+      'Authorization': '1533639445566',
       'Accept': 'application/json'        
     },
     json: {
@@ -129,7 +130,7 @@ module.exports.newTrip = function(req, res, next) {
   });
 
   let month = new Date(req.body.tripDate)
-  if((req.body.furtherRmrks==="")&&(parseInt(req.body.tripType, 10)!==2)) {
+  if((req.body.furtherRmrks==="")&&(parseInt(req.body.tripType, 10)!==2)&&(req.body.cabRequested===false)) {
     trip.countMonthlyTrips(month.getMonth()+1, req.body.tripType)
     .then(function(response){
       const result = response.result;
@@ -140,6 +141,10 @@ module.exports.newTrip = function(req, res, next) {
     })
     .catch(function(error){
       console.log(error);
+    })
+  } else if(req.body.cabRequested===true) {
+    trip.assignDriver(req.body.tripID, 'cab', 5, response => {
+      //console.log(response);
     })
   }
 }
@@ -212,7 +217,7 @@ module.exports.assignDriver = function(req, res, next) {
       url: 'https://digitalreachapi.dialog.lk/camp_req.php',
       headers: {
         'Content-Type': 'application/json',  
-        'Authorization': '1532927585427',
+        'Authorization': '1533639445566',
         'Accept': 'application/json'        
       },
       json: {
@@ -306,7 +311,7 @@ module.exports.setApproval = function (req, res) {
       url: 'https://digitalreachapi.dialog.lk/camp_req.php',
       headers: {
         'Content-Type': 'application/json',  
-        'Authorization': '1532927585427',
+        'Authorization': '1533639445566',
         'Accept': 'application/json'        
       },
       json: {
@@ -356,6 +361,7 @@ module.exports.sendMobileResponse = function (req, res, next) {
 module.exports.setTripStatus = function (req, res) {
   const message = req.body.message;
   var state, tripID, mileage;
+  console.log(message);
 
   [state, tripID, mileage] = message.split(" ");
   state = state.substr(0,1).toUpperCase()+state.slice(1).toLowerCase();
@@ -474,13 +480,206 @@ module.exports.driverCount = function (req, res) {
   })
 }
 
+module.exports.cancelTrip = function (req, res, next) {
+  trip.cancelTrip(req.body.tripID)
+  .then(function (response){
+    if(response.status==='success') {
+      res.send(response);
+    } else {
+      res.send(response);
+    }
+  })
+  .catch(function(error){
+    console.log(error);
+  })
+} 
+
+cron.schedule("* * * * *", function() {
+  var transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+      user: 'fao.testbed@gmail.com',
+      pass: 'Rand0mm4il!!!',
+    }
+  });
+
+  trip.checkNotStarted(res=>{
+    res.result.forEach(element => {    
+      var mailOptionsRqstr = {
+        from: 'fao.testbed@gmail.com',
+        to: 'samali.liyanage93@gmail.com',
+        subject: 'Reminder for '+element.TripID,
+        text: 'Your trip with the above number has not started. Please cancel the trip or contact the Travel Manager.'
+      }
+
+      transporter.sendMail(mailOptionsRqstr, function(error, info) {
+        if(error) {
+          console.log(error);
+        } else {
+          console.log('Email to requester sent for update: '+info.response);
+        }
+      });
+
+      var mailOptionsMngr = {
+        from: 'fao.testbed@gmail.com',
+        to: 'samali.liyanage93@gmail.com',
+        subject: 'Reminder for '+element.TripID,
+        text: 'The trip with the above number has not started. Please cancel the trip.'
+      }
+
+      transporter.sendMail(mailOptionsMngr, function(error, info) {
+        if(error) {
+          console.log(error);
+        } else {
+          console.log('Email to manager sent for update: '+info.response);
+        }
+      });
+
+      var offset = new Date().getTimezoneOffset();
+      var startTimeDate = new Date();
+      startTimeDate.setMinutes(startTimeDate.getMinutes()-offset);
+      var endTimeDate = new Date(startTimeDate);
+      endTimeDate.setMinutes(endTimeDate.getMinutes()+5);
+      var startTime = startTimeDate.getFullYear()+'-'+(startTimeDate.getMonth()+1)+'-'+startTimeDate.getDate()+' '+startTimeDate.getHours()+':'+startTimeDate.getMinutes()+':'+startTimeDate.getSeconds();
+      var endTime = endTimeDate.getFullYear()+'-'+(endTimeDate.getMonth()+1)+'-'+endTimeDate.getDate()+' '+endTimeDate.getHours()+':'+endTimeDate.getMinutes()+':'+endTimeDate.getSeconds()
+      
+      const optionsRqstr = {  
+        url: 'https://digitalreachapi.dialog.lk/camp_req.php',
+        headers: {
+          'Content-Type': 'application/json',  
+          'Authorization': '1533639445566',
+          'Accept': 'application/json'        
+        },
+        json: {
+          "msisdn" :"94767434145",
+          "mt_port" : "Demo",
+          "channel" : "1",
+          "s_time" : startTime,
+          "e_time" : endTime,
+          "msg" : "Your trip with the number"+element.TripID+" has not started. Please cancel the trip or contact the Travel Manager."
+        }
+      };
+
+      request.post(optionsRqstr, function (err, resp, body) {
+        if(err) {
+          console.log(err.body);
+        } else {
+          console.log(resp.body);
+        }
+      });
+
+      const optionsMgr = {  
+        url: 'https://digitalreachapi.dialog.lk/camp_req.php',
+        headers: {
+          'Content-Type': 'application/json',  
+          'Authorization': '1533639445566',
+          'Accept': 'application/json'        
+        },
+        json: {
+          "msisdn" :"94767434145",
+          "mt_port" : "Demo",
+          "channel" : "1",
+          "s_time" : startTime,
+          "e_time" : endTime,
+          "msg" : "Trip with the number"+element.TripID+" has not started. Please cancel the trip."
+        }
+      };
+
+      request.post(optionsMgr, function (err, resp, body) {
+        if(err) {
+          console.log(err.body);
+        } else {
+          console.log(resp.body);
+        }
+      });
+    });
+  });
+
+  trip.checkOngoing(res=>{
+    res.result.forEach(element => {    
+      var mailOptionsRqstr = {
+        from: 'fao.testbed@gmail.com',
+        to: 'samali.liyanage93@gmail.com',
+        subject: 'Reminder for '+element.TripID,
+        text: 'You only have 30 minutes left in the allocated time for your trip with the above Trip ID.'
+      }
+
+      transporter.sendMail(mailOptionsRqstr, function(error, info) {
+        if(error) {
+          console.log(error);
+        } else {
+          console.log('Email sent for update: '+info.response);
+        }
+      });
+
+      var offset = new Date().getTimezoneOffset();
+      var startTimeDate = new Date();
+      startTimeDate.setMinutes(startTimeDate.getMinutes()-offset);
+      var endTimeDate = new Date(startTimeDate);
+      endTimeDate.setMinutes(endTimeDate.getMinutes()+5);
+      var startTime = startTimeDate.getFullYear()+'-'+(startTimeDate.getMonth()+1)+'-'+startTimeDate.getDate()+' '+startTimeDate.getHours()+':'+startTimeDate.getMinutes()+':'+startTimeDate.getSeconds();
+      var endTime = endTimeDate.getFullYear()+'-'+(endTimeDate.getMonth()+1)+'-'+endTimeDate.getDate()+' '+endTimeDate.getHours()+':'+endTimeDate.getMinutes()+':'+endTimeDate.getSeconds()
+      
+      const optionsRqstr = {  
+        url: 'https://digitalreachapi.dialog.lk/camp_req.php',
+        headers: {
+          'Content-Type': 'application/json',  
+          'Authorization': '1533639445566',
+          'Accept': 'application/json'        
+        },
+        json: {
+          "msisdn" :"94767434145",
+          "mt_port" : "Demo",
+          "channel" : "1",
+          "s_time" : startTime,
+          "e_time" : endTime,
+          "msg" : "You only have 30 minutes left in the allocated time for your trip with the Trip ID "+element.TripID
+        }
+      };
+
+      request.post(optionsRqstr, function (err, resp, body) {
+        if(err) {
+          console.log(err.body);
+        } else {
+          console.log(resp.body);
+        }
+      });
+
+      const optionsDriver = {  
+        url: 'https://digitalreachapi.dialog.lk/camp_req.php',
+        headers: {
+          'Content-Type': 'application/json',  
+          'Authorization': '1533639445566',
+          'Accept': 'application/json'        
+        },
+        json: {
+          "msisdn" :"94767434145",
+          "mt_port" : "Demo",
+          "channel" : "1",
+          "s_time" : startTime,
+          "e_time" : endTime,
+          "msg" : "You only have 30 minutes left in the allocated time for your current trip with the Trip ID "+element.TripID
+        }
+      };
+
+      request.post(optionsDriver, function (err, resp, body) {
+        if(err) {
+          console.log(err.body);
+        } else {
+          console.log(resp.body);
+        }
+      });
+    });
+  });
+})
+
 //testing controllers
 module.exports.testMobile = function (req, res) {
   const options = {  
     url: 'https://digitalreachapi.dialog.lk/camp_req.php',
     headers: {
       'Content-Type': 'application/json',  
-      'Authorization': '1532927585427',
+      'Authorization': '1533639445566',
       'Accept': 'application/json'        
     },
     json: {
