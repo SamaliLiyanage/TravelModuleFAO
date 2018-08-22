@@ -3,22 +3,28 @@ import axios from 'axios';
 import { Form, Col, Row, FormControl, FormGroup, ControlLabel, Button, Checkbox, Alert } from 'react-bootstrap';
 
 function TripDuration(props) {
-  //PROPS::: tripType, duration, getValidationState, durationValid, onChange
+  //PROPS::: tripType, duration, minutes, getValidationState, durationValid, minutesValid, onChange
 
   const [unit, minutes] = (props.tripType==="2") ? ["days", null] :
   [
     "hours", 
-    <div>
-      <Col sm={3}><FormControl type="text" />{"minutes"}</Col>
-    </div>
+    <Col sm={3}>
+      <FormGroup controlId="tripDurationMin" value={props.minutes} validationState={props.getValidationState(props.minutesValid)}>
+        <FormControl type="text" onChange={(e)=>props.onChange(e)} />{"minutes"}
+      </FormGroup>
+    </Col>
   ];
 
   return (
+    <Row>
+      <Col sm={8}>
     <FormGroup controlId="tripDuration" value={props.duration} validationState={props.getValidationState(props.durationValid)}>
-      <Col sm={4} componentClass={ControlLabel}>Duration: </Col>
-      <Col sm={3}><FormControl type="text" onChange={(e)=>props.onChange(e)} />{unit}</Col>
-      {minutes}
+          <Col sm={6} componentClass={ControlLabel}>Duration: </Col>
+          <Col sm={6}><FormControl type="text" onChange={(e)=>props.onChange(e)} />{unit}</Col>
     </FormGroup>
+      </Col>
+      {minutes}
+    </Row>
   );
 }
 
@@ -71,7 +77,7 @@ function BudgetingEntity(props) {
 
 function TimeWarning(props) {
   const today = new Date(props.date);
-  var colors = { color: "#a94442", 'font-weight': 'bold' };
+  var colors = { color: "#a94442", fontWeight: 'bold' };
 
   if (today.getDay() < 5) {
     if (today.getHours() >= 8 && today.getHours() < 16) {
@@ -123,6 +129,7 @@ export default class RequestTrip extends React.Component {
       tripTime: "--:--",
       tripType: 0,
       tripDuration: 0,
+      tripDurationMin: 0,
       destinations: [null],
       destinationTowns: [null],
       budgetingEntity: 0,
@@ -130,9 +137,13 @@ export default class RequestTrip extends React.Component {
       tripPurpose: null,
       cabRequested: false,
       onBehalf: false,
+      obName: null,
+      obEmail: null,
+      obMobile: null,
       fthrRemarks: "",
       ttypeValid: false,
       tripDurValid: false,
+      tripMinValid: false,
       tripDtValid: false,
       tripTmValid: false,
       destinationsValid: [false],
@@ -143,9 +154,12 @@ export default class RequestTrip extends React.Component {
       budgetingEntityValid: false,
       projectNumberValid: false,
       prpsValid: false,
+      obNameValid: false,
+      obEmailVaild: false,
+      obMobileValid: false,
       destDisabled: false,
       remarksAdded: false,
-      formErrors: ['', '', '', '', '', '', ''],
+      formErrors: ['', '', '', '', '', '', '', '', '', '', ''],
       formValid: false
     }
 
@@ -300,6 +314,7 @@ export default class RequestTrip extends React.Component {
       username: this.state.rqstrID,
       tripType: parseInt(this.state.tripType, 10),
       tripDuration: this.state.tripDuration,
+      tripDurationMin: this.state.tripDurationMin,
       tripDate: this.state.tripDate,
       tripTime: this.state.tripTime,
       tripPurpose: this.state.tripPurpose,
@@ -308,7 +323,11 @@ export default class RequestTrip extends React.Component {
       destinationTowns: this.state.destinationTowns,
       budgetingEntity: this.state.budgetingEntity,
       projectNumber: this.state.projectNumber,
-      cabRequested: this.state.cabRequested
+      cabRequested: this.state.cabRequested,
+      onBehalf: this.state.onBehalf,
+      obName: this.state.obName,
+      obEmail: this.state.obEmail,
+      obMobile: this.state.obMobile
     })
       .then(response => {
         this.props.history.push('/success/' + this.state.tripID);
@@ -379,10 +398,15 @@ export default class RequestTrip extends React.Component {
     let fieldErrors = this.state.formErrors;
     let ttypeValid = this.state.ttypeValid;
     let tripDurValid = this.state.tripDurValid;
+    let tripMinValid = this.state.tripMinValid;
     let tripDtValid = this.state.tripDtValid;
     let tripTmValid = this.state.tripTmValid;
     let prpsValid = this.state.prpsValid;
     let budgetingEntityValid = this.state.budgetingEntityValid;
+
+    let obNameValid = this.state.obNameValid;
+    let obEmailVaild = this.state.obEmailVaild;
+    let obMobileValid = this.state.obMobileValid; 
 
     let getToday = new Date();
     let today = new Date(getToday.getFullYear() + "-" + (getToday.getMonth() + 1) + "-" + getToday.getDate());
@@ -394,7 +418,11 @@ export default class RequestTrip extends React.Component {
         break;
       case 'tripDuration':
         tripDurValid = (/^[0-9]+$/).test(value);
-        fieldErrors[6] = tripDurValid ? '' : ' is not valid';
+        fieldErrors[6] = (tripDurValid) ? '' : ' is not valid';
+        break;
+      case 'tripDurationMin':
+        tripMinValid = (/^[0-9]+$/).test(value);
+        fieldErrors[7] = tripMinValid ? '' : ' is not valid';
         break;
       case 'tripDate':
         var thisDate = new Date(value);
@@ -413,6 +441,18 @@ export default class RequestTrip extends React.Component {
         budgetingEntityValid = !((/^0$/).test(value));
         fieldErrors[4] = budgetingEntityValid ? '' : ' is not selected';
         break;
+      case 'obName':
+        obNameValid = (/^(?:([a-zA-Z ]+))$/).test(value);
+        fieldErrors[8] = obNameValid ? '' : ' must only contain letters';
+        break;
+      case 'obEmail':
+        obEmailVaild = (/^([\w]+)@([\w]+)(\.)([\w]+)$/).test(value);
+        fieldErrors[9] = obEmailVaild ? '' : ' is not valid';
+        break;
+      case 'obMobile':
+        obMobileValid = (/^[0-9]+$/).test(value) && value.length===10;
+        fieldErrors[10] = obMobileValid ? '' : ' should only contain numbers';
+        break;
       default:
         break;
     }
@@ -423,8 +463,12 @@ export default class RequestTrip extends React.Component {
       tripDtValid: tripDtValid,
       tripTmValid: tripTmValid,
       tripDurValid: tripDurValid,
+      tripMinValid: tripMinValid,
       prpsValid: prpsValid,
       budgetingEntityValid: budgetingEntityValid,
+      obNameValid: obNameValid,
+      obEmailVaild: obEmailVaild,
+      obMobileValid: obMobileValid,
     }, this.validateForm);
   }
 
@@ -456,7 +500,7 @@ export default class RequestTrip extends React.Component {
   }
 
   render() {
-    const fieldNames = ['Trip Type', 'Trip Date', 'Trip Time', 'Trip Purpose', 'Budgeting Entitiy', 'Further Remarks', 'Trip Duration'];
+    const fieldNames = ['Trip Type', 'Trip Date', 'Trip Time', 'Trip Purpose', 'Budgeting Entitiy', 'Further Remarks', 'Trip Duration', 'Trip Duration'];
 
     return (
       <Form horizontal onSubmit={this.handleSubmit}>
@@ -506,7 +550,7 @@ export default class RequestTrip extends React.Component {
             </FormGroup>
           </Col>
           <Col sm={4}>
-            <TripDuration tripType={this.state.tripType} duration={this.state.tripDuration} getValidationState={this.getValidationState} durationValid={this.state.tripDurValid} onChange={this.handleChange} />        
+            <TripDuration tripType={this.state.tripType} duration={this.state.tripDuration} minutes={this.state.tripDurationMin} getValidationState={this.getValidationState} durationValid={this.state.tripDurValid} minutesValid={this.state.tripMinValid} onChange={this.handleChange} />        
           </Col>
         </Row>
 
@@ -534,16 +578,47 @@ export default class RequestTrip extends React.Component {
           </Col>
         </Row>
 
+        <div hidden={!this.state.onBehalf}>
         <Row>
           <Col sm={4}>
+              <FormGroup controlId="obName" validationState={this.getValidationState(this.state.obNameValid)}>
+                <Col sm={6} componentClass={ControlLabel}>Name of Person: </Col>
+                <Col sm={6}>
+                  <FormControl type="text" value={this.state.obName} onChange={this.handleChange} />
+                </Col>
+              </FormGroup>
+            </Col>
+
+            <Col sm={4}>
+              <FormGroup controlId="obEmail" validationState={this.getValidationState(this.state.obEmailVaild)}> 
+                <Col sm={4} componentClass={ControlLabel}>Email: </Col>
+                <Col sm={8}>
+                  <FormControl type="text" value={this.state.obEmail} onChange={this.handleChange} />
+                </Col>
+              </FormGroup>
+            </Col>
+
+            <Col sm={4}>
+              <FormGroup controlId="obMobile" validationState={this.getValidationState(this.state.obMobileValid)}>
+                <Col sm={4} componentClass={ControlLabel}>Mobile: </Col>
+                <Col sm={8}>
+                  <FormControl type="text" value={this.state.obMobile} onChange={this.handleChange} />
+                </Col>
+              </FormGroup>
+            </Col>
+          </Row>
+        </div>
+
+        <Row>
+          <Col sm={2}>
             <FormGroup controlId="remarksAdded">
-              <Col sm={6} smOffset={6}><Checkbox inline checked={this.state.remarksAdded} title="fRequests" onClick={this.handleClick}>Further Remarks:</Checkbox></Col>
+              <Col smOffset={2}><Checkbox inline checked={this.state.remarksAdded} title="fRequests" onClick={this.handleClick}>Further Remarks:</Checkbox></Col>
             </FormGroup>
           </Col>
 
-          <Col sm={8}>
+          <Col sm={10}>
             <FormGroup controlId="fthrRemarks">
-              <Col sm={10}>
+              <Col sm={12}>
                 <FormControl type="textarea" value={this.state.fthrRemarks} readOnly={!(this.state.remarksAdded)} onChange={this.handleChange} />
               </Col>
             </FormGroup>

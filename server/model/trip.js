@@ -6,11 +6,11 @@ const connection = db.connection;
 //BudgetProject::: `TripID``Project_No`
 //User:::`Username``Full_Name``Password``Role``Mobile_No`
 
-exports.newTrip = function (tripID, userName, tripType, tripDate, tripTime, tripDuration, tripPurpose, next) {
+exports.newTrip = function (tripID, userName, tripType, tripDate, tripTime, tripDuration, tripDurationMin, tripPurpose, onBehalf, next) {
     date = new Date();
-    values = [tripID, userName, tripType, date, tripDate, tripTime, tripDuration, tripPurpose];
+    values = [tripID, userName, tripType, date, tripDate, tripTime, tripDuration, tripDurationMin, tripPurpose, onBehalf];
 
-    db.connection.query('INSERT INTO Trip(TripID, Username, Trip_Type, Requested_Date, Trip_Date, Trip_Time, Duration, Purpose) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', values, function (err, results) {
+    db.connection.query('INSERT INTO Trip(TripID, Username, Trip_Type, Requested_Date, Trip_Date, Trip_Time, Duration, Duration_Minute, Purpose, OnBehalf) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', values, function (err, results) {
         if (err) {
             console.log(err);
             next ({
@@ -311,7 +311,7 @@ exports.getBudgetingEntity = function (tripID, next) {
 exports.checkDriverAvailability = function (driverID, date, startTime, endTime, next) {
     const values = [date, driverID, endTime, startTime];
     var temp;
-    db.connection.query('SELECT COUNT(*) AS TripCount FROM (SELECT TripID, Trip_Time, Driver_ID, Duration, DATE_ADD(Trip_Time, INTERVAL Duration HOUR) AS End_Time FROM Trip WHERE Trip_Date=? AND Driver_ID=?) AS T WHERE (Trip_Time<? AND End_Time>?)', values, function(err, results) {
+    db.connection.query('SELECT COUNT(*) AS TripCount FROM (SELECT TripID, Trip_Time, Driver_ID, Duration, Duration_Minute, DATE_ADD(DATE_ADD(Trip_Time, INTERVAL Duration HOUR), INTERVAL Duration_Minute MINUTE) AS End_Time FROM Trip WHERE Trip_Date=? AND Driver_ID=?) AS T WHERE (Trip_Time<? AND End_Time>?)', values, function(err, results) {
         if (err) {
             console.log(err);
             temp = {
@@ -411,7 +411,7 @@ exports.checkOngoing = function (next) {
 
     var values = [date, time]
 
-    connection.query('SELECT Trip.TripID AS TripID, User.Mobile_No AS Mobile_No FROM Trip, User WHERE Start IS NOT NULL AND End IS NULL AND Trip_Date=? AND Trip.Username=User.Username AND DATE_ADD(DATE_ADD(Trip_Time, INTERVAL Duration HOUR), INTERVAL -30 MINUTE)=?', values, (err, results) => {
+    connection.query('SELECT Trip.TripID AS TripID, User.Mobile_No AS Mobile_No FROM Trip, User WHERE Start IS NOT NULL AND End IS NULL AND Trip_Date=? AND Trip.Username=User.Username AND DATE_ADD(DATE_ADD(DATE_ADD(Trip_Time, INTERVAL Duration HOUR), INTERVAL Duration_Minute MINUTE), INTERVAL -30 MINUTE)=?', values, (err, results) => {
         var temp;
         if (err) {
             temp = {
@@ -459,4 +459,4 @@ exports.checkNotStarted = function (next) {
         }
         next (temp);
     })
-}
+}  

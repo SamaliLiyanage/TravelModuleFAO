@@ -42,3 +42,7 @@ module.exports.isLogged = function (req, res, next) {
   res.json({hello:"Hello"});
   //user.isLoggedIn(res);
 }
+
+module.exports.getOnBehalf = function (req, res, next) {
+  user.getUsers(res);
+}

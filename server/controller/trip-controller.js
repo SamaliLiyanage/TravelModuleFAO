@@ -1,8 +1,9 @@
 var trip = require('../model/trip');
-var nodemailer = require('nodemailer');
+var user = require('../model/user');
 var tapApi = require('tap-telco-api');
 var request = require('request');
 var cron = require('node-cron');
+var emailHelper = require('../../server/helper/email-helper');
 
 const smsConfig = {
   applicationId: "APP_000101",
@@ -30,7 +31,12 @@ function DriverName(driverNo) {
 module.exports.newTrip = function(req, res, next) {
   let results;
 
-  trip.newTrip(req.body.tripID, req.body.username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.tripDuration, req.body.tripPurpose, (response)=>{
+  trip.newTrip(req.body.tripID, req.body.username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.tripDuration, req.body.tripDurationMin, req.body.tripPurpose, req.body.onBehalf, (response)=>{
+    if (req.body.onBehalf===true) {
+      user.onBehalfUser(req.body.tripID, req.body.obName, req.body.obEmail, req.body.obMobile, respon => {
+        //console.log(respon)
+      })
+    }
     results = {trip: response};
     res.send(results);
   });
@@ -49,50 +55,29 @@ module.exports.newTrip = function(req, res, next) {
     })
   }
 
-  //Email Settings and Sending
-  var transporter = nodemailer.createTransport({
-    service: 'Gmail',
-    auth: {
-      user: 'fao.testbed@gmail.com',
-      pass: 'Rand0mm4il!!!',
-    }
-  });
+  var mailRqstr = 'Your request for a trip on the '+req.body.tripDate+ ' has been sent to the travel manager'
 
-  var mailOptionsRqstr = {
-    from: 'fao.testbed@gmail.com',
-    to: 'samali.liyanage93@gmail.com',
-    subject: 'Trip Request '+req.body.tripID,
-    text: 'Your request for a trip on the '+req.body.tripDate+ ' has been sent to the travel manager',
-  }
-
-  var mailOptionsMgr = {
-    from: 'fao.testbed@gmail.com',
-    to: 'samali.liyanage93@gmail.com',
-    subject: 'Trip Request '+req.body.tripID,
-    html: '<ul><li>Trip ID:'+req.body.tripID+
+  var mailMgr = '<ul><li>Trip ID:'+req.body.tripID+
     '</li><li>Username: '+req.body.username+
     '</li><li>Trip Date: '+req.body.tripDate+
     '</li><li>Trip Time: '+req.body.tripTime+
     '</li><li>Destination: '+req.body.destination+
     '</li><li>Purpose: '+req.body.tripPurpose+
-    '</li></ul>',
-  }
+    '</li></ul>'
 
-  transporter.sendMail(mailOptionsRqstr, function(error, info) {
-    if(error) {
-      console.log(error);
-    } else {
-      console.log('Email sent: '+info.response);
-    }
-  });
+  emailHelper.sendMessage(
+    'samali.liyanage93@gmail.com', 
+    'Trip Request '+req.body.tripID,
+    mailRqstr,
+    false
+  );
 
-  transporter.sendMail(mailOptionsMgr, function(error, info) {
-    if(error) {
-      console.log(error);
-    } else {
-      console.log('Email sent: '+info.response);
-    }
-  })
+  emailHelper.sendMessage(
+    'samali.liyanage93@gmail.com',
+    'Trip Request '+req.body.tripID,
+    mailMgr,
+    true
+  );
 
   //Text Message Settings and Sending 
   var smsMessage = req.body.username+" has requested a trip with Trip ID: "+req.body.tripID;
@@ -170,14 +155,6 @@ module.exports.assignDriver = function(req, res, next) {
     res.send(response);
   });
 
-  var transporter = nodemailer.createTransport({
-    service: 'Gmail',
-    auth: {
-      user: 'fao.testbed@gmail.com',
-      pass: 'Rand0mm4il!!!'
-    }
-  });
-
   var text = null;
   var smsMessage = null;  
   
@@ -189,21 +166,14 @@ module.exports.assignDriver = function(req, res, next) {
     text = DriverName(req.body.driverID)+ ' has been assigned to your trip with Trip ID: ' + req.body.tripID;
   }
 
-  var mailOptions = {
-    from: 'fao.testbed@gmail.com',
-    to: 'samali.liyanage93@gmail.com',
-    subject: 'Trip Request '+req.body.tripID,
-    text: text,
-  }
-
   if (req.body.driverID!='0'){
-    transporter.sendMail(mailOptions, function(error, info) {
-      if(error) {
-        console.log(error);
-      } else {
-        console.log('Email sent: '+info.response);
-      }
-    });
+    emailHelper.sendMessage(
+      'samali.liyanage93@gmail.com',
+      'Trip Request '+req.body.tripID,
+      text,
+      false
+    );
+  };
 
     var offset = new Date().getTimezoneOffset();
     var startTimeDate = new Date();
@@ -237,7 +207,6 @@ module.exports.assignDriver = function(req, res, next) {
         console.log(resp.body);
       }
     });
-  }
 }
 
 //Get the details of the given trip
@@ -276,28 +245,12 @@ module.exports.setApproval = function (req, res) {
 
   trip.changeComments(req.body.tripID, req.body.comment, response => {
 
-    var transporter = nodemailer.createTransport({
-      service: 'Gmail',
-      auth: {
-        user: 'fao.testbed@gmail.com',
-        pass: 'Rand0mm4il!!!'
-      }
-    });
-
-    var mailOptions = {
-      from: 'fao.testbed@gmail.com',
-      to: 'samali.liyanage93@gmail.com',
-      subject: 'Trip Request '+req.body.tripID,
-      text: text,
-    }
-
-    transporter.sendMail(mailOptions, function(error, info) {
-      if(error) {
-        console.log(error);
-      } else {
-        console.log('Email sent: '+info.response);
-      }
-    });
+    emailHelper.sendMessage(
+      'samali.liyanage93@gmail.com',
+      'Trip Request '+req.body.tripID,
+      text,
+      false
+    );
 
     var offset = new Date().getTimezoneOffset();
     var startTimeDate = new Date();
@@ -419,13 +372,6 @@ function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, 
       if(response.status==='success' && response.result===0){
         trip.assignDriver(tripID, ordered_driver_index[index]+1, 2, response=>{
           if(response.status==='success'){
-            var transporter = nodemailer.createTransport({
-              service: 'Gmail',
-              auth: {
-                user: 'fao.testbed@gmail.com',
-                pass: 'Rand0mm4il!!!'
-              }
-            });
             
             var text = null;
             var smsMessage = null;  
@@ -437,22 +383,14 @@ function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, 
               smsMessage = DriverName(ordered_driver_index[index]+1)+" has been assigned to your trip with Trip ID: "+tripID;  
               text = DriverName(ordered_driver_index[index]+1)+ ' has been assigned to your trip with Trip ID: ' + tripID;
             }
-            
-            var mailOptions = {
-              from: 'fao.testbed@gmail.com',
-              to: 'samali.liyanage93@gmail.com',
-              subject: 'Trip Request '+tripID,
-              text: text,
-            }
 
             if (ordered_driver_index[index]+1!==0){
-              transporter.sendMail(mailOptions, function(error, info) {
-                if(error) {
-                  console.log(error);
-                } else {
-                  console.log('Email sent: '+info.response);
-                }
-              });
+              emailHelper.sendMessage(
+                'samali.liyanage93@gmail.com',
+                'Trip Request '+tripID,
+                text,
+                false
+              );
             }
 
             return (response);            
@@ -495,45 +433,23 @@ module.exports.cancelTrip = function (req, res, next) {
 } 
 
 cron.schedule("* * * * *", function() {
-  var transporter = nodemailer.createTransport({
-    service: 'Gmail',
-    auth: {
-      user: 'fao.testbed@gmail.com',
-      pass: 'Rand0mm4il!!!',
-    }
-  });
 
   trip.checkNotStarted(res=>{
-    res.result.forEach(element => {    
-      var mailOptionsRqstr = {
-        from: 'fao.testbed@gmail.com',
-        to: 'samali.liyanage93@gmail.com',
-        subject: 'Reminder for '+element.TripID,
-        text: 'Your trip with the above number has not started. Please cancel the trip or contact the Travel Manager.'
-      }
+    res.result.forEach(element => { 
 
-      transporter.sendMail(mailOptionsRqstr, function(error, info) {
-        if(error) {
-          console.log(error);
-        } else {
-          console.log('Email to requester sent for update: '+info.response);
-        }
-      });
+      emailHelper.sendMessage(
+        'samali.liyanage93@gmail.com',
+        'Reminder for '+element.TripID,
+        'Your trip with the above number has not started. Please cancel the trip or contact the Travel Manager.',
+        false
+      );
 
-      var mailOptionsMngr = {
-        from: 'fao.testbed@gmail.com',
-        to: 'samali.liyanage93@gmail.com',
-        subject: 'Reminder for '+element.TripID,
-        text: 'The trip with the above number has not started. Please cancel the trip.'
-      }
-
-      transporter.sendMail(mailOptionsMngr, function(error, info) {
-        if(error) {
-          console.log(error);
-        } else {
-          console.log('Email to manager sent for update: '+info.response);
-        }
-      });
+      emailHelper.sendMessage(
+        'samali.liyanage93@gmail.com',
+        'Reminder for '+element.TripID,
+        'The trip with the above number has not started. Please cancel the trip.',
+        false
+      );
 
       var offset = new Date().getTimezoneOffset();
       var startTimeDate = new Date();

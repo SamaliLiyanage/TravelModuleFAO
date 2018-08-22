@@ -157,10 +157,9 @@ function BudgetingEntity(props) {
 function Destinations(props) {
     //PROPS::: destinations
     const destinations = props.destinations;
-    console.log("Inside", destinations);
     const content = destinations.map((dest, index) => {
         return (
-            <Col sm={2}>
+            <Col sm={2} key={index}>
                 <FormControl.Static>{(index + 1) + ") " + dest.Destination + ", " + dest.Destination_Town}</FormControl.Static>
             </Col>
         )
@@ -181,7 +180,8 @@ export default class ViewTripDetails extends React.Component {
             remark: "",
             budgetingEntity: 1,
             projectNumber: null,
-            destinations: []
+            destinations: [],
+            onBehalf: [],
         }
 
         this.handleChange = this.handleChange.bind(this);
@@ -248,6 +248,17 @@ export default class ViewTripDetails extends React.Component {
                     this.setState({
                         destinations: res.data.data
                     })
+                }
+            })
+        
+        axios.get('/users/getonbehalf/' + this.state.tripid)
+            .then(res=>{
+                console.log("Hi", res, this.state.tripid);
+                if (res.data.status === "success") {
+                    console.log("Hi",res.data.result);
+                    this.setState({
+                        onBehalf: res.data.result
+                    });
                 }
             })
     }
