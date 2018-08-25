@@ -7,7 +7,10 @@ module.exports.addUser = function (req, res, next) {
 
 //Get all users with all fields
 module.exports.getUsers = function (req, res, next) {
-  user.getUsers(res);
+  user.getOnBehalf(req.params.id, (resp) => {
+    res.send(resp);
+    //user.getUsers(res);
+  });
 };
 
 //Get all users of given role
@@ -44,5 +47,7 @@ module.exports.isLogged = function (req, res, next) {
 }
 
 module.exports.getOnBehalf = function (req, res, next) {
-  user.getUsers(res);
+  user.getOnBehalf(req.params.id, (resp) => {
+    res.send(resp);
+  });
 }

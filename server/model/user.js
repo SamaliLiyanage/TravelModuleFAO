@@ -144,7 +144,7 @@ exports.getOnBehalf = function(tripID, next) {
     } else {
       temp = {
         status: 'success',
-        result: result
+        result: result[0]
       }
     }
     next(temp);

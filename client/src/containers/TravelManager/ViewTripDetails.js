@@ -18,6 +18,38 @@ function CancelTrip(props) {
         return null;
     }
 }
+
+/**
+ * 
+ * @param {onBehalf} props 
+ */
+function OnBehalfOf(props) {
+    // PROPS::: onBehalf
+    const onBehalf = props.onBehalf;
+    console.log("on behalf", onBehalf);
+    return (
+        (props.onBehalf !== null) ?
+        <div>
+            <FormGroup>
+                <Col componentClass={ControlLabel} smOffset={1} sm={2}>On Behalf Of:</Col>
+                <Col sm={3}>
+                    <FormControl.Static>{onBehalf.Traveller_Name}</FormControl.Static>
+                </Col>
+            </FormGroup>
+            <FormGroup>
+                <Col componentClass={ControlLabel} smOffset={1} sm={2}>Phone:</Col>
+                <Col sm={3}>
+                    <FormControl.Static>{onBehalf.Traveller_Phone}</FormControl.Static>
+                </Col>
+                <Col componentClass={ControlLabel} sm={2}>Email:</Col>
+                <Col sm={2}>
+                    <FormControl.Static>{onBehalf.Traveller_Email}</FormControl.Static>
+                </Col>
+            </FormGroup>
+        </div>:
+        null
+    );
+}
  
 function ApprovalButton(props) {
     if (props.userType === 5) {
@@ -181,7 +213,7 @@ export default class ViewTripDetails extends React.Component {
             budgetingEntity: 1,
             projectNumber: null,
             destinations: [],
-            onBehalf: [],
+            onBehalf: null,
         }
 
         this.handleChange = this.handleChange.bind(this);
@@ -251,13 +283,12 @@ export default class ViewTripDetails extends React.Component {
                 }
             })
         
-        axios.get('/users/getonbehalf/' + this.state.tripid)
+        axios.get('/users/onbehalf/' + this.state.tripid)
             .then(res=>{
-                console.log("Hi", res, this.state.tripid);
+                console.log("On behalf ",res);
                 if (res.data.status === "success") {
-                    console.log("Hi",res.data.result);
                     this.setState({
-                        onBehalf: res.data.result
+                        onBehalf: res.data.result,
                     });
                 }
             })
@@ -382,6 +413,7 @@ export default class ViewTripDetails extends React.Component {
                         <FormControl.Static>{this.state.tripInfo.Purpose}</FormControl.Static>
                     </Col>
                 </FormGroup>
+                <OnBehalfOf onBehalf={this.state.onBehalf} />
                 <FormGroup>
                     <Col componentClass={ControlLabel} smOffset={1} sm={2}>Budgeting Entity:</Col>
                     <BudgetingEntity budgetingEntity={this.state.budgetingEntity} projectNumber={this.state.projectNumber} />
