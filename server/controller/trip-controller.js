@@ -1,20 +1,9 @@
 var trip = require('../model/trip');
 var user = require('../model/user');
 var tapApi = require('tap-telco-api');
-var request = require('request');
 var cron = require('node-cron');
 var emailHelper = require('../../server/helper/email-helper');
-
-const smsConfig = {
-  applicationId: "APP_000101",
-  password: "password"
-}
-
-const netConfig = {
-  host: '127.0.0.1', 
-  port: 7000, 
-  path: '/sms/send'
-}
+var mobileHelper = require('../../server/helper/mobile-helper');
 
 function DriverName(driverNo) {
   var driver = parseInt(driverNo, 10);
@@ -29,7 +18,10 @@ function DriverName(driverNo) {
 
 //Insert details on new trip
 module.exports.newTrip = function(req, res, next) {
-  let results;
+  let results = {
+    tripNo: req.body.tripID,
+    details: []
+  };
 
   trip.newTrip(req.body.tripID, req.body.username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.tripDuration, req.body.tripDurationMin, req.body.tripPurpose, req.body.onBehalf, (response)=>{
     if (req.body.onBehalf===true) {
@@ -37,101 +29,60 @@ module.exports.newTrip = function(req, res, next) {
         //console.log(respon)
       })
     }
-    results = {trip: response};
-    res.send(results);
-  });
-  trip.addDestinations(req.body.tripID, req.body.destinations, req.body.destinationTowns, response => {
-    //console.log(response);
-  });
-  if(parseInt(req.body.budgetingEntity, 10)===2) {
-    trip.setBudgetingEntity(req.body.tripID, req.body.projectNumber, response => {
+    results.details.push({trip: response});
+    trip.addDestinations(req.body.tripID, req.body.destinations, req.body.destinationTowns, response => {
       //console.log(response);
-    })
-  }
-  if (!(req.body.furtherRmrks==="")){
-    trip.addFurtherComments(req.body.tripID, req.body.furtherRmrks);
-    trip.changeStatus(req.body.tripID, 6, response => {
-      //res.send(response);
-    })
-  }
+      results.details.push({destinations: response});
 
-  var mailRqstr = 'Your request for a trip on the '+req.body.tripDate+ ' has been sent to the travel manager'
+      var mailMgr = '<ul><li>Trip ID:'+req.body.tripID+
+        '</li><li>Username: '+req.body.username+
+        '</li><li>Trip Date: '+req.body.tripDate+
+        '</li><li>Trip Time: '+req.body.tripTime+
+        '</li><li>Destination: '+req.body.destination+
+        '</li><li>Purpose: '+req.body.tripPurpose+
+        '</li></ul>';
+      emailHelper.sendMessage(
+        'samali.liyanage93@gmail.com',
+        'Trip Request '+req.body.tripID,
+        mailMgr,
+        true
+      );
 
-  var mailMgr = '<ul><li>Trip ID:'+req.body.tripID+
-    '</li><li>Username: '+req.body.username+
-    '</li><li>Trip Date: '+req.body.tripDate+
-    '</li><li>Trip Time: '+req.body.tripTime+
-    '</li><li>Destination: '+req.body.destination+
-    '</li><li>Purpose: '+req.body.tripPurpose+
-    '</li></ul>'
+      var smsMessage = req.body.username+" has requested a trip with Trip ID: "+req.body.tripID;
+      mobileHelper.sendMessage("94767434145", smsMessage);
 
-  emailHelper.sendMessage(
-    'samali.liyanage93@gmail.com', 
-    'Trip Request '+req.body.tripID,
-    mailRqstr,
-    false
-  );
-
-  emailHelper.sendMessage(
-    'samali.liyanage93@gmail.com',
-    'Trip Request '+req.body.tripID,
-    mailMgr,
-    true
-  );
-
-  //Text Message Settings and Sending 
-  var smsMessage = req.body.username+" has requested a trip with Trip ID: "+req.body.tripID;
-  var offset = new Date().getTimezoneOffset();
-  var startTimeDate = new Date();
-  startTimeDate.setMinutes(startTimeDate.getMinutes()-offset);
-  var endTimeDate = new Date(startTimeDate);
-  endTimeDate.setMinutes(endTimeDate.getMinutes()+5);
-  var startTime = startTimeDate.getFullYear()+'-'+(startTimeDate.getMonth()+1)+'-'+startTimeDate.getDate()+' '+startTimeDate.getHours()+':'+startTimeDate.getMinutes()+':'+startTimeDate.getSeconds();
-  var endTime = endTimeDate.getFullYear()+'-'+(endTimeDate.getMonth()+1)+'-'+endTimeDate.getDate()+' '+endTimeDate.getHours()+':'+endTimeDate.getMinutes()+':'+endTimeDate.getSeconds()
-  
-  const options = {  
-    url: 'https://digitalreachapi.dialog.lk/camp_req.php',
-    headers: {
-      'Content-Type': 'application/json',  
-      'Authorization': '1533639445566',
-      'Accept': 'application/json'        
-    },
-    json: {
-      "msisdn" :"94767434145",
-      "mt_port" : "Demo",
-      "channel" : "1",
-      "s_time" : startTime,
-      "e_time" : endTime,
-      "msg" : smsMessage
+      res.send(results);
+    });
+    if(parseInt(req.body.budgetingEntity, 10)===2) {
+      trip.setBudgetingEntity(req.body.tripID, req.body.projectNumber, response => {
+        //console.log(response);
+      })
     }
-  };
-
-  request.post(options, function (err, resp, body) {
-    if(err) {
-      console.log(err.body);
-    } else {
-      console.log(resp.body);
+    if (!(req.body.furtherRmrks==="")){
+      trip.addFurtherComments(req.body.tripID, req.body.furtherRmrks);
+      trip.changeStatus(req.body.tripID, 6, response => {
+        //res.send(response);
+      })
+    }
+    let month = new Date(req.body.tripDate)
+    if((req.body.furtherRmrks==="")&&(parseInt(req.body.tripType, 10)!==2)&&(req.body.cabRequested===false)) {
+      trip.countMonthlyTrips(month.getMonth()+1, req.body.tripType)
+      .then(function(response){
+        const result = response.result;
+        const ordered_driver_index = Array.from(Array(result.length).keys())
+                        .sort((a, b)=> result[a]<result[b] ? -1: (result[a]>result[b] ? 1 : 0));
+        let index=0;
+        process(ordered_driver_index, index, req.body.tripTime, req.body.tripDuration, req.body.tripDate, req.body.tripID, res);
+      })
+      .catch(function(error){
+        console.log(error);
+      })
+    } else if(req.body.cabRequested===true) {
+      trip.assignDriver(req.body.tripID, 'cab', 5, response => {
+        //console.log(response);
+      })
     }
   });
-
-  let month = new Date(req.body.tripDate)
-  if((req.body.furtherRmrks==="")&&(parseInt(req.body.tripType, 10)!==2)&&(req.body.cabRequested===false)) {
-    trip.countMonthlyTrips(month.getMonth()+1, req.body.tripType)
-    .then(function(response){
-      const result = response.result;
-      const ordered_driver_index = Array.from(Array(result.length).keys())
-                      .sort((a, b)=> result[a]<result[b] ? -1: (result[a]>result[b] ? 1 : 0));
-      let index=0;
-      process(ordered_driver_index, index, req.body.tripTime, req.body.tripDuration, req.body.tripDate, req.body.tripID, res);
-    })
-    .catch(function(error){
-      console.log(error);
-    })
-  } else if(req.body.cabRequested===true) {
-    trip.assignDriver(req.body.tripID, 'cab', 5, response => {
-      //console.log(response);
-    })
-  }
 }
 
 //Get all trips
@@ -173,40 +124,8 @@ module.exports.assignDriver = function(req, res, next) {
       text,
       false
     );
+    mobileHelper.sendMessage("94767434145", smsMessage);
   };
-
-    var offset = new Date().getTimezoneOffset();
-    var startTimeDate = new Date();
-    startTimeDate.setMinutes(startTimeDate.getMinutes()-offset);
-    var endTimeDate = new Date(startTimeDate);
-    endTimeDate.setMinutes(endTimeDate.getMinutes()+5);
-    var startTime = startTimeDate.getFullYear()+'-'+(startTimeDate.getMonth()+1)+'-'+startTimeDate.getDate()+' '+startTimeDate.getHours()+':'+startTimeDate.getMinutes()+':'+startTimeDate.getSeconds();
-    var endTime = endTimeDate.getFullYear()+'-'+(endTimeDate.getMonth()+1)+'-'+endTimeDate.getDate()+' '+endTimeDate.getHours()+':'+endTimeDate.getMinutes()+':'+endTimeDate.getSeconds()
-
-    const options = {  
-      url: 'https://digitalreachapi.dialog.lk/camp_req.php',
-      headers: {
-        'Content-Type': 'application/json',  
-        'Authorization': '1533639445566',
-        'Accept': 'application/json'        
-      },
-      json: {
-        "msisdn" :"94767434145",
-        "mt_port" : "Demo",
-        "channel" : "1",
-        "s_time" : startTime,
-        "e_time" : endTime,
-        "msg" : smsMessage
-      }
-    };
-
-    request.post(options, function (err, resp, body) {
-      if(err) {
-        console.log(err.body);
-      } else {
-        console.log(resp.body);
-      }
-    });
 }
 
 //Get the details of the given trip
@@ -252,34 +171,7 @@ module.exports.setApproval = function (req, res) {
       false
     );
 
-    var offset = new Date().getTimezoneOffset();
-    var startTimeDate = new Date();
-    startTimeDate.setMinutes(startTimeDate.getMinutes()-offset);
-    var endTimeDate = new Date(startTimeDate);
-    endTimeDate.setMinutes(endTimeDate.getMinutes()+5);
-    var startTime = startTimeDate.getFullYear()+'-'+(startTimeDate.getMonth()+1)+'-'+startTimeDate.getDate()+' '+startTimeDate.getHours()+':'+startTimeDate.getMinutes()+':'+startTimeDate.getSeconds();
-    var endTime = endTimeDate.getFullYear()+'-'+(endTimeDate.getMonth()+1)+'-'+endTimeDate.getDate()+' '+endTimeDate.getHours()+':'+endTimeDate.getMinutes()+':'+endTimeDate.getSeconds()
-
-    const options = {  
-      url: 'https://digitalreachapi.dialog.lk/camp_req.php',
-      headers: {
-        'Content-Type': 'application/json',  
-        'Authorization': '1533639445566',
-        'Accept': 'application/json'        
-      },
-      json: {
-        "msisdn" :"94772434145",
-        "mt_port" : "Demo",
-        "channel" : "1",
-        "s_time" : startTime,
-        "e_time" : endTime,
-        "msg" : smsMessage
-      }
-    };
-  
-    request.post(options, function (err, resp, body) {
-      res.send(response);
-    });
+    mobileHelper.sendMessage("94767434145", smsMessage);
 
     trip.getTrip(req.body.tripID, response => {
       const data = response.data;
@@ -391,6 +283,7 @@ function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, 
                 text,
                 false
               );
+              mobileHelper.sendMessage("94767434145", smsMessage);
             }
 
             return (response);            
@@ -451,166 +344,46 @@ cron.schedule("* * * * *", function() {
         false
       );
 
-      var offset = new Date().getTimezoneOffset();
-      var startTimeDate = new Date();
-      startTimeDate.setMinutes(startTimeDate.getMinutes()-offset);
-      var endTimeDate = new Date(startTimeDate);
-      endTimeDate.setMinutes(endTimeDate.getMinutes()+5);
-      var startTime = startTimeDate.getFullYear()+'-'+(startTimeDate.getMonth()+1)+'-'+startTimeDate.getDate()+' '+startTimeDate.getHours()+':'+startTimeDate.getMinutes()+':'+startTimeDate.getSeconds();
-      var endTime = endTimeDate.getFullYear()+'-'+(endTimeDate.getMonth()+1)+'-'+endTimeDate.getDate()+' '+endTimeDate.getHours()+':'+endTimeDate.getMinutes()+':'+endTimeDate.getSeconds()
-      
-      const optionsRqstr = {  
-        url: 'https://digitalreachapi.dialog.lk/camp_req.php',
-        headers: {
-          'Content-Type': 'application/json',  
-          'Authorization': '1533639445566',
-          'Accept': 'application/json'        
-        },
-        json: {
-          "msisdn" :"94767434145",
-          "mt_port" : "Demo",
-          "channel" : "1",
-          "s_time" : startTime,
-          "e_time" : endTime,
-          "msg" : "Your trip with the number"+element.TripID+" has not started. Please cancel the trip or contact the Travel Manager."
-        }
-      };
+      mobileHelper.sendMessage(
+        "94767434145",
+        "Your trip with the number"+element.TripID+" has not started. Please cancel the trip or contact the Travel Manager."
+      );
 
-      request.post(optionsRqstr, function (err, resp, body) {
-        if(err) {
-          console.log(err.body);
-        } else {
-          console.log(resp.body);
-        }
-      });
-
-      const optionsMgr = {  
-        url: 'https://digitalreachapi.dialog.lk/camp_req.php',
-        headers: {
-          'Content-Type': 'application/json',  
-          'Authorization': '1533639445566',
-          'Accept': 'application/json'        
-        },
-        json: {
-          "msisdn" :"94767434145",
-          "mt_port" : "Demo",
-          "channel" : "1",
-          "s_time" : startTime,
-          "e_time" : endTime,
-          "msg" : "Trip with the number"+element.TripID+" has not started. Please cancel the trip."
-        }
-      };
-
-      request.post(optionsMgr, function (err, resp, body) {
-        if(err) {
-          console.log(err.body);
-        } else {
-          console.log(resp.body);
-        }
-      });
+      mobileHelper.sendMessage(
+        "94767434145",
+        "Trip with the number"+element.TripID+" has not started. Please cancel the trip."
+      );
     });
   });
 
   trip.checkOngoing(res=>{
-    res.result.forEach(element => {    
-      var mailOptionsRqstr = {
-        from: 'fao.testbed@gmail.com',
-        to: 'samali.liyanage93@gmail.com',
-        subject: 'Reminder for '+element.TripID,
-        text: 'You only have 30 minutes left in the allocated time for your trip with the above Trip ID.'
-      }
+    res.result.forEach(element => {  
+      emailHelper.sendMessage(
+        'samali.liyanage93@gmail.com',
+        'Reminder for '+element.TripID,
+        'You only have 30 minutes left in the allocated time for your trip with the above Trip ID.',
+        false
+      );
 
-      transporter.sendMail(mailOptionsRqstr, function(error, info) {
-        if(error) {
-          console.log(error);
-        } else {
-          console.log('Email sent for update: '+info.response);
-        }
-      });
+      mobileHelper.sendMessage(
+        "94767434145",
+        "You only have 30 minutes left in the allocated time for your trip with the Trip ID "+element.TripID
+      );
 
-      var offset = new Date().getTimezoneOffset();
-      var startTimeDate = new Date();
-      startTimeDate.setMinutes(startTimeDate.getMinutes()-offset);
-      var endTimeDate = new Date(startTimeDate);
-      endTimeDate.setMinutes(endTimeDate.getMinutes()+5);
-      var startTime = startTimeDate.getFullYear()+'-'+(startTimeDate.getMonth()+1)+'-'+startTimeDate.getDate()+' '+startTimeDate.getHours()+':'+startTimeDate.getMinutes()+':'+startTimeDate.getSeconds();
-      var endTime = endTimeDate.getFullYear()+'-'+(endTimeDate.getMonth()+1)+'-'+endTimeDate.getDate()+' '+endTimeDate.getHours()+':'+endTimeDate.getMinutes()+':'+endTimeDate.getSeconds()
-      
-      const optionsRqstr = {  
-        url: 'https://digitalreachapi.dialog.lk/camp_req.php',
-        headers: {
-          'Content-Type': 'application/json',  
-          'Authorization': '1533639445566',
-          'Accept': 'application/json'        
-        },
-        json: {
-          "msisdn" :"94767434145",
-          "mt_port" : "Demo",
-          "channel" : "1",
-          "s_time" : startTime,
-          "e_time" : endTime,
-          "msg" : "You only have 30 minutes left in the allocated time for your trip with the Trip ID "+element.TripID
-        }
-      };
-
-      request.post(optionsRqstr, function (err, resp, body) {
-        if(err) {
-          console.log(err.body);
-        } else {
-          console.log(resp.body);
-        }
-      });
-
-      const optionsDriver = {  
-        url: 'https://digitalreachapi.dialog.lk/camp_req.php',
-        headers: {
-          'Content-Type': 'application/json',  
-          'Authorization': '1533639445566',
-          'Accept': 'application/json'        
-        },
-        json: {
-          "msisdn" :"94767434145",
-          "mt_port" : "Demo",
-          "channel" : "1",
-          "s_time" : startTime,
-          "e_time" : endTime,
-          "msg" : "You only have 30 minutes left in the allocated time for your current trip with the Trip ID "+element.TripID
-        }
-      };
-
-      request.post(optionsDriver, function (err, resp, body) {
-        if(err) {
-          console.log(err.body);
-        } else {
-          console.log(resp.body);
-        }
-      });
+      mobileHelper.sendMessage(
+        "94767434145",
+        "You only have 30 minutes left in the allocated time for your current trip with the Trip ID "+element.TripID
+      );
     });
   });
 })
 
 //testing controllers
 module.exports.testMobile = function (req, res) {
-  const options = {  
-    url: 'https://digitalreachapi.dialog.lk/camp_req.php',
-    headers: {
-      'Content-Type': 'application/json',  
-      'Authorization': '1533639445566',
-      'Accept': 'application/json'        
-    },
-    json: {
-      "msisdn" :"94772434145",
-      "mt_port" : "Demo",
-      "channel" : "1",
-      "s_time" : "2018-07-30 13:25:00",
-      "e_time" : "2018-07-30 13:30:00",
-      "msg" : "Testing"
-    }
-  };
-
-  request.post(options, function (err, resp, body) {
-    res.send(body);
-  })
+  mobileHelper.sendMessage(
+    "94772434145",
+    "Testing"
+  );
 }
 
 module.exports.driverAvailability = function (req, res) {
