@@ -2,8 +2,8 @@ var trip = require('../model/trip');
 var user = require('../model/user');
 var tapApi = require('tap-telco-api');
 var cron = require('node-cron');
-var emailHelper = require('../../server/helper/email-helper');
-var mobileHelper = require('../../server/helper/mobile-helper');
+var emailHelper = require('../helper/email-helper');
+var mobileHelper = require('../helper/mobile-helper');
 
 function DriverName(driverNo) {
   var driver = parseInt(driverNo, 10);
@@ -22,17 +22,22 @@ module.exports.newTrip = function(req, res, next) {
     tripNo: req.body.tripID,
     details: []
   };
-
+  // Insert details about new trip
   trip.newTrip(req.body.tripID, req.body.username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.tripDuration, req.body.tripDurationMin, req.body.tripPurpose, req.body.onBehalf, (response)=>{
+    // If the above is successful continue
     if (req.body.onBehalf===true) {
+      // If trip is made on behalf of someone
       user.onBehalfUser(req.body.tripID, req.body.obName, req.body.obEmail, req.body.obMobile, respon => {
         //console.log(respon)
       })
     }
     results.details.push({trip: response});
+    // Insert destination details
     trip.addDestinations(req.body.tripID, req.body.destinations, req.body.destinationTowns, response => {
       //console.log(response);
       results.details.push({destinations: response});
+
+      // Send mail and sms if all successful to travel manager
 
       var mailMgr = '<ul><li>Trip ID:'+req.body.tripID+
         '</li><li>Username: '+req.body.username+
@@ -250,7 +255,20 @@ module.exports.getBudgetEntity = function (req, res) {
 
 function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, tripID, res) {
   if(index>=ordered_driver_index.length) {
-    return ({"result":"cab"});
+    trip.assignDriver(req.body.tripID, 'cab', 5, response => {
+      smsMessage = "A cab has been assigned to your trip with Trip ID: "+tripID;  
+      text = 'A cab has been assigned to your trip with Trip ID: ' + tripID;
+
+      emailHelper.sendMessage(
+        'samali.liyanage93@gmail.com',
+        'Trip Request '+tripID,
+        text,
+        false
+      );
+      mobileHelper.sendMessage("94767434145", smsMessage);
+    
+      return (response);
+    });
   } else {
     var endTime = parseInt(tripTime.slice(0, 2), 10)+parseInt(tripDuration, 10);
     if (endTime.toString().length===1){
@@ -268,14 +286,10 @@ function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, 
             var text = null;
             var smsMessage = null;  
   
-            if (ordered_driver_index[index]+1==='cab') {
-              smsMessage = "A cab has been assigned to your trip with Trip ID: "+tripID;  
-              text = 'A cab has been assigned to your trip with Trip ID: ' + tripID;
-            } else if (ordered_driver_index[index]+1!='0') {
+            if (ordered_driver_index[index]+1!='0') {
               smsMessage = DriverName(ordered_driver_index[index]+1)+" has been assigned to your trip with Trip ID: "+tripID;  
               text = DriverName(ordered_driver_index[index]+1)+ ' has been assigned to your trip with Trip ID: ' + tripID;
             }
-
             if (ordered_driver_index[index]+1!==0){
               emailHelper.sendMessage(
                 'samali.liyanage93@gmail.com',
