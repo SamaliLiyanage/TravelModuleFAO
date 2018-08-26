@@ -11,10 +11,11 @@ router.get('/gettrip/:tripID', tripController.getTrip);
 router.get('/allfthrrq', tripController.getAllFurtherRequests);
 router.get('/frexists/:tripID', tripController.getFurtherRequest);
 router.post('/approval', tripController.setApproval);
-router.post('/testmobile', tripController.testMobile);
+router.post('/testmobile', tripController.setTripStatus);
 router.get('/destinations/:tripID', tripController.getDestinations);
 router.get('/bentity/:tripID', tripController.getBudgetEntity);
 router.post('/checkavailability', tripController.driverAvailability);
 router.post('/drivercount', tripController.driverCount);
+router.post('/canceltrip', tripController.cancelTrip);
 
 module.exports = router;

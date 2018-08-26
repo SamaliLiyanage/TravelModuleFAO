@@ -1,4 +1,5 @@
 var db = require('../db.js');
+var connection = db.connection;
 
 exports.addUser = function(userName, fullName, passWord, telePhone, role, res) {
   var values = [userName, fullName, passWord, telePhone, role];
@@ -104,4 +105,48 @@ exports.isLoggedIn = function(res) {
       res.send(JSON.stringify(results));
     }
   });
+}
+
+exports.onBehalfUser = function(tripID, name, email, mobile, next) {
+  var values = [tripID, name, email, mobile];
+  connection.query('INSERT INTO TripTraveller(TripID, Traveller_Name, Traveller_Email, Traveller_Mobile) VALUES (?, ?, ?, ?)', values, (err, result)=>{
+    var temp;
+    if(err) {
+      temp = {
+        status: 'fail',
+        result: err
+      }
+    } else {
+      temp = {
+        status: 'success',
+        result: result
+      }
+    }
+    next (temp);
+  })  
+}
+
+exports.getOnBehalf = function(tripID, next) {
+  var value = [tripID]
+  db.connection.query('SELECT * FROM TripTraveller WHERE TripID=?', value, (err, result)=>{
+    var temp;
+    console.log(result);
+    if(err) {
+      temp = {
+        status: 'fail',
+        result: 'err'
+      }
+    } else if(result.length===0) {
+      temp = {
+        status: 'no result',
+        result: 'none'
+      }
+    } else {
+      temp = {
+        status: 'success',
+        result: result[0]
+      }
+    }
+    next(temp);
+  })
 }

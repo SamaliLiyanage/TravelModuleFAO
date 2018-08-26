@@ -4,6 +4,7 @@ var express = require('express'),
 
 router.post('/new', userController.addUser);
 router.get('/all', userController.getUsers);
+router.get('/onbehalf/:id', userController.getOnBehalf);
 router.get('/:fieldName/:fieldValue', userController.getUsersFilter);
 router.get('/:id', userController.getUser);
 router.post('/update', userController.updateUser);

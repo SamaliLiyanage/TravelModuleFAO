@@ -1,15 +1,16 @@
 var db = require('../db.js');
+const connection = db.connection;
 
 //Trip:::`TripID``Username``Driver_ID``Trip_Type``Requested_Date``Trip_Date``Start``End`
 //TripDestination::: `TripID``Destination``Destination_Town`
 //BudgetProject::: `TripID``Project_No`
 //User:::`Username``Full_Name``Password``Role``Mobile_No`
 
-exports.newTrip = function (tripID, userName, tripType, tripDate, tripTime, tripDuration, tripPurpose, next) {
+exports.newTrip = function (tripID, userName, tripType, tripDate, tripTime, tripDuration, tripDurationMin, tripPurpose, onBehalf, next) {
     date = new Date();
-    values = [tripID, userName, tripType, date, tripDate, tripTime, tripDuration, tripPurpose];
+    values = [tripID, userName, tripType, date, tripDate, tripTime, tripDuration, tripDurationMin, tripPurpose, onBehalf];
 
-    db.connection.query('INSERT INTO Trip(TripID, Username, Trip_Type, Requested_Date, Trip_Date, Trip_Time, Duration, Purpose) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', values, function (err, results) {
+    db.connection.query('INSERT INTO Trip(TripID, Username, Trip_Type, Requested_Date, Trip_Date, Trip_Time, Duration, Duration_Minute, Purpose, OnBehalf) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', values, function (err, results) {
         if (err) {
             console.log(err);
             next ({
@@ -308,9 +309,9 @@ exports.getBudgetingEntity = function (tripID, next) {
 }
 
 exports.checkDriverAvailability = function (driverID, date, startTime, endTime, next) {
-    const values = [date, driverID, startTime, endTime, startTime, endTime];
+    const values = [date, driverID, endTime, startTime];
     var temp;
-    db.connection.query('SELECT COUNT(*) AS TripCount FROM (SELECT TripID, Trip_Time, Driver_ID, Duration, DATE_ADD(Trip_Time, INTERVAL Duration HOUR) AS End_Time FROM Trip WHERE Trip_Date=? AND Driver_ID=?) AS T WHERE ((Trip_Time>? AND Trip_Time<?) OR (End_Time>? AND End_Time<?))', values, function(err, results) {
+    db.connection.query('SELECT COUNT(*) AS TripCount FROM (SELECT TripID, Trip_Time, Driver_ID, Duration, Duration_Minute, DATE_ADD(DATE_ADD(Trip_Time, INTERVAL Duration HOUR), INTERVAL Duration_Minute MINUTE) AS End_Time FROM Trip WHERE Trip_Date=? AND Driver_ID=?) AS T WHERE (Trip_Time<? AND End_Time>?)', values, function(err, results) {
         if (err) {
             console.log(err);
             temp = {
@@ -324,6 +325,25 @@ exports.checkDriverAvailability = function (driverID, date, startTime, endTime, 
         }
         next(temp);
     });
+}
+
+exports.checkDriverFieldAvailability = function (driverID, date, startTime, endDate, next) {
+    const values = [];
+    var temp;
+    db.connection.query('SELECT COUNT(*) AS TripCount FROM Trip WHERE Trip_Date>=? AND Trip_Date<=?', values, function(err, result) {
+        if (err) {
+            console.log(err);
+            temp = {
+                status: 'fail'
+            };
+        } else {
+            temp = {
+                status: 'success',
+                result: result[0].TripCount
+            }
+        }
+        next(temp);
+    })
 }
 
 exports.countMonthlyTrips = function (month, type) {
@@ -352,3 +372,91 @@ exports.countMonthlyTrips = function (month, type) {
         })
     });
 }
+
+exports.cancelTrip = function (tripID) {
+    return new Promise (function (resolve, reject) {
+        var temp;
+        db.connection.query('UPDATE Trip SET Driver_ID=0, Trip_Status=7 WHERE TripID=?', [tripID], function(error, result) {
+            if (error) {
+                console.log(error);
+                temp = {
+                    status: 'fail'
+                };
+                reject(temp);
+            } else {
+                temp = {
+                    status: 'success'
+                }
+                resolve(temp);
+            }
+        })        
+    });
+}
+
+exports.checkOngoing = function (next) {
+    const dateNow = new Date();
+    var date = dateNow.getFullYear()+'-'+(dateNow.getMonth()+1)+'-'+dateNow.getDate();
+    var time;
+    var hours = dateNow.getHours();
+    var minutes = dateNow.getMinutes();
+
+    if (hours<10) {
+        hours = '0'+hours;
+    }
+    if (minutes<10) {
+        time = hours+':0'+minutes+':00';
+    } else {
+        time = hours+':'+minutes+':00';
+    }
+
+    var values = [date, time]
+
+    connection.query('SELECT Trip.TripID AS TripID, User.Mobile_No AS Mobile_No FROM Trip, User WHERE Start IS NOT NULL AND End IS NULL AND Trip_Date=? AND Trip.Username=User.Username AND DATE_ADD(DATE_ADD(DATE_ADD(Trip_Time, INTERVAL Duration HOUR), INTERVAL Duration_Minute MINUTE), INTERVAL -30 MINUTE)=?', values, (err, results) => {
+        var temp;
+        if (err) {
+            temp = {
+                status: 'fail',
+                result: err
+            }
+        } else {
+            temp = {
+                status: 'success',
+                result: results
+            }
+        }
+        next(temp);
+    })
+}
+
+exports.checkNotStarted = function (next) {
+    var dateNow = new Date();
+    var date = dateNow.getFullYear()+'-'+(dateNow.getMonth()+1)+'-'+dateNow.getDate();
+    var time;
+    var hours = dateNow.getHours();
+    var minutes = dateNow.getMinutes();
+
+    if (hours<10) {
+        hours = '0'+hours;
+    }
+    if (minutes<10) {
+        time = hours+':0'+minutes+':00';
+    } else {
+        time = hours+':'+minutes+':00';
+    }
+
+    connection.query('SELECT Trip.TripID AS TripID, User.Mobile_No AS Mobile_No FROM Trip, User WHERE Start IS NULL AND Trip_Date=? AND DATE_ADD(Trip_Time, INTERVAL 15 MINUTE)=? AND Trip.Username=User.Username', [date, time], (err, results)=>{
+        var temp;
+        if(err) {
+            temp = {
+                status: 'fail',
+                result: err
+            }
+        } else {
+            temp = {
+                status: 'success',
+                result: results
+            }
+        }
+        next (temp);
+    })
+}  
