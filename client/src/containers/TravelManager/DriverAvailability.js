@@ -273,7 +273,10 @@ export default class DriverAvailability extends React.Component {
           <Row className="show-grid">
             <Col sm={12}>
               Affected Trips
-          </Col>
+              <FormGroup controlId="submit">
+                <Button name="submit" type="submit" onClick={(e) => { console.log(e.target.name) }} >Submit</Button>
+              </FormGroup>
+            </Col>
           </Row>
         </Grid>
       </Form>
