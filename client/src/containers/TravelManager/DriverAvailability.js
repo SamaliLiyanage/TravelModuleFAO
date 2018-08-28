@@ -10,15 +10,15 @@ import { DriverName } from '../../Selections';
  * @param props::: time - time not available
  */
 function SingleDayTime(props) {
-  const content = parseInt(props.type,10)===3 ?
-  <FormGroup controlId="time">
-    <Col componentClass={ControlLabel} sm={4}>Time :</Col>
-    <Col sm={8}>
-      <FormControl type="time" value={props.time} onChange={props.onChange} />
-    </Col>
-  </FormGroup>:
-  null;
-  return (content);    
+  const content = parseInt(props.type, 10) === 3 ?
+    <FormGroup controlId="time">
+      <Col componentClass={ControlLabel} sm={4}>Time :</Col>
+      <Col sm={8}>
+        <FormControl type="time" value={props.time} onChange={props.onChange} />
+      </Col>
+    </FormGroup> :
+    null;
+  return (content);
 }
 
 /**
@@ -29,7 +29,7 @@ function SingleDayTime(props) {
  * @param props::: time - time not available
  */
 function SingleDay(props) {
-  const content = (parseInt(props.type,10)===2 || parseInt(props.type,10)===3)?
+  const content = (parseInt(props.type, 10) === 2 || parseInt(props.type, 10) === 3) ?
     <Row>
       <Col sm={3} smOffset={1}>
         <FormGroup controlId="leaveDate">
@@ -42,14 +42,61 @@ function SingleDay(props) {
       <Col sm={3}>
         <SingleDayTime type={props.type} onChange={props.onChange} time={props.time} />
       </Col>
-    </Row>:
+    </Row> :
     null;
   return (content);
 }
 
-function TimePeriod(props) {
+/**
+ * 
+ * @param props::: onClick - function to call when clicking button 
+ * @param props::: index - index of current
+ * @param props::: length - length of array
+ */
+function AddButton(props) {
+  const content = (props.length === (props.index + 1)) ?
+    <Col sm={1}>
+      <FormGroup>
+        <Button name="add" type="button" onClick={(e) => props.onClick(e, null)} >Add</Button>
+      </FormGroup>
+    </Col> :
+    <Col sm={1}>
+    </Col>;
   return (
-    <div>
+    content
+  );
+}
+
+/**
+ * 
+ * @param props::: onClick - function to call when clicking button
+ * @param props::: index - index to remove
+ * @param props::: length - length of array
+ */
+function RemoveButton(props) {
+  const content = (props.length !== 1) ?
+    <Col sm={1}>
+      <FormGroup>
+        <Button name="remove" type="button" onClick={(e) => props.onClick(e, props.index)} >Remove</Button>
+      </FormGroup>
+    </Col> :
+    <Col sm={1}>
+    </Col>;
+  return (
+    content
+  );
+}
+
+/**
+ * 
+ * @param props::: indefinite - Is the time period indefinite?
+ * @param props::: onClick - function to call on clicking "Add another period"
+ * @param props::: length - number of this element called
+ * @param props::: index - index to remove
+ */
+function TimeRange(props) {
+  const content = (!props.indefinite) ?
+    <div sm={12}>
       <Col sm={3} smOffset={1}>
         <FormGroup>
           <Col componentClass={ControlLabel} sm={4}>From :</Col>
@@ -66,33 +113,61 @@ function TimePeriod(props) {
           </Col>
         </FormGroup>
       </Col>
-      <Col sm={2}>
-        <FormGroup>
-          <Button name="add" type="button" >Add another period</Button>
-        </FormGroup>
-      </Col>
-    </div>
+      <AddButton onClick={props.onClick} index={props.index} length={props.length} />
+      <RemoveButton onClick={props.onClick} index={props.index} length={props.length} />
+    </div> :
+    <Col sm={3} smOffset={1}>
+      <FormGroup>
+        <Col componentClass={ControlLabel} sm={4}>From :</Col>
+        <Col sm={8}>
+          <FormControl type="date" />
+        </Col>
+      </FormGroup>
+    </Col>
+  return (content);
+}
+
+/**
+ * 
+ * @param props::: indefinite - Is the time period indefinite?
+ * @param props::: fromDate - fromDate array
+ * @param props::: onClick - function to call on clicking "Add another period"
+ */
+function TimePeriod(props) {
+  const content = props.fromDate.map((date, index) => {
+    return <TimeRange key={index} indefinite={props.indefinite} onClick={props.onClick} length={props.fromDate.length} index={index} />
+  });
+  return (
+    content
   );
 }
 
 /**
  * 
  * @param props::: type-type of trip;  
+ * @param props::: indefinite - Is the time period indefinite? call when clicked
+ * @param props::: onClick - function to
+ * @param props::: fromDate - fromDate array
+ * @param props::: onChange - function to call on clicking "Add another period"
  */
 function MultipleDays(props) {
-  const content = parseInt(props.type, 10)===1 ?
-    <Row>
-      <TimePeriod />
-      <Col sm={1}>
-        <FormGroup>
-          <Col>
-            <Checkbox>Indefinite</Checkbox>
-          </Col>
-        </FormGroup>
-      </Col>
-    </Row>:
+  const content = parseInt(props.type, 10) === 1 ?
+    props.fromDate.length === 1 ?
+      <Row>
+        <TimePeriod indefinite={props.indefinite} fromDate={props.fromDate} onClick={props.onChange} />
+        <Col sm={1}>
+          <FormGroup controlId="indefinite" >
+            <Col>
+              <Checkbox inline checked={props.indefinite} title="indefinite" onClick={props.onClick} >Indefinite</Checkbox>
+            </Col>
+          </FormGroup>
+        </Col>
+      </Row> :
+      <Row>
+        <TimePeriod indefinite={props.indefinite} fromDate={props.fromDate} onClick={props.onChange} />
+      </Row> :
     null;
-  return(content);
+  return (content);
 }
 
 export default class DriverAvailability extends React.Component {
@@ -109,6 +184,7 @@ export default class DriverAvailability extends React.Component {
     };
 
     this.handleChange = this.handleChange.bind(this);
+    this.handleClick = this.handleClick.bind(this);
   }
 
   handleChange(event) {
@@ -124,22 +200,43 @@ export default class DriverAvailability extends React.Component {
     let leaveDate = this.state.leaveDate;
     let time = this.state.time;
 
-    if(id==="driver") driver = value;
-    if(id==="type") type = value;
-    if(id==="leaveDate") leaveDate = value;
-    if(id==="time") time = value;
+    if (id === "driver") driver = value;
+    if (id === "type") {
+      type = value;
+      if (parseInt(value, 10) === 1) {
+        fromDate.push(new Date());
+      }
+    }
+    if (id === "leaveDate") leaveDate = value;
+    if (id === "time") time = value;
+    if (target.parentElement.title === "indefinite") indefinite = !(indefinite);
 
     this.setState({
-      [id]:value
+      [id]: value,
+      indefinite: indefinite,
+      fromDate: fromDate
+    });
+  }
+
+  handleClick(event, index) {
+    let fromDate = this.state.fromDate;
+    if (event.target.name === "add") {
+      fromDate.push(new Date());
+    } else if (event.target.name === "remove") {
+      fromDate.splice(index, 1)
+    }
+
+    this.setState({
+      fromDate: fromDate
     });
   }
 
   render() {
     return (
-      <Grid>
-        <Row className="show-grid">
-          <Col sm={12}>
-            <Form horizontal>
+      <Form horizontal>
+        <Grid>
+          <Row className="show-grid">
+            <Col sm={12}>
               <Row>
                 <Col sm={6}>
                   <FormGroup controlId="driver">
@@ -168,17 +265,18 @@ export default class DriverAvailability extends React.Component {
                   </FormGroup>
                 </Col>
               </Row>
-              <MultipleDays type={this.state.type} />
+              <MultipleDays type={this.state.type} indefinite={this.state.indefinite} onClick={this.handleChange} fromDate={this.state.fromDate} onChange={this.handleClick} />
               <SingleDay type={this.state.type} leaveDate={this.state.leaveDate} onChange={this.handleChange} />
-            </Form>
+
+            </Col>
+          </Row>
+          <Row className="show-grid">
+            <Col sm={12}>
+              Affected Trips
           </Col>
-        </Row>
-        <Row className="show-grid">
-          <Col sm={12}>
-            Affected Trips
-          </Col>
-        </Row>
-      </Grid>
+          </Row>
+        </Grid>
+      </Form>
     );
   }
 }
