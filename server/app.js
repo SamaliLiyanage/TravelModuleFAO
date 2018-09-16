@@ -8,6 +8,8 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+var winston = require('./config/winston');
+
 var app = express();
 var router = express.Router();
 
@@ -26,7 +28,7 @@ app.use(flash());
 //app.set('views', path.join(__dirname, 'views'));
 //app.set('view engine', 'jade');
 
-app.use(logger('dev'));
+app.use(logger('combined', {stream: winston.stream}));
 //app.use(express.json());
 //app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
