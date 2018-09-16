@@ -394,10 +394,8 @@ cron.schedule("* * * * *", function() {
 
 //testing controllers
 module.exports.testMobile = function (req, res) {
-  mobileHelper.sendMessage(
-    "94772434145",
-    "Testing"
-  );
+  mobileHelper.getMessage();
+  return res.send({name: "sam"});
 }
 
 module.exports.driverAvailability = function (req, res) {
