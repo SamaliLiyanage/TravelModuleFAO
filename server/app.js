@@ -8,7 +8,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-var winston = require('./config/winston');
+//var winston = require('./config/winston');
 
 var app = express();
 var router = express.Router();
@@ -28,7 +28,7 @@ app.use(flash());
 //app.set('views', path.join(__dirname, 'views'));
 //app.set('view engine', 'jade');
 
-app.use(logger('combined', {stream: winston.stream}));
+app.use(logger('combined'));
 //app.use(express.json());
 //app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -57,9 +57,11 @@ app.get('/logout',function (req, res) {
 
 var usersRouter = require('./api/users-api');
 var tripsRouter = require('./api/trip-api');
+var driverRouter = require('./api/driver-api');
 
 app.use('/users', usersRouter);
 app.use('/trips', tripsRouter);
+app.use('/drivers', driverRouter);
 
 app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname, '../client/build', 'index.html'));

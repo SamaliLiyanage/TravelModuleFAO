@@ -255,7 +255,7 @@ module.exports.getBudgetEntity = function (req, res) {
 
 function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, tripID, res) {
   if(index>=ordered_driver_index.length) {
-    trip.assignDriver(req.body.tripID, 'cab', 5, response => {
+    trip.assignDriver(tripID, 'cab', 5, response => {
       smsMessage = "A cab has been assigned to your trip with Trip ID: "+tripID;  
       text = 'A cab has been assigned to your trip with Trip ID: ' + tripID;
 
