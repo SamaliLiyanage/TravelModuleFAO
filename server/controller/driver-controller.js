@@ -7,11 +7,12 @@ module.exports.addLeave = function (req, res, next) {
     const leaveType = req.body.leaveType;
     const driverID = req.body.driverID;
 
-    const leaveDate = leaveDateTemp.map((date) => {
-        return (date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate());
-    });
+    var leaveTime = [];
 
-    var leaveTime = null;
+    const leaveDate = leaveDateTemp.map((date) => {
+        leaveTime.push(null);
+        return date;
+    });
 
     if (leaveType === 3) {
         leaveTime = [req.body.leaveTime];

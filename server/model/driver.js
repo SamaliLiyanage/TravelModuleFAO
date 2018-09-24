@@ -3,17 +3,19 @@ const connection = db.connection;
 
 exports.addDriverLeave = function(driverID, leaveDate, leaveTime, next){
     let values = "";
-    if (leaveTime===null){ // No times given
+    if (leaveTime[0]===null){ // No times given
         leaveDate.forEach((date, index) => {
             (index===(leaveDate.length-1))?
-            values += ("("+driverID+","+date+",NULL)"):
-            values += ("("+driverID+","+date+",NULL),");
+            values += ("("+driverID+", \'"+date+"\',NULL)"):
+            values += ("("+driverID+",\'"+date+"\',NULL),");
+            console.log("Date ", date)
         });
     } else {
         leaveDate.forEach((date, index) => {
             (index===(leaveDate.length-1))?
-            values += ("("+driverID+","+date+","+leaveTime[index]+")"):
-            values += ("("+driverID+","+date+","+leaveTime[index]+"),");
+            values += ("("+driverID+", \'"+date+"\', \'"+leaveTime[index]+"\')"):
+            values += ("("+driverID+", \'"+date+"\', \'"+leaveTime[index]+"\'),");
+            console.log("Date ", date)
         });
     }
 
@@ -22,11 +24,13 @@ exports.addDriverLeave = function(driverID, leaveDate, leaveTime, next){
     connection.query("INSERT INTO DriverLeave (Driver_ID, LeaveDate, LeaveTime) VALUES"+values,(err, result) => {
         var temp;
         if(err){
+            console.log(err)
             temp = {
                 status: "fail",
                 data: err
             }
         } else {
+            console.log(result)
             temp = {
                 status: "success",
                 data: result

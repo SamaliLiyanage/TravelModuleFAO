@@ -344,11 +344,42 @@ export default class DriverAvailability extends React.Component {
       availableDrivers: []
     };
 
+    this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleClick = this.handleClick.bind(this);
     this.handleDateChange = this.handleDateChange.bind(this);
     this.handleDriverChange = this.handleDriverChange.bind(this);
     this.handleModalPopUp = this.handleModalPopUp.bind(this);
+  }
+
+  handleSubmit(event) {
+    let tempDates = [];
+    let temp, endTemp;
+    let datesArray;
+
+    this.state.fromDate.map((date, index) => {
+      temp = new Date(date);
+      endTemp = new Date(this.state.toDate[index]);
+      var dt = new Date(temp);
+      while (dt <= endTemp) {
+        tempDates.push(dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate());
+        dt.setDate(dt.getDate() + 1);
+      }
+      return (tempDates);
+    });
+
+    (parseInt(this.state.type, 10) === 1) ?
+      datesArray = tempDates :
+      datesArray = [this.state.leaveDate];
+      
+    axios.post('/drivers/', {
+      leaveDate: datesArray,
+      leaveType: this.state.type,
+      driverID: this.state.driver,
+      leaveTime: this.state.time,
+    }).then((res) => {
+      console.log(res);
+    });
   }
 
   handleChange(event) {
@@ -662,7 +693,7 @@ export default class DriverAvailability extends React.Component {
               Affected Trips
               <AffectedTripTable trips={this.state.affectedTrips} handleDisplay={this.handleModalPopUp} />
               <FormGroup controlId="submit">
-                <Button name="submit" type="submit" onClick={(e) => { console.log(e.target.name) }} disabled={!this.state.formValid}>Submit</Button>
+                <Button name="submit" type="submit" onClick={(e) => { this.handleSubmit(e)}} disabled={!this.state.formValid}>Submit</Button>
               </FormGroup>
               <TripModal modalShow={this.state.modalShow} handleDisplay={this.handleModalPopUp} trip={this.state.modalTrip} availableDrivers={this.state.availableDrivers} driverChange={this.handleDriverChange} tripIndex={this.state.tripIndex} />
             </Col>
