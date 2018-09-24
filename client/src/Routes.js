@@ -15,6 +15,8 @@ import DriverSchedule from './containers/TravelManager/ViewSchedules';
 import TabbedRequest from './containers/TravelManager/ViewReqTabs';
 import AdminView from './containers/Adminstrator/ViewFthrRemarks';
 import ViewTripDetails from './containers/TravelManager/ViewTripDetails';
+import DriverAvailability from './containers/TravelManager/DriverAvailability';
+import ViewDriverLeave from './containers/TravelManager/ViewDriverLeave';
 
 export default ({ childProps }) =>
   <Switch>
@@ -31,5 +33,7 @@ export default ({ childProps }) =>
     <AppliedRoute path='/viewtabs' exact component={TabbedRequest} />
     <AppliedRoute path='/viewfrequests' exact component={AdminView} props={childProps} />
     <AppliedRoute path='/viewtrip/:tripid' exact component={ViewTripDetails} props={childProps} />
+    <AppliedRoute path='/driveravailability' exact component={DriverAvailability} props={childProps} />
+    <AppliedRoute path='/viewleave' exact component={ViewDriverLeave} props={childProps} />
     <Route component={NotFound} />
   </Switch>;

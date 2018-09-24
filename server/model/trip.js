@@ -13,12 +13,12 @@ exports.newTrip = function (tripID, userName, tripType, tripDate, tripTime, trip
     db.connection.query('INSERT INTO Trip(TripID, Username, Trip_Type, Requested_Date, Trip_Date, Trip_Time, Duration, Duration_Minute, Purpose, OnBehalf) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', values, function (err, results) {
         if (err) {
             console.log(err);
-            next ({
+            next({
                 status: "fail",
                 data: err
             });
         } else {
-            next ({
+            next({
                 status: "success",
                 data: results
             });
@@ -115,10 +115,10 @@ exports.getTrip = function (tripID, next) {
     });
 }
 
-exports.getFurtherComments = function (next){
-    db.connection.query ('SELECT * FROM Trip, FurtherRemark WHERE Trip.TripID=FurtherRemark.TripID AND Trip.Trip_Status=6',[], function(err, result, temp) {
+exports.getFurtherComments = function (next) {
+    db.connection.query('SELECT * FROM Trip, FurtherRemark WHERE Trip.TripID=FurtherRemark.TripID AND Trip.Trip_Status=6', [], function (err, result, temp) {
         var temp;
-        if(err){
+        if (err) {
             temp = {
                 success: false,
                 data: err
@@ -135,7 +135,7 @@ exports.getFurtherComments = function (next){
 }
 
 exports.getFurtherComment = function (tripID, next) {
-    db.connection.query ('SELECT Remark FROM FurtherRemark WHERE TripID=?', tripID, function (err, result) {
+    db.connection.query('SELECT Remark FROM FurtherRemark WHERE TripID=?', tripID, function (err, result) {
         var temp;
         if (err) {
             temp = {
@@ -144,7 +144,7 @@ exports.getFurtherComment = function (tripID, next) {
                 data: err
             }
         } else {
-            if (result.length===0) {
+            if (result.length === 0) {
                 temp = {
                     success: true,
                     exists: false
@@ -157,14 +157,14 @@ exports.getFurtherComment = function (tripID, next) {
                 }
             }
         }
-        next (temp);
+        next(temp);
     })
 }
 
 exports.changeStatus = function (tripID, status, next) {
     values = [status, tripID];
 
-    db.connection.query ('UPDATE Trip SET Trip_Status=? WHERE TripID=?', values, function (err, result) {
+    db.connection.query('UPDATE Trip SET Trip_Status=? WHERE TripID=?', values, function (err, result) {
         var temp;
 
         if (err) {
@@ -184,7 +184,7 @@ exports.changeStatus = function (tripID, status, next) {
 exports.changeComments = function (tripID, newComment, next) {
     values = [newComment, tripID];
 
-    db.connection.query ('UPDATE FurtherRemark SET Remark=? WHERE TripID=?', values, function(err, result) {
+    db.connection.query('UPDATE FurtherRemark SET Remark=? WHERE TripID=?', values, function (err, result) {
         var temp;
 
         if (err) {
@@ -205,42 +205,42 @@ exports.setTripStatus = function (tripID, state, mileage, status, next) {
     const stateDate = new Date();
     const values = [stateDate, mileage, status, tripID];
 
-    let statement = 'UPDATE Trip SET '+state+'=?, '+state+'_Mileage=?, Trip_Status=? WHERE TripID=?';
+    let statement = 'UPDATE Trip SET ' + state + '=?, ' + state + '_Mileage=?, Trip_Status=? WHERE TripID=?';
 
-    db.connection.query(statement, values, function(err, response) {
+    db.connection.query(statement, values, function (err, response) {
         var temp;
 
         if (err) {
-            temp = {status: 'error'}
-        } else if (response.affectedRows===1) {
+            temp = { status: 'error' }
+        } else if (response.affectedRows === 1) {
             console.log(response);
-            temp = {status: 'success'};
+            temp = { status: 'success' };
         } else {
-            temp = {status: 'fail'}
+            temp = { status: 'fail' }
         }
 
         next(temp);
     })
-} 
+}
 
 exports.getTripStatus = function (tripID, next) {
-    db.connection.query ('SELECT Start, End FROM Trip WHERE TripID=? AND (Trip_Status=2 OR Trip_Status=3)', tripID, function (err, result) {
-        if(err) {
-            next('err');            
-        } else if(result.length===1) {
+    db.connection.query('SELECT Start, End FROM Trip WHERE TripID=? AND (Trip_Status=2 OR Trip_Status=3)', tripID, function (err, result) {
+        if (err) {
+            next('err');
+        } else if (result.length === 1) {
             next(result[0]);
         } else {
-            next ('err');
+            next('err');
         }
     })
 }
 
 exports.addDestinations = function (tripID, destinationList, destinationTownList, next) {
     const destinationString = destinationList.map((destination, index) => {
-        return ('('+tripID+', \"'+destination+'\", \"'+destinationTownList[index]+'\")');
-    }) 
+        return ('(' + tripID + ', \"' + destination + '\", \"' + destinationTownList[index] + '\")');
+    })
 
-    db.connection.query('INSERT INTO TripDestination (TripID, Destination, Destination_Town) VALUES '+destinationString.join(), function (err) {
+    db.connection.query('INSERT INTO TripDestination (TripID, Destination, Destination_Town) VALUES ' + destinationString.join(), function (err) {
         if (err) {
             console.log(err);
             next(err);
@@ -251,7 +251,7 @@ exports.addDestinations = function (tripID, destinationList, destinationTownList
 }
 
 exports.getDestinations = function (tripID, next) {
-    db.connection.query ('SELECT Destination, Destination_Town FROM TripDestination WHERE TripID=?', tripID, function (err, results) {
+    db.connection.query('SELECT Destination, Destination_Town FROM TripDestination WHERE TripID=?', tripID, function (err, results) {
         var temp;
         if (err) {
             temp = {
@@ -264,15 +264,15 @@ exports.getDestinations = function (tripID, next) {
                 data: results
             }
         }
-        next (temp);
+        next(temp);
     });
 }
 
 exports.setBudgetingEntity = function (tripID, pNumber, next) {
     const values = [tripID, pNumber];
 
-    db.connection.query ('INSERT INTO BudgetProject (TripID, Project_No) VALUES (?, ?)', values, function (err, results) {
-        if(err) {
+    db.connection.query('INSERT INTO BudgetProject (TripID, Project_No) VALUES (?, ?)', values, function (err, results) {
+        if (err) {
             console.log(err);
             next(err);
         } else {
@@ -282,7 +282,7 @@ exports.setBudgetingEntity = function (tripID, pNumber, next) {
 }
 
 exports.getBudgetingEntity = function (tripID, next) {
-    db.connection.query ('SELECT * FROM BudgetProject WHERE TripID= ?', tripID, function (err, result) {
+    db.connection.query('SELECT * FROM BudgetProject WHERE TripID= ?', tripID, function (err, result) {
         var temp;
         if (err) {
             temp = {
@@ -291,7 +291,7 @@ exports.getBudgetingEntity = function (tripID, next) {
                 data: err
             }
         } else {
-            if (result.length===0) {
+            if (result.length === 0) {
                 temp = {
                     success: true,
                     exists: false
@@ -304,14 +304,14 @@ exports.getBudgetingEntity = function (tripID, next) {
                 }
             }
         }
-        next (temp);
+        next(temp);
     })
 }
 
 exports.checkDriverAvailability = function (driverID, date, startTime, endTime, next) {
     const values = [date, driverID, endTime, startTime];
     var temp;
-    db.connection.query('SELECT COUNT(*) AS TripCount FROM (SELECT TripID, Trip_Time, Driver_ID, Duration, Duration_Minute, DATE_ADD(DATE_ADD(Trip_Time, INTERVAL Duration HOUR), INTERVAL Duration_Minute MINUTE) AS End_Time FROM Trip WHERE Trip_Date=? AND Driver_ID=?) AS T WHERE (Trip_Time<? AND End_Time>?)', values, function(err, results) {
+    db.connection.query('SELECT COUNT(*) AS TripCount FROM (SELECT TripID, Trip_Time, Driver_ID, Duration, Duration_Minute, DATE_ADD(DATE_ADD(Trip_Time, INTERVAL Duration HOUR), INTERVAL Duration_Minute MINUTE) AS End_Time FROM Trip WHERE Trip_Date=? AND Driver_ID=?) AS T WHERE (Trip_Time<? AND End_Time>?)', values, function (err, results) {
         if (err) {
             console.log(err);
             temp = {
@@ -330,7 +330,7 @@ exports.checkDriverAvailability = function (driverID, date, startTime, endTime, 
 exports.checkDriverFieldAvailability = function (driverID, date, startTime, endDate, next) {
     const values = [];
     var temp;
-    db.connection.query('SELECT COUNT(*) AS TripCount FROM Trip WHERE Trip_Date>=? AND Trip_Date<=?', values, function(err, result) {
+    db.connection.query('SELECT COUNT(*) AS TripCount FROM Trip WHERE Trip_Date>=? AND Trip_Date<=?', values, function (err, result) {
         if (err) {
             console.log(err);
             temp = {
@@ -347,11 +347,11 @@ exports.checkDriverFieldAvailability = function (driverID, date, startTime, endD
 }
 
 exports.countMonthlyTrips = function (month, type) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         const values = [month, type];
         var temp;
-        db.connection.query('SELECT Driver_ID, COUNT(*) AS TripCount FROM Trip WHERE Driver_ID!=0 AND MONTH(Trip_Date)=? AND Trip_Type=? GROUP BY Driver_ID', values, function(err, results) {
-            if(err) {
+        db.connection.query('SELECT Driver_ID, COUNT(*) AS TripCount FROM Trip WHERE Driver_ID!=0 AND MONTH(Trip_Date)=? AND Trip_Type=? GROUP BY Driver_ID', values, function (err, results) {
+            if (err) {
                 console.log(err);
                 temp = {
                     status: 'fail'
@@ -360,8 +360,8 @@ exports.countMonthlyTrips = function (month, type) {
             } else {
                 let driverCount = [0, 0, 0];
                 results.forEach(driver => {
-                    driverCount[parseInt(driver.Driver_ID, 10)-1] = parseInt(driver.TripCount, 10);
-                    
+                    driverCount[parseInt(driver.Driver_ID, 10) - 1] = parseInt(driver.TripCount, 10);
+
                 });
                 temp = {
                     status: 'success',
@@ -374,9 +374,9 @@ exports.countMonthlyTrips = function (month, type) {
 }
 
 exports.cancelTrip = function (tripID) {
-    return new Promise (function (resolve, reject) {
+    return new Promise(function (resolve, reject) {
         var temp;
-        db.connection.query('UPDATE Trip SET Driver_ID=0, Trip_Status=7 WHERE TripID=?', [tripID], function(error, result) {
+        db.connection.query('UPDATE Trip SET Driver_ID=0, Trip_Status=7 WHERE TripID=?', [tripID], function (error, result) {
             if (error) {
                 console.log(error);
                 temp = {
@@ -389,24 +389,24 @@ exports.cancelTrip = function (tripID) {
                 }
                 resolve(temp);
             }
-        })        
+        })
     });
 }
 
 exports.checkOngoing = function (next) {
     const dateNow = new Date();
-    var date = dateNow.getFullYear()+'-'+(dateNow.getMonth()+1)+'-'+dateNow.getDate();
+    var date = dateNow.getFullYear() + '-' + (dateNow.getMonth() + 1) + '-' + dateNow.getDate();
     var time;
     var hours = dateNow.getHours();
     var minutes = dateNow.getMinutes();
 
-    if (hours<10) {
-        hours = '0'+hours;
+    if (hours < 10) {
+        hours = '0' + hours;
     }
-    if (minutes<10) {
-        time = hours+':0'+minutes+':00';
+    if (minutes < 10) {
+        time = hours + ':0' + minutes + ':00';
     } else {
-        time = hours+':'+minutes+':00';
+        time = hours + ':' + minutes + ':00';
     }
 
     var values = [date, time]
@@ -430,23 +430,23 @@ exports.checkOngoing = function (next) {
 
 exports.checkNotStarted = function (next) {
     var dateNow = new Date();
-    var date = dateNow.getFullYear()+'-'+(dateNow.getMonth()+1)+'-'+dateNow.getDate();
+    var date = dateNow.getFullYear() + '-' + (dateNow.getMonth() + 1) + '-' + dateNow.getDate();
     var time;
     var hours = dateNow.getHours();
     var minutes = dateNow.getMinutes();
 
-    if (hours<10) {
-        hours = '0'+hours;
+    if (hours < 10) {
+        hours = '0' + hours;
     }
-    if (minutes<10) {
-        time = hours+':0'+minutes+':00';
+    if (minutes < 10) {
+        time = hours + ':0' + minutes + ':00';
     } else {
-        time = hours+':'+minutes+':00';
+        time = hours + ':' + minutes + ':00';
     }
 
-    connection.query('SELECT Trip.TripID AS TripID, User.Mobile_No AS Mobile_No FROM Trip, User WHERE Start IS NULL AND Trip_Date=? AND DATE_ADD(Trip_Time, INTERVAL 15 MINUTE)=? AND Trip.Username=User.Username', [date, time], (err, results)=>{
+    connection.query('SELECT Trip.TripID AS TripID, User.Mobile_No AS Mobile_No FROM Trip, User WHERE Start IS NULL AND Trip_Date=? AND DATE_ADD(Trip_Time, INTERVAL 15 MINUTE)=? AND Trip.Username=User.Username', [date, time], (err, results) => {
         var temp;
-        if(err) {
+        if (err) {
             temp = {
                 status: 'fail',
                 result: err
@@ -457,6 +457,29 @@ exports.checkNotStarted = function (next) {
                 result: results
             }
         }
-        next (temp);
+        next(temp);
     })
-}  
+}
+
+exports.getOnDateForDriver = function (driverID, tripDate) {
+    return new Promise((resolve, reject) => {
+        const values = [driverID, tripDate];
+        connection.query('SELECT * FROM Trip WHERE Driver_ID=? AND Trip_Date=?', values, (err, results) => {
+            var temp;
+            if (err) {
+                temp = {
+                    status: 'fail',
+                    error: err
+                }
+                reject(temp);
+            } else {
+                temp = {
+                    status: 'success',
+                    data: results
+                }
+                resolve(temp);
+            }
+        });
+    });
+}
+
