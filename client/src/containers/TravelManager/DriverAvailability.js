@@ -694,6 +694,7 @@ export default class DriverAvailability extends React.Component {
               <AffectedTripTable trips={this.state.affectedTrips} handleDisplay={this.handleModalPopUp} />
               <FormGroup controlId="submit">
                 <Button name="submit" type="submit" onClick={(e) => { this.handleSubmit(e)}} disabled={!this.state.formValid}>Submit</Button>
+                <Button name="reset" type="reset">Reset</Button>
               </FormGroup>
               <TripModal modalShow={this.state.modalShow} handleDisplay={this.handleModalPopUp} trip={this.state.modalTrip} availableDrivers={this.state.availableDrivers} driverChange={this.handleDriverChange} tripIndex={this.state.tripIndex} />
             </Col>
