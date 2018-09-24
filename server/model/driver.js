@@ -1,27 +1,23 @@
 var db = require('../db.js');
 const connection = db.connection;
 
-exports.addDriverLeave = function(driverID, leaveDate, leaveTime, next){
+exports.addDriverLeave = function(driverID, leaveDate, leaveTime, leaveType, next){
     let values = "";
     if (leaveTime[0]===null){ // No times given
         leaveDate.forEach((date, index) => {
             (index===(leaveDate.length-1))?
-            values += ("("+driverID+", \'"+date+"\',NULL)"):
-            values += ("("+driverID+",\'"+date+"\',NULL),");
-            console.log("Date ", date)
+            values += ("("+driverID+", \'"+date+"\',NULL,"+leaveType+")"):
+            values += ("("+driverID+",\'"+date+"\',NULL,"+leaveType+"),");
         });
     } else {
         leaveDate.forEach((date, index) => {
             (index===(leaveDate.length-1))?
-            values += ("("+driverID+", \'"+date+"\', \'"+leaveTime[index]+"\')"):
-            values += ("("+driverID+", \'"+date+"\', \'"+leaveTime[index]+"\'),");
-            console.log("Date ", date)
+            values += ("("+driverID+", \'"+date+"\', \'"+leaveTime[index]+"\',"+leaveType+")"):
+            values += ("("+driverID+", \'"+date+"\', \'"+leaveTime[index]+"\',"+leaveType+"),");
         });
     }
-
-    console.log(values);
     
-    connection.query("INSERT INTO DriverLeave (Driver_ID, LeaveDate, LeaveTime) VALUES"+values,(err, result) => {
+    connection.query("INSERT INTO DriverLeave (Driver_ID, LeaveDate, LeaveTime, LeaveType) VALUES"+values,(err, result) => {
         var temp;
         if(err){
             console.log(err)
@@ -42,7 +38,8 @@ exports.addDriverLeave = function(driverID, leaveDate, leaveTime, next){
 
 exports.viewDriverLeave = function(driverID, year, next) {
     const values = [driverID, year];
-    connection.query('SELECT * FROM DriverLeave WHERE Driver_ID=? AND YEAR(LeaveDate)=?',[driverID, year], (err, results) => {
+    console.log(driverID);
+    connection.query('SELECT * FROM DriverLeave WHERE Driver_ID=? AND YEAR(LeaveDate)=?',values, (err, results) => {
         var temp;
         if (err) {
             temp = {

@@ -18,7 +18,7 @@ module.exports.addLeave = function (req, res, next) {
         leaveTime = [req.body.leaveTime];
     }
 
-    driver.addDriverLeave(driverID, leaveDate, leaveTime, response => {
+    driver.addDriverLeave(driverID, leaveDate, leaveTime, leaveType, response => {
         res.send(response);
     });
 }
@@ -61,9 +61,11 @@ module.exports.viewLeave = function (req, res, next) {
 
 module.exports.deleteLeave = function (req, res, next) {
     const driverID = req.body.driverID;
-    const leaveDate = req.body.leaveDate;
+    const leaveDate = new Date(req.body.leaveDate);
 
-    driver.deleteDriverLeave(driverID, leaveDate, (response) => {
+    const tempDate = leaveDate.getFullYear()+'-'+(leaveDate.getMonth()+1)+'-'+leaveDate.getDate();
+
+    driver.deleteDriverLeave(driverID, tempDate, (response) => {
         res.send(response);
     });
 }
