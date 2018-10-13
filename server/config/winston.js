@@ -1,7 +1,7 @@
 const winston = require('winston');
 const path = require('path');
 
-var logger = winston.createLogger({
+/*var logger = winston.createLogger({
     transports: [
         //new (winston.transports.Console)({json: false, timestamp: true}),
         new winston.transports.File({filename:path.join(__dirname, '../logs/debug.log')})
