@@ -1,5 +1,5 @@
-const winston = require('winston');
-const path = require('path');
+//const winston = require('winston');
+//const path = require('path');
 
 /*var logger = winston.createLogger({
     transports: [
@@ -19,4 +19,4 @@ const path = require('path');
     }
 }*/
 
-module.exports = logger;
+//module.exports = logger;
