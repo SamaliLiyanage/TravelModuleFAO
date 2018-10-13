@@ -420,7 +420,7 @@ cron.schedule("* * * * *", function () {
 
 //testing controllers
 module.exports.testMobile = function (req, res) {
-  mobileHelper.getMessage();
+  //mobileHelper.getMessage();
   return res.send({ name: "sam" });
 }
 
