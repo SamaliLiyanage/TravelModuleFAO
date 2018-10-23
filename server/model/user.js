@@ -70,6 +70,19 @@ exports.getUser = function(userName, res) {
   });
 }
 
+exports.newGetUser = function(userName, next) {
+  const value = [userName];
+
+  db.connection.query('SELECT * FROM User WHERE Username=?', value, function(err, results) {
+    if(err) {
+      console.log(err);
+      return res.send(err);
+    }else{
+      next(results);
+    }
+  });
+}
+
 exports.updateUser = function(oldUserName, userName, realName, passWord, telePhone, role, res) {
   const values = [userName, realName, passWord, telePhone, role, oldUserName];
 

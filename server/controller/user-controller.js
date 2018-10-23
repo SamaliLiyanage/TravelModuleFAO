@@ -7,10 +7,7 @@ module.exports.addUser = function (req, res, next) {
 
 //Get all users with all fields
 module.exports.getUsers = function (req, res, next) {
-  user.getOnBehalf(req.params.id, (resp) => {
-    res.send(resp);
-    //user.getUsers(res);
-  });
+  user.getUsers(res);
 };
 
 //Get all users of given role

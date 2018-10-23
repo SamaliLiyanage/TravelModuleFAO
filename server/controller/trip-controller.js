@@ -22,98 +22,100 @@ module.exports.newTrip = function (req, res, next) {
     tripNo: req.body.tripID,
     details: []
   };
-  // Insert details about new trip
-  trip.newTrip(req.body.tripID, req.body.username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.tripDuration, req.body.tripDurationMin, req.body.tripPurpose, req.body.onBehalf, (response) => {
-    // If the above is successful continue
-    if (req.body.onBehalf === true) {
-      // If trip is made on behalf of someone
-      user.onBehalfUser(req.body.tripID, req.body.obName, req.body.obEmail, req.body.obMobile, respon => {
+  user.newGetUser(req.body.username, userDetails => {
+    // Insert details about new trip
+    trip.newTrip(req.body.tripID, userDetails.Username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.tripDuration, req.body.tripDurationMin, req.body.tripPurpose, req.body.onBehalf, (response) => {
+      // If the above is successful continue
+      if (req.body.onBehalf === true) {
+        // If trip is made on behalf of someone
+        user.onBehalfUser(req.body.tripID, req.body.obName, req.body.obEmail, req.body.obMobile, respon => {
+          var destinationList = '';
+          req.body.destinations.forEach((destination, index) => {
+            (index < (req.body.destinations.length - 1)) ?
+              destinationList += (' ' + destination + ', ' + req.body.destinationTowns[index] + '\n') :
+              destinationList += (' ' + destination + ', ' + req.body.destinationTowns[index])
+          });
+          var obUser = '<ul><li>Trip ID:' + req.body.tripID +
+            '</li><li>Username: ' + req.body.username +
+            '</li><li>Trip Date: ' + req.body.tripDate +
+            '</li><li>Trip Time: ' + req.body.tripTime +
+            '</li><li>Destination: ' + destinationList +
+            '</li><li>Purpose: ' + req.body.tripPurpose +
+            '</li></ul>';
+          emailHelper.sendMessage(
+            req.body.obEmail,
+            'Trip Request ' + req.body.tripID,
+            obUser,
+            true
+          );
+          //console.log(respon)
+        })
+      }
+      results.details.push({ trip: response });
+      // Insert destination details
+      trip.addDestinations(req.body.tripID, req.body.destinations, req.body.destinationTowns, response => {
+        //console.log(response);
+        results.details.push({ destinations: response });
+
+        // Send mail and sms if all successful to travel manager
+
         var destinationList = '';
         req.body.destinations.forEach((destination, index) => {
           (index < (req.body.destinations.length - 1)) ?
             destinationList += (' ' + destination + ', ' + req.body.destinationTowns[index] + '\n') :
             destinationList += (' ' + destination + ', ' + req.body.destinationTowns[index])
         });
-        var obUser = '<ul><li>Trip ID:' + req.body.tripID +
-          '</li><li>Username: ' + req.body.username +
+
+        var mailMgr = '<ul><li>Trip ID:' + req.body.tripID +
+          '</li><li>Name: ' + userDetails.Full_Name +
           '</li><li>Trip Date: ' + req.body.tripDate +
           '</li><li>Trip Time: ' + req.body.tripTime +
           '</li><li>Destination: ' + destinationList +
           '</li><li>Purpose: ' + req.body.tripPurpose +
           '</li></ul>';
         emailHelper.sendMessage(
-          req.body.obEmail,
+          'samali.liyanage93@gmail.com',
           'Trip Request ' + req.body.tripID,
-          obUser,
+          mailMgr,
           true
         );
-        //console.log(respon)
-      })
-    }
-    results.details.push({ trip: response });
-    // Insert destination details
-    trip.addDestinations(req.body.tripID, req.body.destinations, req.body.destinationTowns, response => {
-      //console.log(response);
-      results.details.push({ destinations: response });
 
-      // Send mail and sms if all successful to travel manager
+        var smsMessage = req.body.username + " has requested a trip with Trip ID: " + req.body.tripID;
+        mobileHelper.sendMessage("94767434145", smsMessage);
 
-      var destinationList = '';
-      req.body.destinations.forEach((destination, index) => {
-        (index < (req.body.destinations.length - 1)) ?
-          destinationList += (' ' + destination + ', ' + req.body.destinationTowns[index] + '\n') :
-          destinationList += (' ' + destination + ', ' + req.body.destinationTowns[index])
+        res.send(results);
       });
-
-      var mailMgr = '<ul><li>Trip ID:' + req.body.tripID +
-        '</li><li>Username: ' + req.body.username +
-        '</li><li>Trip Date: ' + req.body.tripDate +
-        '</li><li>Trip Time: ' + req.body.tripTime +
-        '</li><li>Destination: ' + destinationList +
-        '</li><li>Purpose: ' + req.body.tripPurpose +
-        '</li></ul>';
-      emailHelper.sendMessage(
-        'samali.liyanage93@gmail.com',
-        'Trip Request ' + req.body.tripID,
-        mailMgr,
-        true
-      );
-
-      var smsMessage = req.body.username + " has requested a trip with Trip ID: " + req.body.tripID;
-      mobileHelper.sendMessage("94767434145", smsMessage);
-
-      res.send(results);
+      if (parseInt(req.body.budgetingEntity, 10) === 2) {
+        trip.setBudgetingEntity(req.body.tripID, req.body.projectNumber, response => {
+          //console.log(response);
+        })
+      }
+      if (!(req.body.furtherRmrks === "")) {
+        trip.addFurtherComments(req.body.tripID, req.body.furtherRmrks);
+        trip.changeStatus(req.body.tripID, 6, response => {
+          //res.send(response);
+        })
+      }
+      let month = new Date(req.body.tripDate)
+      if ((req.body.furtherRmrks === "") && (parseInt(req.body.tripType, 10) !== 2) && (req.body.cabRequested === false)) {
+        trip.countMonthlyTrips(month.getMonth() + 1, req.body.tripType)
+          .then(function (response) {
+            const result = response.result;
+            const ordered_driver_index = Array.from(Array(result.length).keys())
+              .sort((a, b) => result[a] < result[b] ? -1 : (result[a] > result[b] ? 1 : 0));
+            let index = 0;
+            process(ordered_driver_index, index, req.body.tripTime, req.body.tripDuration, req.body.tripDate, req.body.tripID, userDetails.Username, res);
+          })
+          .catch(function (error) {
+            console.log(error);
+          })
+      } else if (req.body.cabRequested === true) {
+        trip.assignDriver(req.body.tripID, 'cab', 5, response => {
+          //console.log(response);
+        })
+      }
     });
-    if (parseInt(req.body.budgetingEntity, 10) === 2) {
-      trip.setBudgetingEntity(req.body.tripID, req.body.projectNumber, response => {
-        //console.log(response);
-      })
-    }
-    if (!(req.body.furtherRmrks === "")) {
-      trip.addFurtherComments(req.body.tripID, req.body.furtherRmrks);
-      trip.changeStatus(req.body.tripID, 6, response => {
-        //res.send(response);
-      })
-    }
-    let month = new Date(req.body.tripDate)
-    if ((req.body.furtherRmrks === "") && (parseInt(req.body.tripType, 10) !== 2) && (req.body.cabRequested === false)) {
-      trip.countMonthlyTrips(month.getMonth() + 1, req.body.tripType)
-        .then(function (response) {
-          const result = response.result;
-          const ordered_driver_index = Array.from(Array(result.length).keys())
-            .sort((a, b) => result[a] < result[b] ? -1 : (result[a] > result[b] ? 1 : 0));
-          let index = 0;
-          process(ordered_driver_index, index, req.body.tripTime, req.body.tripDuration, req.body.tripDate, req.body.tripID, res);
-        })
-        .catch(function (error) {
-          console.log(error);
-        })
-    } else if (req.body.cabRequested === true) {
-      trip.assignDriver(req.body.tripID, 'cab', 5, response => {
-        //console.log(response);
-      })
-    }
-  });
+  })
 }
 
 //Get all trips
@@ -148,15 +150,17 @@ module.exports.assignDriver = function (req, res, next) {
     text = DriverName(req.body.driverID) + ' has been assigned to your trip with Trip ID: ' + req.body.tripID;
   }
 
-  if (req.body.driverID != '0') {
-    emailHelper.sendMessage(
-      'samali.liyanage93@gmail.com',
-      'Trip Request ' + req.body.tripID,
-      text,
-      false
-    );
-    mobileHelper.sendMessage("94767434145", smsMessage);
-  };
+  trip.getFullTripDetail(req.body.tripID, (detail) => {
+    if (req.body.driverID != '0') {
+      emailHelper.sendMessage(
+        detail.User.Username,
+        'Trip Request ' + req.body.tripID,
+        text,
+        false
+      );
+      mobileHelper.sendMessage("94" + req.body.Mobile_No, smsMessage);
+    };
+  });
 }
 
 //Get the details of the given trip
@@ -194,15 +198,16 @@ module.exports.setApproval = function (req, res) {
   }
 
   trip.changeComments(req.body.tripID, req.body.comment, response => {
+    trip.getFullTripDetail(req.body.tripID, detail => {
+      emailHelper.sendMessage(
+        detail.User.Username,
+        'Trip Request ' + req.body.tripID,
+        text,
+        false
+      );
 
-    emailHelper.sendMessage(
-      'samali.liyanage93@gmail.com',
-      'Trip Request ' + req.body.tripID,
-      text,
-      false
-    );
-
-    mobileHelper.sendMessage("94767434145", smsMessage);
+      mobileHelper.sendMessage("94" + detail.User.Mobile_No, smsMessage);
+    });
 
     trip.getTrip(req.body.tripID, response => {
       const data = response.data;
@@ -279,19 +284,21 @@ module.exports.getBudgetEntity = function (req, res) {
   })
 }
 
-function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, tripID, res) {
+function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, tripID, userName, res) {
   if (index >= ordered_driver_index.length) {
     trip.assignDriver(tripID, 'cab', 5, response => {
       smsMessage = "A cab has been assigned to your trip with Trip ID: " + tripID;
       text = 'A cab has been assigned to your trip with Trip ID: ' + tripID;
 
-      emailHelper.sendMessage(
-        'samali.liyanage93@gmail.com',
-        'Trip Request ' + tripID,
-        text,
-        false
-      );
-      mobileHelper.sendMessage("94767434145", smsMessage);
+      user.newGetUser(userName, userDetails => {
+        emailHelper.sendMessage(
+          userDetails.Username,
+          'Trip Request ' + tripID,
+          text,
+          false
+        );
+        mobileHelper.sendMessage("94" + userDetails.Mobile_No, smsMessage);
+      })
 
       return (response);
     });
@@ -317,38 +324,25 @@ function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, 
               text = DriverName(ordered_driver_index[index] + 1) + ' has been assigned to your trip with Trip ID: ' + tripID;
             }
             if (ordered_driver_index[index] + 1 !== 0) {
-              emailHelper.sendMessage(
-                'samali.liyanage93@gmail.com',
-                'Trip Request ' + tripID,
-                text,
-                false
-              );
-              mobileHelper.sendMessage("94767434145", smsMessage);
+              user.newGetUser(userName, userDetails => {
+                emailHelper.sendMessage(
+                  userDetails.Username,
+                  'Trip Request ' + tripID,
+                  text,
+                  false
+                );
+                mobileHelper.sendMessage("94" + userDetails.Mobile_No, smsMessage);
+              });
             }
 
             return (response);
           }
         })
       } else {
-        process(ordered_driver_index, index + 1, tripTime, tripDuration, tripDate, tripID, res);
+        process(ordered_driver_index, index + 1, tripTime, tripDuration, tripDate, tripID, userName, res);
       }
     })
   }
-}
-
-module.exports.driverCount = function (req, res) {
-  let month = new Date(req.body.tripDate)
-  trip.countMonthlyTrips(month.getMonth() + 1)
-    .then(function (response) {
-      const result = response.result;
-      const ordered_driver_index = Array.from(Array(result.length).keys())
-        .sort((a, b) => result[a] < result[b] ? -1 : (result[a] > result[b] ? 1 : 0));
-      let index = 0;
-      process(ordered_driver_index, index, req, res);
-    })
-    .catch(function (error) {
-      console.log(error);
-    })
 }
 
 module.exports.cancelTrip = function (req, res, next) {
@@ -371,42 +365,44 @@ cron.schedule("* * * * *", function () {
     res.result.forEach(element => {
 
       emailHelper.sendMessage(
-        'samali.liyanage93@gmail.com',
+        element.Username,
         'Reminder for ' + element.TripID,
         'Your trip with the above number has not started. Please cancel the trip or contact the Travel Manager.',
         false
       );
 
-      emailHelper.sendMessage(
-        'samali.liyanage93@gmail.com',
-        'Reminder for ' + element.TripID,
-        'The trip with the above number has not started. Please cancel the trip.',
-        false
-      );
-
       mobileHelper.sendMessage(
-        "94767434145",
+        "94" + element.Mobile_No,
         "Your trip with the number" + element.TripID + " has not started. Please cancel the trip or contact the Travel Manager."
       );
 
-      mobileHelper.sendMessage(
-        "94767434145",
-        "Trip with the number" + element.TripID + " has not started. Please cancel the trip."
-      );
+      user.getUsersRole(5, respo => {
+        emailHelper.sendMessage(
+          respo.Username,
+          'Reminder for ' + element.TripID,
+          'The trip with the above number has not started. Please cancel the trip.',
+          false
+        );
+
+        mobileHelper.sendMessage(
+          "94" + respo.Mobile_No,
+          "Trip with the number" + element.TripID + " has not started. Please cancel the trip."
+        );
+      });
     });
   });
 
   trip.checkOngoing(res => {
     res.result.forEach(element => {
       emailHelper.sendMessage(
-        'samali.liyanage93@gmail.com',
+        element.Username,
         'Reminder for ' + element.TripID,
         'You only have 30 minutes left in the allocated time for your trip with the above Trip ID.',
         false
       );
 
       mobileHelper.sendMessage(
-        "94767434145",
+        "94" + element.Mobile_No,
         "You only have 30 minutes left in the allocated time for your trip with the Trip ID " + element.TripID
       );
 

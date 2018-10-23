@@ -411,7 +411,7 @@ exports.checkOngoing = function (next) {
 
     var values = [date, time]
 
-    connection.query('SELECT Trip.TripID AS TripID, User.Mobile_No AS Mobile_No FROM Trip, User WHERE Start IS NOT NULL AND End IS NULL AND Trip_Date=? AND Trip.Username=User.Username AND DATE_ADD(DATE_ADD(DATE_ADD(Trip_Time, INTERVAL Duration HOUR), INTERVAL Duration_Minute MINUTE), INTERVAL -30 MINUTE)=?', values, (err, results) => {
+    connection.query('SELECT Trip.TripID AS TripID, User.Mobile_No AS Mobile_No, User.Username AS Username FROM Trip, User WHERE Start IS NOT NULL AND End IS NULL AND Trip_Date=? AND Trip.Username=User.Username AND DATE_ADD(DATE_ADD(DATE_ADD(Trip_Time, INTERVAL Duration HOUR), INTERVAL Duration_Minute MINUTE), INTERVAL -30 MINUTE)=?', values, (err, results) => {
         var temp;
         if (err) {
             temp = {
@@ -444,7 +444,7 @@ exports.checkNotStarted = function (next) {
         time = hours + ':' + minutes + ':00';
     }
 
-    connection.query('SELECT Trip.TripID AS TripID, User.Mobile_No AS Mobile_No FROM Trip, User WHERE Start IS NULL AND Trip_Date=? AND DATE_ADD(Trip_Time, INTERVAL 15 MINUTE)=? AND Trip.Username=User.Username', [date, time], (err, results) => {
+    connection.query('SELECT Trip.TripID AS TripID, User.Mobile_No AS Mobile_No, User.Username AS Username FROM Trip, User WHERE Start IS NULL AND Trip_Date=? AND DATE_ADD(Trip_Time, INTERVAL 15 MINUTE)=? AND Trip.Username=User.Username', [date, time], (err, results) => {
         var temp;
         if (err) {
             temp = {
@@ -483,3 +483,21 @@ exports.getOnDateForDriver = function (driverID, tripDate) {
     });
 }
 
+exports.getFullTripDetail = function (tripID, next) {
+    const values = [tripID];
+    connection.query('SELECT * FROM Trip, User WHERE Trip.TripID=? AND Trip.Username=User.Username', values, (err, results) => {
+        var temp;
+        if (err) {
+            temp = {
+                status: 'fail',
+                error: err
+            }
+        } else {
+            temp = {
+                status: 'success',
+                data: results[0]
+            }
+        }
+        next(temp);
+    })
+}

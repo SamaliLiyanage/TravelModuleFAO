@@ -5,23 +5,23 @@ import { Form, Col, Row, FormControl, FormGroup, ControlLabel, Button, Checkbox,
 function TripDuration(props) {
   //PROPS::: tripType, duration, minutes, getValidationState, durationValid, minutesValid, onChange
 
-  const [unit, minutes] = (props.tripType==="2") ? ["days", null] :
-  [
-    "hours", 
-    <Col sm={3}>
-      <FormGroup controlId="tripDurationMin" value={props.minutes} validationState={props.getValidationState(props.minutesValid)}>
-        <FormControl type="text" onChange={(e)=>props.onChange(e)} />{"minutes"}
-      </FormGroup>
-    </Col>
-  ];
+  const [unit, minutes] = (props.tripType === "2") ? ["days", null] :
+    [
+      "hours",
+      <Col sm={3}>
+        <FormGroup controlId="tripDurationMin" value={props.minutes} validationState={props.getValidationState(props.minutesValid)}>
+          <FormControl type="text" onChange={(e) => props.onChange(e)} />{"minutes"}
+        </FormGroup>
+      </Col>
+    ];
 
   return (
     <Row>
       <Col sm={8}>
-    <FormGroup controlId="tripDuration" value={props.duration} validationState={props.getValidationState(props.durationValid)}>
+        <FormGroup controlId="tripDuration" value={props.duration} validationState={props.getValidationState(props.durationValid)}>
           <Col sm={6} componentClass={ControlLabel}>Duration: </Col>
-          <Col sm={6}><FormControl type="text" onChange={(e)=>props.onChange(e)} />{unit}</Col>
-    </FormGroup>
+          <Col sm={6}><FormControl type="text" onChange={(e) => props.onChange(e)} />{unit}</Col>
+        </FormGroup>
       </Col>
       {minutes}
     </Row>
@@ -179,21 +179,21 @@ export default class RequestTrip extends React.Component {
     var dates = "";
     var idx = "";
 
-    if (date.getMonth().toString().length === 1) {
+    if (date.getMonth() < 9) {
       month = '0' + (date.getMonth() + 1).toString();
     } else {
       month = (date.getMonth() + 1).toString();
     }
 
-    if (date.getDate().toString().length === 1) {
+    if (date.getDate() < 10) {
       dates = '0' + date.getDate().toString();
     } else {
       dates = date.getDate().toString();
     }
 
-    if (nextidx.toString().length === 1) {
+    if (nextidx.toString() < 10) {
       idx = '00' + nextidx;
-    } else if (nextidx.toString().length === 2) {
+    } else if (nextidx.toString() < 100) {
       idx = '0' + nextidx;
     } else {
       idx = nextidx;
@@ -240,16 +240,16 @@ export default class RequestTrip extends React.Component {
     var onBehalf = this.state.onBehalf;
     const formErrors = this.state.formErrors;
 
-    if(event.target.parentElement.title==="fRequests") {
+    if (event.target.parentElement.title === "fRequests") {
       remarksAdded = !(remarksAdded);
       if (remarksAdded === true) {
         formErrors[5] = ' will cause your request be sent first to the Administrator.';
       } else {
         formErrors[5] = '';
       }
-    } else if(event.target.parentElement.title==="cab") {
+    } else if (event.target.parentElement.title === "cab") {
       cabRequested = !(cabRequested);
-    } else if(event.target.parentElement.title==="onbehalf") {
+    } else if (event.target.parentElement.title === "onbehalf") {
       onBehalf = !(onBehalf);
     }
 
@@ -406,7 +406,7 @@ export default class RequestTrip extends React.Component {
 
     let obNameValid = this.state.obNameValid;
     let obEmailVaild = this.state.obEmailVaild;
-    let obMobileValid = this.state.obMobileValid; 
+    let obMobileValid = this.state.obMobileValid;
 
     let getToday = new Date();
     let today = new Date(getToday.getFullYear() + "-" + (getToday.getMonth() + 1) + "-" + getToday.getDate());
@@ -450,7 +450,7 @@ export default class RequestTrip extends React.Component {
         fieldErrors[9] = obEmailVaild ? '' : ' is not valid';
         break;
       case 'obMobile':
-        obMobileValid = (/^[0-9]+$/).test(value) && value.length===10;
+        obMobileValid = (/^[0-9]+$/).test(value) && value.length === 10;
         fieldErrors[10] = obMobileValid ? '' : ' should only contain numbers';
         break;
       default:
@@ -509,7 +509,7 @@ export default class RequestTrip extends React.Component {
             <FormGroup controlId="tripID">
               <Col sm={6} componentClass={ControlLabel}>Trip Number:</Col>
               <Col sm={6}>
-                <FormControl type="text" value={this.state.tripID} readOnly='true' /> 
+                <FormControl type="text" value={this.state.tripID} readOnly='true' />
               </Col>
             </FormGroup>
           </Col>
@@ -530,7 +530,7 @@ export default class RequestTrip extends React.Component {
                 <option value="2">Field trip</option>
                 <option value="3">Field day trip</option>
                 <option value="4">Airport</option>
-                </FormControl>
+              </FormControl>
               </Col>
             </FormGroup>
           </Col>
@@ -550,7 +550,7 @@ export default class RequestTrip extends React.Component {
             </FormGroup>
           </Col>
           <Col sm={4}>
-            <TripDuration tripType={this.state.tripType} duration={this.state.tripDuration} minutes={this.state.tripDurationMin} getValidationState={this.getValidationState} durationValid={this.state.tripDurValid} minutesValid={this.state.tripMinValid} onChange={this.handleChange} />        
+            <TripDuration tripType={this.state.tripType} duration={this.state.tripDuration} minutes={this.state.tripDurationMin} getValidationState={this.getValidationState} durationValid={this.state.tripDurValid} minutesValid={this.state.tripMinValid} onChange={this.handleChange} />
           </Col>
         </Row>
 
@@ -579,8 +579,8 @@ export default class RequestTrip extends React.Component {
         </Row>
 
         <div hidden={!this.state.onBehalf}>
-        <Row>
-          <Col sm={4}>
+          <Row>
+            <Col sm={4}>
               <FormGroup controlId="obName" validationState={this.getValidationState(this.state.obNameValid)}>
                 <Col sm={6} componentClass={ControlLabel}>Name of Person: </Col>
                 <Col sm={6}>
@@ -590,7 +590,7 @@ export default class RequestTrip extends React.Component {
             </Col>
 
             <Col sm={4}>
-              <FormGroup controlId="obEmail" validationState={this.getValidationState(this.state.obEmailVaild)}> 
+              <FormGroup controlId="obEmail" validationState={this.getValidationState(this.state.obEmailVaild)}>
                 <Col sm={4} componentClass={ControlLabel}>Email: </Col>
                 <Col sm={8}>
                   <FormControl type="text" value={this.state.obEmail} onChange={this.handleChange} />
