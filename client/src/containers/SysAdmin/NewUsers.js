@@ -86,7 +86,7 @@ export default class UserForm extends React.Component {
         fieldValidationErrors[0] = rnValid ? '':' is invalid';
         break;
       case 'userName':
-        unValid = (/^([\w]+)@fao(\.)org$/).test(value);
+        unValid = (/^([\w\.0-9]+)@([\w]+)(\.)([\w]+)$/).test(value);
         fieldValidationErrors[1] = unValid ? '':' is invalid';
         break;
       case 'passWord':
@@ -94,7 +94,7 @@ export default class UserForm extends React.Component {
         fieldValidationErrors[2] = pwValid ? '': ' is too short';
         break;
       case 'telePhone':
-        tpValid = !(value.length < 10);
+        tpValid = !(value.length < 9);
         fieldValidationErrors[3] = tpValid ? '': ' is invalid';
         break;
       case 'role':

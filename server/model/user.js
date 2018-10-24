@@ -70,6 +70,19 @@ exports.getUser = function(userName, res) {
   });
 }
 
+exports.newGetUser = function(userName, next) {
+  const value = [userName];
+
+  db.connection.query('SELECT * FROM User WHERE Username=?', value, function(err, results) {
+    if(err) {
+      console.log(err);
+      return res.send(err);
+    }else{
+      next(results);
+    }
+  });
+}
+
 exports.updateUser = function(oldUserName, userName, realName, passWord, telePhone, role, res) {
   const values = [userName, realName, passWord, telePhone, role, oldUserName];
 
@@ -140,6 +153,25 @@ exports.getOnBehalf = function(tripID, next) {
       temp = {
         status: 'no result',
         result: 'none'
+      }
+    } else {
+      temp = {
+        status: 'success',
+        result: result[0]
+      }
+    }
+    next(temp);
+  })
+}
+
+exports.changePassword = function(userName, passWord, next) {
+  var values = [passWord, userName];
+  db.connection.query('UPDATE User SET Password=? WHERE Username=?', values, (err, result) => {
+    var temp;
+    if (err) {
+      temp = {
+        status: 'fail',
+        result: err
       }
     } else {
       temp = {

@@ -20,6 +20,8 @@ function Errors(props) {
 					</Alert>
 				</Col>
 			);
+		} else {
+			return (null);
 		}
 	});
 

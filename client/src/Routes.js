@@ -17,6 +17,7 @@ import AdminView from './containers/Adminstrator/ViewFthrRemarks';
 import ViewTripDetails from './containers/TravelManager/ViewTripDetails';
 import DriverAvailability from './containers/TravelManager/DriverAvailability';
 import ViewDriverLeave from './containers/TravelManager/ViewDriverLeave';
+import UserProfile from './containers/UserProfile';
 
 export default ({ childProps }) =>
   <Switch>
@@ -35,5 +36,6 @@ export default ({ childProps }) =>
     <AppliedRoute path='/viewtrip/:tripid' exact component={ViewTripDetails} props={childProps} />
     <AppliedRoute path='/driveravailability' exact component={DriverAvailability} props={childProps} />
     <AppliedRoute path='/viewleave' exact component={ViewDriverLeave} props={childProps} />
+    <AppliedRoute path='/changepassword/:mismatch' exact component={UserProfile} props={childProps} />
     <Route component={NotFound} />
   </Switch>;

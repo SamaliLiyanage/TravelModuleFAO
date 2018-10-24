@@ -1,11 +1,10 @@
 var request = require('request');
 var cron = require('node-cron');
-var dotenv = require('dotenv').config();
-//var fs = require('fs');
-//var path = require('path');
-
-let tokenDate = null;
-let authToken = -1;
+var fs = require('fs');
+var path = require('path');
+var telco = require('tap-telco-api');
+var twilio_send = require('twilio')('ACcc7bb7f8e86eee57881854d785e30cdb', '16a9057877a17f624024638128bd83d2');
+require('dotenv').config();
 
 var offset = new Date().getTimezoneOffset();
 var startTimeDate = new Date();
@@ -16,7 +15,17 @@ endTimeDate.setMinutes(endTimeDate.getMinutes() + 5);
 var startTime = startTimeDate.getFullYear() + '-' + (startTimeDate.getMonth() + 1) + '-' + startTimeDate.getDate() + ' ' + startTimeDate.getHours() + ':' + startTimeDate.getMinutes() + ':' + startTimeDate.getSeconds();
 var endTime = endTimeDate.getFullYear() + '-' + (endTimeDate.getMonth() + 1) + '-' + endTimeDate.getDate() + ' ' + endTimeDate.getHours() + ':' + endTimeDate.getMinutes() + ':' + endTimeDate.getSeconds();
 
-exports.sendMessage = function (receiver, message) {
+exports.sendMessage = function (receiver, message){
+    twilio_send.messages.create({
+        body: message,
+        from: '+18325513324',
+        to: '+'+receiver
+    }).then (
+        message => console.log(message.status)
+    ).done();
+}
+
+/*exports.sendMessage = function (receiver, message) {
     checkAuthorization((result) => {
         if(result[1] === -1){
             console.log("Some error");
@@ -96,7 +105,7 @@ function getAuthorization(callback) {
                 jsonReq,
                 'utf8',
                 (err) => console.log('authorization error ', err)
-            );*/
+            );
             let tempDate = new Date();
             callback(
                 [
@@ -118,10 +127,5 @@ function getAuthorization(callback) {
 cron.schedule("0 0 * * *", () => {
     /*getAuthorization(result => {
         console.log(result);
-    });*/
-    if (getAuthorization()[1] === -1) {
-        console.log("Error in acquiring authentication code.");
-    } else {
-        console.log("Authentication code successfully acquired.");
-    }
-});
+    });
+});*/
