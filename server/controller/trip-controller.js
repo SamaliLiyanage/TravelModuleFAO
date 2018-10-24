@@ -4,6 +4,7 @@ var tapApi = require('tap-telco-api');
 var cron = require('node-cron');
 var emailHelper = require('../helper/email-helper');
 var mobileHelper = require('../helper/mobile-helper');
+var messagingResponse = require('twilio').twiml.MessagingResponse;
 
 function DriverName(driverNo) {
   var driver = parseInt(driverNo, 10);
@@ -262,9 +263,10 @@ module.exports.sendMobileResponse = function (req, res, next) {
 
 //Trip start and end
 module.exports.setTripStatus = function (req, res) {
-  const message = req.body.message;
+  const message = req.body.Body;
   var state, tripID, mileage;
   console.log(message);
+  var twiml = new messagingResponse();
 
   [state, tripID, mileage] = message.split(" ");
   state = state.substr(0, 1).toUpperCase() + state.slice(1).toLowerCase();
@@ -274,23 +276,30 @@ module.exports.setTripStatus = function (req, res) {
       if ((response.End === null) && (response.Start === null)) {
         trip.setTripStatus(tripID, state, mileage, 3, resp => {
           console.log(resp);
-          res.send(resp);
+          twiml.message('Successfully recorded trip start');
+          //res.send(resp);
         })
       } else {
-        res.send({ status: 'fail' });
+        twiml.message('Error in format of text message');
+        //res.send({ status: 'fail' });
       }
     } else if (state === 'End') {
       if ((response.Start !== null) && (response.End === null)) {
         trip.setTripStatus(tripID, state, mileage, 4, resp => {
           console.log(resp);
-          res.send(resp);
+          twiml.message('Successfully recorded trip end');
+          //res.send(resp);
         })
       } else {
-        res.send({ status: 'fail' });
+        twiml.message('Error in format of text message');
+        //res.send({ status: 'fail' });
       }
     } else {
-      res.send({ status: 'fail' });
+      twiml.message('Error in format of text message');
+      //res.send({ status: 'fail' });
     }
+    res.writeHead(200, { 'Content-Type': 'text/xml' });
+    res.end(twiml.toString());
   })
 }
 
