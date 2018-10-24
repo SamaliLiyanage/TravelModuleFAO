@@ -99,7 +99,7 @@ module.exports.newTrip = function (req, res, next) {
           true
         );
 
-        var smsMessage = req.body.username + " has requested a trip with Trip ID: " + req.body.tripID;
+        var smsMessage = userDetails[0].Full_Name + " has requested a trip with Trip ID: " + req.body.tripID;
         mobileHelper.sendMessage("94767434145", smsMessage);
 
         res.send(results);
