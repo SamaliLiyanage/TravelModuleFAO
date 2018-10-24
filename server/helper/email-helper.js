@@ -1,10 +1,16 @@
 var nodemailer = require('nodemailer');
+var dotenv = require('dotenv').config();
 
 var transporter = nodemailer.createTransport({
     service: 'Gmail',
+    port: 25,
+    secure:false,
+    tls: {
+        rejectUnauthorized: false
+    },
     auth: {
         user: 'fao.testbed@gmail.com',
-        pass: 'Rand0mm4il!!!'
+        pass: process.env.EMAIL_PASSWORD
     }
 });
 

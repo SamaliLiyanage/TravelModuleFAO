@@ -16,5 +16,6 @@ router.get('/destinations/:tripID', tripController.getDestinations);
 router.get('/bentity/:tripID', tripController.getBudgetEntity);
 router.post('/checkavailability', tripController.driverAvailability);
 router.post('/canceltrip', tripController.cancelTrip);
+router.post('/testing', tripController.testMobile);
 
 module.exports = router;
