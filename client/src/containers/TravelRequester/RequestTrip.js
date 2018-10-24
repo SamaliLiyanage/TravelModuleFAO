@@ -159,7 +159,8 @@ export default class RequestTrip extends React.Component {
       obMobileValid: false,
       destDisabled: false,
       remarksAdded: false,
-      formErrors: ['', '', '', '', '', '', '', '', '', '', ''],
+      formErrors: ['', '', '', '', '', '', '', '', '', '', '', ''],
+      outsideOfficeHours: false,
       formValid: false
     }
 
@@ -234,7 +235,6 @@ export default class RequestTrip extends React.Component {
   }
 
   handleClick(event) {
-    console.log(event.target);
     var remarksAdded = this.state.remarksAdded;
     var cabRequested = this.state.cabRequested;
     var onBehalf = this.state.onBehalf;
@@ -243,7 +243,7 @@ export default class RequestTrip extends React.Component {
     if (event.target.parentElement.title === "fRequests") {
       remarksAdded = !(remarksAdded);
       if (remarksAdded === true) {
-        formErrors[5] = ' will cause your request be sent first to the Administrator.';
+        formErrors[5] = ' (including trips outside office hours) will first be sent to the Administrator.';
       } else {
         formErrors[5] = '';
       }
@@ -272,6 +272,8 @@ export default class RequestTrip extends React.Component {
     let destinationTownsValid = this.state.destinationTownsValid;
     let destsValid = this.state.destsValid;
 
+    let formErrors = this.state.formErrors;
+
     if (id === "tripType") {
       if (value === "4") {
         destinations[0] = "Airport";
@@ -297,6 +299,30 @@ export default class RequestTrip extends React.Component {
           destinationTownsValid: [false],
           destsValid: [false]
         });
+      }
+    }
+
+    if (id === "tripTime") {
+      let hour = parseInt(value.substring(0, 2), 10);
+      let minute = parseInt(value.substring(3), 10);
+      if (hour < 8) {
+        formErrors[11] = 'Requests for trips outside office hours will first be sent to the Administrator.'
+        this.setState({
+          outsideOfficeHours: true,
+          formErrors: formErrors
+        });
+      } else if ((hour >= 16) && (minute >= 0)) {
+        formErrors[11] = 'Requests for trips outside office hours will first be sent to the Administrator.'
+        this.setState({
+          outsideOfficeHours: true,
+          formErrors: formErrors
+        });
+      } else {
+        formErrors[11] = '';
+        this.setState({
+          outsideOfficeHours: false,
+          formErrors: formErrors
+        })
       }
     }
 
@@ -327,7 +353,8 @@ export default class RequestTrip extends React.Component {
       onBehalf: this.state.onBehalf,
       obName: this.state.obName,
       obEmail: this.state.obEmail,
-      obMobile: this.state.obMobile
+      obMobile: this.state.obMobile,
+      outsideOfficeHours: this.state.outsideOfficeHours
     })
       .then(response => {
         this.props.history.push('/success/' + this.state.tripID);
@@ -338,7 +365,6 @@ export default class RequestTrip extends React.Component {
   }
 
   handleAddRemove(event, text, index) {
-    console.log(text);
     let destinations = this.state.destinations.slice();
     let destinationTowns = this.state.destinationTowns.slice();
     if (text === "+") {
@@ -390,8 +416,6 @@ export default class RequestTrip extends React.Component {
     const target = event.target;
     const id = target.id;
     const value = target.value;
-
-    console.log(id, value);
   }
 
   validateField(fieldName, value) {
@@ -500,7 +524,7 @@ export default class RequestTrip extends React.Component {
   }
 
   render() {
-    const fieldNames = ['Trip Type', 'Trip Date', 'Trip Time', 'Trip Purpose', 'Budgeting Entitiy', 'Further Remarks', 'Trip Duration', 'Trip Duration'];
+    const fieldNames = ['Trip Type', 'Trip Date', 'Trip Time', 'Trip Purpose', 'Budgeting Entitiy', 'Further Remarks', 'Trip Duration', 'Trip Duration', 'Name ', 'Email ','Mobile ',''];
 
     return (
       <Form horizontal onSubmit={this.handleSubmit}>

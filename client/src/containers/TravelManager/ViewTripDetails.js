@@ -26,7 +26,6 @@ function CancelTrip(props) {
 function OnBehalfOf(props) {
     // PROPS::: onBehalf
     const onBehalf = props.onBehalf;
-    console.log("on behalf", onBehalf);
     return (
         (props.onBehalf !== null) ?
         <div>

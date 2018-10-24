@@ -24,7 +24,7 @@ module.exports.newTrip = function (req, res, next) {
   };
   user.newGetUser(req.body.username, userDetails => {
     // Insert details about new trip
-    trip.newTrip(req.body.tripID, userDetails.Username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.tripDuration, req.body.tripDurationMin, req.body.tripPurpose, req.body.onBehalf, (response) => {
+    trip.newTrip(req.body.tripID, userDetails[0].Username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.tripDuration, req.body.tripDurationMin, req.body.tripPurpose, req.body.onBehalf, (response) => {
       // If the above is successful continue
       if (req.body.onBehalf === true) {
         // If trip is made on behalf of someone
@@ -67,7 +67,7 @@ module.exports.newTrip = function (req, res, next) {
         });
 
         var mailMgr = '<ul><li>Trip ID:' + req.body.tripID +
-          '</li><li>Name: ' + userDetails.Full_Name +
+          '</li><li>Name: ' + userDetails[0].Full_Name +
           '</li><li>Trip Date: ' + req.body.tripDate +
           '</li><li>Trip Time: ' + req.body.tripTime +
           '</li><li>Destination: ' + destinationList +
@@ -90,8 +90,12 @@ module.exports.newTrip = function (req, res, next) {
           //console.log(response);
         })
       }
-      if (!(req.body.furtherRmrks === "")) {
-        trip.addFurtherComments(req.body.tripID, req.body.furtherRmrks);
+      if ((!(req.body.furtherRmrks === "")) || req.body.outsideOfficeHours) {
+        let furtherRmrk = req.body.furtherRmrks;
+        if(req.body.outsideOfficeHours) {
+          furtherRmrk = furtherRmrk + ' || Trip OUTSIDE office hours.';
+        }
+        trip.addFurtherComments(req.body.tripID, furtherRmrk);
         trip.changeStatus(req.body.tripID, 6, response => {
           //res.send(response);
         })
@@ -104,7 +108,7 @@ module.exports.newTrip = function (req, res, next) {
             const ordered_driver_index = Array.from(Array(result.length).keys())
               .sort((a, b) => result[a] < result[b] ? -1 : (result[a] > result[b] ? 1 : 0));
             let index = 0;
-            process(ordered_driver_index, index, req.body.tripTime, req.body.tripDuration, req.body.tripDate, req.body.tripID, userDetails.Username, res);
+            process(ordered_driver_index, index, req.body.tripTime, req.body.tripDuration, req.body.tripDate, req.body.tripID, userDetails[0].Username, res);
           })
           .catch(function (error) {
             console.log(error);
@@ -292,12 +296,12 @@ function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, 
 
       user.newGetUser(userName, userDetails => {
         emailHelper.sendMessage(
-          userDetails.Username,
+          userDetails[0].Username,
           'Trip Request ' + tripID,
           text,
           false
         );
-        mobileHelper.sendMessage("94" + userDetails.Mobile_No, smsMessage);
+        mobileHelper.sendMessage("94" + userDetails[0].Mobile_No, smsMessage);
       })
 
       return (response);
@@ -326,12 +330,12 @@ function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, 
             if (ordered_driver_index[index] + 1 !== 0) {
               user.newGetUser(userName, userDetails => {
                 emailHelper.sendMessage(
-                  userDetails.Username,
+                  userDetails[0].Username,
                   'Trip Request ' + tripID,
                   text,
                   false
                 );
-                mobileHelper.sendMessage("94" + userDetails.Mobile_No, smsMessage);
+                mobileHelper.sendMessage("94" + userDetails[0].Mobile_No, smsMessage);
               });
             }
 
