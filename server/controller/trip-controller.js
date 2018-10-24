@@ -66,15 +66,33 @@ module.exports.newTrip = function (req, res, next) {
             destinationList += (' ' + destination + ', ' + req.body.destinationTowns[index])
         });
 
+        let fRemark = req.body.furtherRmrks;
+        let fRHTML = ''
+        if(req.body.outsideOfficeHours) {
+          fRemark = fRemark + ' || Trip OUTSIDE office hours.';
+        } 
+        if(!(fRemark==="")){
+          fRHTML = '</li><li>Further remarks: '
+        }
+
         var mailMgr = '<ul><li>Trip ID:' + req.body.tripID +
           '</li><li>Name: ' + userDetails[0].Full_Name +
+          '</li><li>Trip Type: ' + req.body.tripType +
           '</li><li>Trip Date: ' + req.body.tripDate +
           '</li><li>Trip Time: ' + req.body.tripTime +
           '</li><li>Destination: ' + destinationList +
           '</li><li>Purpose: ' + req.body.tripPurpose +
+          fRHTML +
           '</li></ul>';
         emailHelper.sendMessage(
           'samali.liyanage93@gmail.com',
+          'Trip Request ' + req.body.tripID,
+          mailMgr,
+          true
+        );
+
+        emailHelper.sendMessage(
+          userDetails[0].Username,
           'Trip Request ' + req.body.tripID,
           mailMgr,
           true
