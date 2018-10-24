@@ -39,10 +39,10 @@ function SetMenu(props) {
 						<LinkContainer to='/viewleave'>
 							<NavItem>View Leave</NavItem>
 						</LinkContainer>
-						<LinkContainer to='/changepassword/false'>
-							<NavItem>Change Password</NavItem>
-						</LinkContainer>
 					</NavDropdown>
+					<LinkContainer to='/changepassword/false'>
+						<NavItem>Change Password</NavItem>
+					</LinkContainer>
 					<NavItem onClick={props.onClick}>Log Out</NavItem>
 				</Fragment>
 			);
