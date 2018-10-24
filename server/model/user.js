@@ -163,3 +163,22 @@ exports.getOnBehalf = function(tripID, next) {
     next(temp);
   })
 }
+
+exports.changePassword = function(userName, passWord, next) {
+  var values = [passWord, userName];
+  db.connection.query('UPDATE User SET Password=? WHERE Username=?', values, (err, result) => {
+    var temp;
+    if (err) {
+      temp = {
+        status: 'fail',
+        result: err
+      }
+    } else {
+      temp = {
+        status: 'success',
+        result: result[0]
+      }
+    }
+    next(temp);
+  })
+}

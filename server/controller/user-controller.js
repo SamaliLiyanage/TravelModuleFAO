@@ -48,3 +48,19 @@ module.exports.getOnBehalf = function (req, res, next) {
     res.send(resp);
   });
 }
+
+module.exports.changePassword = function (req, res, next) {
+  user.newGetUser(req.body.userName, response => {
+    console.log(req.body.oldPassWord, response[0].Password)
+    if (req.body.oldPassWord === response[0].Password) {
+      user.changePassword(req.body.userName, req.body.newPassWord, result => {
+        res.send(result);
+      });
+    } else {
+      res.send({
+        status: 'fail',
+        result: 'Password mismatch'
+      })
+    }
+  })
+}
