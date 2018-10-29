@@ -69,10 +69,10 @@ module.exports.newTrip = function (req, res, next) {
 
         let fRemark = req.body.furtherRmrks;
         let fRHTML = ''
-        if(req.body.outsideOfficeHours) {
+        if (req.body.outsideOfficeHours) {
           fRemark = fRemark + ' || Trip OUTSIDE office hours.';
-        } 
-        if(!(fRemark==="")){
+        }
+        if (!(fRemark === "")) {
           fRHTML = '</li><li>Further remarks: '
         }
 
@@ -111,7 +111,7 @@ module.exports.newTrip = function (req, res, next) {
       }
       if ((!(req.body.furtherRmrks === "")) || req.body.outsideOfficeHours) {
         let furtherRmrk = req.body.furtherRmrks;
-        if(req.body.outsideOfficeHours) {
+        if (req.body.outsideOfficeHours) {
           furtherRmrk = furtherRmrk + ' || Trip OUTSIDE office hours.';
         }
         trip.addFurtherComments(req.body.tripID, furtherRmrk);
@@ -408,17 +408,19 @@ cron.schedule("* * * * *", function () {
       );
 
       user.getUsersRole(5, respo => {
-        emailHelper.sendMessage(
-          respo.Username,
-          'Reminder for ' + element.TripID,
-          'The trip with the above number has not started. Please cancel the trip.',
-          false
-        );
+        respo.forEach(manager => {
+          emailHelper.sendMessage(
+            manager.Username,
+            'Reminder for ' + element.TripID,
+            'The trip with the above number has not started. Please cancel the trip.',
+            false
+          );
 
-        mobileHelper.sendMessage(
-          "94" + respo.Mobile_No,
-          "Trip with the number" + element.TripID + " has not started. Please cancel the trip."
-        );
+          mobileHelper.sendMessage(
+            "94" + manager.Mobile_No,
+            "Trip with the number" + element.TripID + " has not started. Please cancel the trip."
+          );
+        });
       });
     });
   });
