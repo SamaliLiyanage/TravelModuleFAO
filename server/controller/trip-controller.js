@@ -445,7 +445,7 @@ cron.schedule("* * * * *", function () {
 
       user.getUser("driver" + element.Driver_ID + "@fao.org", response => {
         mobileHelper.sendMessage(
-          "94" = response.Mobile_No,
+          "94" + response.Mobile_No,
           "You only have 30 minutes left in the allocated time for your current trip with the Trip ID " + element.TripID
         );
       });
