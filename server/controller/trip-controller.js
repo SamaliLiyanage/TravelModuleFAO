@@ -408,7 +408,7 @@ cron.schedule("* * * * *", function () {
       );
 
       user.getUsersRole(5, respo => {
-        respo.forEach(manager => {
+        respo.result.forEach(manager => {
           emailHelper.sendMessage(
             manager.Username,
             'Reminder for ' + element.TripID,
