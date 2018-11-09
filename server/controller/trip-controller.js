@@ -454,7 +454,7 @@ cron.schedule("* * * * *", function () {
 })
 
 module.exports.fetchStatus = function (req, res, next) {
-  console.log(req.body.data);
+  console.log(req.body);
   res.send({status: "success"});
 }
 
