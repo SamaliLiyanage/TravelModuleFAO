@@ -453,6 +453,10 @@ cron.schedule("* * * * *", function () {
   });
 })
 
+module.exports.fetchStatus = function (req, res, next) {
+  console.log(req.data);
+}
+
 //testing controllers
 module.exports.testMobile = function (req, res) {
   //mobileHelper.getMessage();
