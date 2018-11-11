@@ -266,7 +266,7 @@ module.exports.sendMobileResponse = function (req, res, next) {
 }
 
 //Trip start and end
-module.exports.setTripStatus = function (req, res) {
+module.exports.fetchStatus = function (req, res) {
   const message = req.body.Body;
   var state, tripID, mileage;
   console.log(message);
@@ -452,11 +452,6 @@ cron.schedule("* * * * *", function () {
     });
   });
 })
-
-module.exports.fetchStatus = function (req, res, next) {
-  console.log(req.body);
-  res.send({status: "success"});
-}
 
 //testing controllers
 module.exports.testMobile = function (req, res) {

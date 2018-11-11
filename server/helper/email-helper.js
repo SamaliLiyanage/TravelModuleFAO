@@ -3,7 +3,7 @@ var dotenv = require('dotenv').config();
 
 var transporter = nodemailer.createTransport({
     service: 'Gmail',
-    port: 25,
+    port: 587,
     secure:false,
     tls: {
         rejectUnauthorized: false
