@@ -10,7 +10,7 @@ var transporter = nodemailer.createTransport({
     },
     auth: {
         user: 'fao.testbed@gmail.com',
-        pass: process.env.EMAIL_PASSWORD
+        pass: 'Rand0mm4il!!!'
     }
 });
 
