@@ -2,12 +2,9 @@ var nodemailer = require('nodemailer');
 var dotenv = require('dotenv').config();
 
 var transporter = nodemailer.createTransport({
-    service: 'Gmail',
+    service: 'smtp.gmail.com',
     port: 587,
     secure:false,
-    tls: {
-        rejectUnauthorized: false
-    },
     auth: {
         user: 'fao.testbed@gmail.com',
         pass: 'Rand0mm4il!!!'
@@ -15,6 +12,7 @@ var transporter = nodemailer.createTransport({
 });
 
 var sendMail = function(receiver, subject, message) {
+    console.log("Preparing normal mail ....");
     return {
         from: 'fao.testbed@gmail.com',
         to: receiver,
@@ -24,6 +22,7 @@ var sendMail = function(receiver, subject, message) {
 };
 
 var sendHtml = function(receiver, subject, message) {
+    console.log("Preparing normal mail ....");
     return {
         from: 'fao.testbed@gmail.com',
         to: receiver,
@@ -33,6 +32,7 @@ var sendHtml = function(receiver, subject, message) {
 };
 
 exports.sendMessage = function (receiver, subject, message, isHTML) {
+    console.log("Preparing .... ");
     transporter.sendMail (isHTML?
         sendHtml(receiver, subject, message):
         sendMail(receiver, subject, message), (err, info) => {
