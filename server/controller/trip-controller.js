@@ -102,7 +102,9 @@ module.exports.newTrip = function (req, res, next) {
         var smsMessage = userDetails[0].Full_Name + " has requested a trip with Trip ID: " + req.body.tripID;
         user.getUsersRole(5, mgrs => {
           mgrs.result.forEach(mgr => {
-            mobileHelper.sendMessage("94" + mgr.Mobile_No, smsMessage);
+            mobileHelper.sendMessage("94" + mgr.Mobile_No, smsMessage, (result) => {
+              console.log(result);
+            });
           });
         });
 
@@ -185,7 +187,9 @@ module.exports.assignDriver = function (req, res, next) {
         text,
         false
       );
-      mobileHelper.sendMessage("94" + req.body.Mobile_No, smsMessage);
+      mobileHelper.sendMessage("94" + req.body.Mobile_No, smsMessage, result => {
+        console.log(result);
+      });
     };
   });
 }
@@ -233,7 +237,9 @@ module.exports.setApproval = function (req, res) {
         false
       );
 
-      mobileHelper.sendMessage("94" + detail.User.Mobile_No, smsMessage);
+      mobileHelper.sendMessage("94" + detail.User.Mobile_No, smsMessage, result => {
+        console.log(result);
+      });
     });
 
     trip.getTrip(req.body.tripID, response => {
@@ -267,10 +273,9 @@ module.exports.sendMobileResponse = function (req, res, next) {
 
 //Trip start and end
 module.exports.fetchStatus = function (req, res) {
-  const message = req.body.Body;
+  const message = req.body.response;
   var state, tripID, mileage;
   console.log(message);
-  var twiml = new messagingResponse();
 
   [state, tripID, mileage] = message.split(" ");
   state = state.substr(0, 1).toUpperCase() + state.slice(1).toLowerCase();
@@ -280,30 +285,33 @@ module.exports.fetchStatus = function (req, res) {
       if ((response.End === null) && (response.Start === null)) {
         trip.setTripStatus(tripID, state, mileage, 3, resp => {
           console.log(resp);
-          twiml.message('Successfully recorded trip start');
-          //res.send(resp);
+          mobileHelper.sendMessage('Successfully recorded trip start', req.body.source, result => {
+            res.send(result);
+          });
         })
       } else {
-        twiml.message('Error in format of text message');
-        //res.send({ status: 'fail' });
+        mobileHelper.sendMessage('Error in format of text message', req.body.source, result => {
+          res.send(result);
+        });
       }
     } else if (state === 'End') {
       if ((response.Start !== null) && (response.End === null)) {
         trip.setTripStatus(tripID, state, mileage, 4, resp => {
           console.log(resp);
-          twiml.message('Successfully recorded trip end');
-          //res.send(resp);
+          mobileHelper.sendMessage('Successfully recorded trip end', req.body.source, result => {
+            res.send(result);
+          });
         })
       } else {
-        twiml.message('Error in format of text message');
-        //res.send({ status: 'fail' });
+        mobileHelper.sendMessage('Error in format of text message', req.body.source, result => {
+          res.send(result);
+        });
       }
     } else {
-      twiml.message('Error in format of text message');
-      //res.send({ status: 'fail' });
+      mobileHelper.sendMessage('Error in format of text message', req.body.source, result => {
+        res.send(result);
+      });
     }
-    res.writeHead(200, { 'Content-Type': 'text/xml' });
-    res.end(twiml.toString());
   })
 }
 
@@ -332,7 +340,9 @@ function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, 
           text,
           false
         );
-        mobileHelper.sendMessage("94" + userDetails[0].Mobile_No, smsMessage);
+        mobileHelper.sendMessage("94" + userDetails[0].Mobile_No, smsMessage, result => {
+          console.log(result);
+        });
       })
 
       return (response);
@@ -366,7 +376,9 @@ function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, 
                   text,
                   false
                 );
-                mobileHelper.sendMessage("94" + userDetails[0].Mobile_No, smsMessage);
+                mobileHelper.sendMessage("94" + userDetails[0].Mobile_No, smsMessage, result => {
+                  console.log(result);
+                });
               });
             }
 
@@ -408,7 +420,8 @@ cron.schedule("* * * * *", function () {
 
       mobileHelper.sendMessage(
         "94" + element.Mobile_No,
-        "Your trip with the number" + element.TripID + " has not started. Please cancel the trip or contact the Travel Manager."
+        "Your trip with the number" + element.TripID + " has not started. Please cancel the trip or contact the Travel Manager.",
+        result => {console.log(result)}
       );
 
       user.getUsersRole(5, respo => {

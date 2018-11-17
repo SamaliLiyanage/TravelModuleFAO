@@ -12,7 +12,6 @@ var transporter = nodemailer.createTransport({
 });
 
 var sendMail = function(receiver, subject, message) {
-    console.log("Preparing normal mail ....");
     return {
         from: 'fao.testbed@gmail.com',
         to: receiver,
@@ -22,7 +21,6 @@ var sendMail = function(receiver, subject, message) {
 };
 
 var sendHtml = function(receiver, subject, message) {
-    console.log("Preparing normal mail ....");
     return {
         from: 'fao.testbed@gmail.com',
         to: receiver,
@@ -32,7 +30,6 @@ var sendHtml = function(receiver, subject, message) {
 };
 
 exports.sendMessage = function (receiver, subject, message, isHTML) {
-    console.log("Preparing .... ");
     transporter.sendMail (isHTML?
         sendHtml(receiver, subject, message):
         sendMail(receiver, subject, message), (err, info) => {
