@@ -17,6 +17,8 @@ var passport =require('passport');
 var flash = require('connect-flash');
 var expressSession = require('express-session');
 
+var onStartUp = require('./helper/mobile-helper');
+
 require('./config/passport')(passport);
 
 app.use(expressSession({secret: 'mySecretKey'}));
@@ -90,5 +92,7 @@ var server = app.listen(3001, "127.0.0.1", function () {
   var port = server.address().port
   console.log("Example app listening at http://%s:%s",host,port)
 });
+
+onStartUp.onStartUp();
 
 module.exports = app;
