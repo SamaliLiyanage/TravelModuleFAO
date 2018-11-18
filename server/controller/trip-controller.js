@@ -1,10 +1,8 @@
 var trip = require('../model/trip');
 var user = require('../model/user');
-var tapApi = require('tap-telco-api');
 var cron = require('node-cron');
 var emailHelper = require('../helper/email-helper');
 var mobileHelper = require('../helper/mobile-helper');
-var messagingResponse = require('twilio').twiml.MessagingResponse;
 
 function DriverName(driverNo) {
   var driver = parseInt(driverNo, 10);
@@ -263,12 +261,6 @@ module.exports.setApproval = function (req, res) {
   trip.changeStatus(req.body.tripID, 1, response => {
     //console.log(response);
   })
-}
-
-//Send mobile response 
-module.exports.sendMobileResponse = function (req, res, next) {
-  res.send(tapApi.sms.successResponse);
-  next();
 }
 
 //Trip start and end

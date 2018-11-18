@@ -1,5 +1,5 @@
 var nodemailer = require('nodemailer');
-var dotenv = require('dotenv').config();
+require('dotenv').config();
 
 var transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
