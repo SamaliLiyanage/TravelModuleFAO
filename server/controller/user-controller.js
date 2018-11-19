@@ -23,7 +23,9 @@ module.exports.getUsersFilter = function (req, res, next) {
 
 //Get user with specific ID
 module.exports.getUser = function (req, res, next) {
-  user.getUser(req.params.id, res);
+  user.getUser(req.params.id, response => {
+    res.send(response);
+  });
 }
 
 //Update user with given ID
