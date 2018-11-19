@@ -57,16 +57,25 @@ exports.getUsersRole = function(fieldValue, next) {
   })
 }
 
-exports.getUser = function(userName, res) {
+exports.getUser = function(userName, next) {
   const value = [userName];
+  var temp;
 
   db.connection.query('SELECT * FROM User WHERE Username=?', value, function(err, results) {
     if(err) {
       console.log(err);
-      return res.send(err);
+      temp = {
+        status: "fail",
+        result: err
+      }
     }else{
-      res.send(results);
+      temp = {
+        status: "success",
+        result: results
+      }
     }
+    console.log(temp);
+    next(temp);
   });
 }
 

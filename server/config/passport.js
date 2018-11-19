@@ -23,10 +23,10 @@ module.exports = function(passport) {
        console.log("passport.use / local -login");
        db.connection.query('SELECT * FROM User WHERE Username = ?', username, function(err, rows){
          //console.log("username ::::", rows);
-         if(err) return done(err);
+         if(err) return done(err, false, {message: 'Login error'});
          if(!(rows.length===1)) {
            //console.log("Here !!!!!");
-           return done(null, false);
+           return done(null, false, {message: 'No such user'});
          }
          if(!(rows[0].Password == password)){
           //console.log("Here 2!!!!!");

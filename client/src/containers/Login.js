@@ -9,7 +9,11 @@ export default class Login extends Component {
     this.state = {
       username: "",
       password: "",
+      loginFail: false
     };
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   componentDidMount() {
@@ -54,25 +58,47 @@ export default class Login extends Component {
         password: this.state.password,
       })
       .then(function (res) {
-        if(res.data.length === 1){
-          authenticate.userHasAuthenticated(true, res.data[0].Username, res.data[0].Role);
-          if((res.data[0].Role)===1) {
+        console.log(res);
+        var data = res.data.result;
+        if(res.data.status === "success"){
+          authenticate.userHasAuthenticated(true, data[0].Username, data[0].Role);
+          if((data[0].Role)===1) {
             authenticate.history.push('/viewusers');
-          }else if((res.data[0].Role)===4) {
+          }else if((data[0].Role)===4) {
             authenticate.history.push('/requesttrip');
-          }else if((res.data[0].Role)===2) {
+          }else if((data[0].Role)===2) {
             authenticate.history.push('/viewtrips');
-          } if((res.data[0].Role)===5) {
+          } if((data[0].Role)===5) {
             authenticate.history.push('/viewfrequests');
           } 
-        }else{
+        } else if(res.data.status === "fail") {
+          console.log("In here");
+          this.setState({
+            username: "",
+            password: "",
+            loginFail: true
+          });
           authenticate.userHasAuthenticated(false, null, null);
-          authenticate.history.push('/login');
+        } else{
+          console.log("In here");
+          this.setState({
+            username: "",
+            password: "",
+            loginFail: true
+          });
+          authenticate.userHasAuthenticated(false, null, null);
+          //authenticate.history.push('/login');
         }
       })
-      .catch(function (error) {
-        console.log("Response error::::", error);
-      })
+      // .catch(function (error) {
+      //   console.log("Response error::::", error);
+      //   this.setState({
+      //     username: "",
+      //     password: "",
+      //     loginFail: true
+      //   });
+      //   authenticate.userHasAuthenticated(false, null, null);
+      // })
 
 
   }
