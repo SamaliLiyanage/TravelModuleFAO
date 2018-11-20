@@ -40,6 +40,35 @@ function getAuthorization(callback) {
     });
 }
 
+function sendMessageRequest(options) {
+    request.post(options, (err, resp, body) => {
+        if (err) {
+            console.log("Err ", err.body);
+        } else if (resp.body.error === "0") {
+            return ({ result: "success" });
+        } else if (resp.body.error === "108") {
+            var get_Auth = new Promise((resolve, reject) => {
+                getAuthorization(value => {
+                    if (value === null) {
+                        reject(null);
+                    } else {
+                        resolve(value)
+                    }
+                });
+            })
+            get_Auth.then((value) => {
+                authCode = value;
+            }).catch((value) => {
+                console.log("Problem !!!");
+            })
+            console.log("XXX ", authCode);
+            sendMessageRequest(options);
+        } else {
+            callback({ error: resp.body.error });
+        }
+    });
+}
+
 cron.schedule("0 0 * * *", () => {
     var get_Auth = new Promise((resolve, reject) => {
         getAuthorization(value => {
@@ -59,7 +88,7 @@ cron.schedule("0 0 * * *", () => {
 });
 
 exports.sendMessage = function (receiver, message, callback) {
-    while(authCode === null) {
+    while (authCode === null) {
         getAuthorization();
     }
     const options = {
@@ -79,17 +108,10 @@ exports.sendMessage = function (receiver, message, callback) {
         }
     };
 
-    request.post(options, (err, resp, body) => {
-        if (err) console.log("Err ", err.body);
-        else if(resp.body.error === "0") {
-            callback({result: "success"});
-        } else {
-            callback({error: resp.body.error});
-        }
-    });
+    callback(sendMessageRequest(options));
 }
 
-exports.onStartUp = function (){
+exports.onStartUp = function () {
     var get_Auth = new Promise((resolve, reject) => {
         getAuthorization(value => {
             if (value === null) {

@@ -1,18 +1,52 @@
 import React from 'react';
 import axios from 'axios';
-import { Form, FormGroup, Col, ControlLabel, FormControl, Button } from 'react-bootstrap';
+import { Form, FormGroup, Col, ControlLabel, FormControl, Button, Modal, ButtonToolbar } from 'react-bootstrap';
 import { TripTypes, TripStatus, DriverName } from '../../Selections';
 
+function CancelModal(props) {
+    var showModal = props.showModal;
+    //var handleDisplay = props.handleDisplay;
+    var onYes = props.onYes;
+    var onNo = props.onNo;
+    var tripNumber = props.tripNumber;
+
+    let content = null;
+
+    if (showModal == true) {
+        content = (
+            <Modal.Dialog show={showModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Confirm Cancellation</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    Are you sure you want to cancel this trip with Trip No. {tripNumber}?
+                </Modal.Body>
+                <Modal.Footer>
+                    <ButtonToolbar>
+                        <Button onClick={(e)=> onYes(e)}>Yes</Button>
+                        <Button onClick={(e)=> onNo(e)}>No</Button>
+                    </ButtonToolbar>
+                </Modal.Footer>
+            </Modal.Dialog>
+        );
+    }
+ 
+    return (content);
+}
+
 function CancelTrip(props) {
-    //PROPS::: userType, onClick, tripStatus
+    //PROPS::: userType, onClick, onCancel, tripStatus, showModal, tripNumber
 
     if(props.userType !== 5 && (props.tripStatus===1||props.tripStatus===2||props.tripStatus===5||props.tripStatus===6)) {
         return(
-            <FormGroup>
-                <Col sm={3} smOffset={9}>
-                    <Button bsStyle="danger" onClick={(e)=> props.onClick(e)}>Cancel Trip</Button>
-                </Col>
-            </FormGroup>
+            <div>
+                <FormGroup>
+                    <Col sm={3} smOffset={9}>
+                        <Button bsStyle="danger" onClick={(e)=> props.onClick(e)}>Cancel Trip</Button>
+                    </Col>
+                </FormGroup>
+                <CancelModal showModal={props.showModal} tripNumber={props.tripNumber} onYes={props.onCancel} onNo={props.onClick} />
+            </div>
         );
     } else {
         return null;
@@ -213,11 +247,13 @@ export default class ViewTripDetails extends React.Component {
             projectNumber: null,
             destinations: [],
             onBehalf: null,
+            showModal: false,
         }
 
         this.handleChange = this.handleChange.bind(this);
         this.handleApproval = this.handleApproval.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
+        this.handleShowModal = this.handleShowModal.bind(this);
     }
 
     componentWillMount() {
@@ -348,14 +384,23 @@ export default class ViewTripDetails extends React.Component {
             tripID: this.state.tripid
         })
             .then(response => {
-                if (response.data.success) {
+                if (response.data.status === "success") {
                     tripInfo.Trip_Status = 7;
                     tripInfo.Driver_ID = 0;
                     this.setState({
-                        tripInfo: tripInfo
+                        tripInfo: tripInfo,
+                        showModal: false
                     });
                 }
             })
+    }
+
+    handleShowModal(event) {
+        let showModal = this.state.showModal;
+
+        this.setState({
+            showModal: !showModal
+        });
     }
 
     render() {
@@ -420,7 +465,7 @@ export default class ViewTripDetails extends React.Component {
                 <FurtherRemarks exists={this.state.furtherRemarks} remark={this.state.remark} />
                 <Driver userType={this.props.userType} tripID={this.state.tripid} driverID={this.state.tripInfo.Driver_ID} tripDate={tripDate} tripStatus={this.state.tripInfo.Trip_Status} onChange={this.handleChange} />
                 <ApprovalButton userType={this.props.userType} tripStatus={this.state.tripInfo.Trip_Status} remark={this.state.remark} tripID={this.state.tripid} onApprove={this.handleApproval} />
-                <CancelTrip userType={this.props.userType} onClick={this.handleCancel} tripStatus={this.state.tripInfo.Trip_Status} />
+                <CancelTrip userType={this.props.userType} onClick={this.handleShowModal} onCancel={this.handleCancel} tripStatus={this.state.tripInfo.Trip_Status} showModal={this.state.showModal} tripNumber={this.state.tripid} />
             </Form>
         );
     }
