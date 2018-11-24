@@ -473,3 +473,9 @@ module.exports.driverAvailability = function (req, res) {
     }
   })
 }
+
+module.exports.consolidatedRequest = function (req, res) {
+  trip.consolidatedRequested(req.params.tripID, response => {
+    return res.send(response);
+  });
+}

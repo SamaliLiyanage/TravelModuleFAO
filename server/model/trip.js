@@ -501,3 +501,81 @@ exports.getFullTripDetail = function (tripID, next) {
         next(temp);
     })
 }
+
+exports.consolidatedRequested = function (tripID, next) {
+    const values = [tripID];
+    connection.query('SELECT * FROM Trip, User WHERE Trip.TripID=? AND Trip.Username=User.Username', values, (err, tripResult) => {
+        if (err) {
+            next({ status: "fail", err: err });
+        } else {
+            connection.query('SELECT * FROM TripTraveller WHERE TripID=?', values, (travErr, travResults) => {
+                if (travErr) {
+                    next({
+                        status: "fail",
+                        err: travErr,
+                        data: [tripResult]
+                    });
+                } else {
+                    connection.query('SELECT * FROM TripDestination WHERE TripID=?', values, (destErr, destResults) => {
+                        if (destErr) {
+                            next({
+                                status: "fail",
+                                err: destErr,
+                                data: [tripResult, travResults]
+                            });
+                        } else {
+                            connection.query('SELECT * FROM FurtherRemark WHERE TripID=?', values, (frErr, frResults) => {
+                                if (frErr) {
+                                    next({
+                                        status: "fail",
+                                        err: frErr,
+                                        data: [tripResult, travResults, destResults]
+                                    });
+                                } else {
+                                    let content = {
+                                        status: "success",
+                                        destResults: destResults,
+                                        tripID: tripResult[0].TripID,
+                                        username: tripResult[0].Username,
+                                        tripStatus: tripResult[0].Trip_Status,
+                                        driverID: tripResult[0].Driver_ID,
+                                        tripType: tripResult[0].Trip_Type,
+                                        requestedDate: tripResult[0].Requested_Date,
+                                        tripDate: tripResult[0].Trip_Date,
+                                        tripTime: tripResult[0].Trip_Time,
+                                        durationHours: tripResult[0].Duration,
+                                        durationMinutes: tripResult[0].Duration_Minute,
+                                        purpose: tripResult[0].Purpose,
+                                        onBehalf: tripResult[0].OnBehalf,
+                                        startTime: tripResult[0].Start,
+                                        endTime: tripResult[0].End,
+                                        startMileage: tripResult[0].Start_Mileage,
+                                        endMileage: tripResult[0].End_Mileage,
+                                        fullName: tripResult[0].Full_Name,
+                                        role: tripResult[0].Role,
+                                        mobileNumber: tripResult[0].Mobile_No,
+                                    }
+                                    if (travResults.length === 0) {
+                                        content['travName'] = null,
+                                        content['travEmail'] = null,
+                                        content['travMobile'] = null
+                                    } else {
+                                        content['travName'] = travResults[0].Traveller_Name,
+                                        content['travEmail'] = travResults[0].Traveller_Email,
+                                        content['travMobile'] = travResults[0].Traveller_Mobile
+                                    }
+                                    if (frResults.length === 0) {
+                                        content['frResults'] = null
+                                    } else {
+                                        content['frResults'] = frResults[0].Remark
+                                    }
+                                    next(content)
+                                }
+                            })
+                        }
+                    })
+                }
+            });
+        }
+    });
+}
