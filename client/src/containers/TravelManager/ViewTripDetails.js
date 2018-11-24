@@ -164,7 +164,9 @@ function Driver(props) {
             );
         }
     } else {
-        if (props.tripStatus === 6) {
+        if (props.tripStatus === 1 || props.tripStatus === 2 || props.tripStatus === 5) {
+            disabled = false;
+        } else {
             disabled = true;
         }
         if (props.userType === 2) {
