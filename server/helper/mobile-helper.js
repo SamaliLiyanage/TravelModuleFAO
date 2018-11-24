@@ -64,7 +64,7 @@ function sendMessageRequest(options) {
             console.log("XXX ", authCode);
             sendMessageRequest(options);
         } else {
-            callback({ error: resp.body.error });
+            return({ error: resp.body.error });
         }
     });
 }
