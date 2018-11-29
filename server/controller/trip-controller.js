@@ -427,7 +427,8 @@ cron.schedule("* * * * *", function () {
 
           mobileHelper.sendMessage(
             "94" + manager.Mobile_No,
-            "Trip with the number" + element.TripID + " has not started. Please cancel the trip."
+            "Trip with the number" + element.TripID + " has not started. Please cancel the trip.",
+            (x) => {console.log(x)}
           );
         });
       });
