@@ -25,6 +25,9 @@ module.exports.newTrip = function (req, res, next) {
     // Insert details about new trip
     trip.newTrip(req.body.tripID, userDetails[0].Username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.tripDuration, req.body.tripDurationMin, req.body.tripPurpose, req.body.onBehalf, (response) => {
       // If the above is successful continue
+      if (response.status === "fail") {
+        return res.send({status: "fail"})
+      }
       if (req.body.onBehalf === true) {
         // If trip is made on behalf of someone
         user.onBehalfUser(req.body.tripID, req.body.obName, req.body.obEmail, req.body.obMobile, respon => {
