@@ -9,6 +9,7 @@ import ViewUsers from './containers/SysAdmin/ViewUsers';
 import EditUser from './containers/SysAdmin/EditUser';
 import RequestTrip from './containers/TravelRequester/RequestTrip';
 import RequestTripSuccess from './containers/TravelRequester/RequestTripSuccess';
+import RequestTripFail from './containers/TravelRequester/RequestTripFail';
 import ViewRequests from './containers/TravelRequester/ViewTrips';
 import ViewTrips from './containers/TravelManager/ViewRequests';
 import DriverSchedule from './containers/TravelManager/ViewSchedules';
@@ -29,6 +30,7 @@ export default ({ childProps }) =>
     <AppliedRoute path='/requesttrip' exact component={RequestTrip} props={childProps} />
     <AppliedRoute path='/viewtrips' exact component={ViewTrips} props={childProps} />
     <AppliedRoute path='/success/:tripid' exact component={RequestTripSuccess} props={childProps} />
+    <AppliedRoute path='/fail' exact component={RequestTripFail} props={childProps} />    
     <AppliedRoute path='/viewrequests' exact component={ViewRequests} props={childProps} />
     <AppliedRoute path='/viewschedules' exact component={DriverSchedule} props={childProps} />
     <AppliedRoute path='/viewtabs' exact component={TabbedRequest} />

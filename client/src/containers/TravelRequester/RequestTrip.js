@@ -357,7 +357,11 @@ export default class RequestTrip extends React.Component {
       outsideOfficeHours: this.state.outsideOfficeHours
     })
       .then(response => {
-        this.props.history.push('/success/' + this.state.tripID);
+        if(response.data.status === "fail"){
+          this.props.history.push('/fail');
+        } else {
+          this.props.history.push('/success/' + this.state.tripID);
+        }
       })
       .catch(function (error) {
         console.log(error);
