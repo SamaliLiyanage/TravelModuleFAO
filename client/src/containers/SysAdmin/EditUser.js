@@ -162,12 +162,12 @@ export default class EditUser extends React.Component {
     axios.get('/users/' + this.state.id)
       .then(res => {
         this.setState({
-          user: res.data[0],
-          realName: res.data[0].Full_Name,
-          userName: res.data[0].Username,
-          passWord: res.data[0].Password,
-          telePhone: res.data[0].Mobile_No,
-          role: res.data[0].Role
+          user: res.data.result[0],
+          realName: res.data.result[0].Full_Name,
+          userName: res.data.result[0].Username,
+          passWord: res.data.result[0].Password,
+          telePhone: res.data.result[0].Mobile_No,
+          role: res.data.result[0].Role
         });
       });
   }
