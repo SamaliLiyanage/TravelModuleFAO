@@ -17,9 +17,14 @@ function SetMenu(props) {
 					<LinkContainer to='/newuser'>
 						<NavItem>Add User</NavItem>
 					</LinkContainer>
-					<LinkContainer to='/changepassword/false'>
-						<NavItem>Change Password</NavItem>
-					</LinkContainer>
+					<NavDropdown id="userActions" title="User">
+						<LinkContainer to='/viewprofile'>
+							<NavItem>View Profile</NavItem>
+						</LinkContainer>
+						<LinkContainer to='/changepassword/false'>
+							<NavItem>Change Password</NavItem>
+						</LinkContainer>
+					</NavDropdown>
 					<NavItem onClick={props.onClick}>Log Out</NavItem>
 				</Fragment>
 			);
@@ -40,18 +45,28 @@ function SetMenu(props) {
 							<NavItem>View Leave</NavItem>
 						</LinkContainer>
 					</NavDropdown>
-					<LinkContainer to='/changepassword/false'>
-						<NavItem>Change Password</NavItem>
-					</LinkContainer>
+					<NavDropdown id="userActions" title="User">
+						<LinkContainer to='/viewprofile'>
+							<NavItem>View Profile</NavItem>
+						</LinkContainer>
+						<LinkContainer to='/changepassword/false'>
+							<NavItem>Change Password</NavItem>
+						</LinkContainer>
+					</NavDropdown>
 					<NavItem onClick={props.onClick}>Log Out</NavItem>
 				</Fragment>
 			);
 		} else if (userType === 3) {
 			return (
 				<Fragment>
-					<LinkContainer to='/changepassword/false'>
-						<NavItem>Change Password</NavItem>
-					</LinkContainer>
+					<NavDropdown id="userActions" title="User">
+						<LinkContainer to='/viewprofile'>
+							<NavItem>View Profile</NavItem>
+						</LinkContainer>
+						<LinkContainer to='/changepassword/false'>
+							<NavItem>Change Password</NavItem>
+						</LinkContainer>
+					</NavDropdown>
 					<NavItem onClick={props.onClick}>Log Out</NavItem>
 				</Fragment>
 			);
@@ -64,9 +79,14 @@ function SetMenu(props) {
 					<LinkContainer to='/viewrequests'>
 						<NavItem>View Requests</NavItem>
 					</LinkContainer>
-					<LinkContainer to='/changepassword/false'>
-						<NavItem>Change Password</NavItem>
-					</LinkContainer>
+					<NavDropdown id="userActions" title="User">
+						<LinkContainer to='/viewprofile'>
+							<NavItem>View Profile</NavItem>
+						</LinkContainer>
+						<LinkContainer to='/changepassword/false'>
+							<NavItem>Change Password</NavItem>
+						</LinkContainer>
+					</NavDropdown>
 					<NavItem onClick={props.onClick}>Log Out</NavItem>
 				</Fragment>
 			);
@@ -76,9 +96,14 @@ function SetMenu(props) {
 					<LinkContainer to='/viewfrequests'>
 						<NavItem>View Requests</NavItem>
 					</LinkContainer>
-					<LinkContainer to='/changepassword/false'>
-						<NavItem>Change Password</NavItem>
-					</LinkContainer>
+					<NavDropdown id="userActions" title="User">
+						<LinkContainer to='/viewprofile'>
+							<NavItem>View Profile</NavItem>
+						</LinkContainer>
+						<LinkContainer to='/changepassword/false'>
+							<NavItem>Change Password</NavItem>
+						</LinkContainer>
+					</NavDropdown>
 					<NavItem onClick={props.onClick}>Log Out</NavItem>
 				</Fragment>
 			);

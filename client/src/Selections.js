@@ -1,11 +1,12 @@
 export function UserTypes(props) {
+    console.log(props);
     switch(props.role) {
         case 1: return "System Administrator";
         case 2: return "Travel Manager";
         case 3: return "Driver";
         case 4: return "Requester";
         case 5: return "Travel Admin";
-        default: break;
+        default: return null;
       }
 }
 
