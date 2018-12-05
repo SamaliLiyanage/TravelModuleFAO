@@ -111,7 +111,7 @@ export default class EditUser extends React.Component {
         fieldValidationErrors[2] = pwValid ? '' : ' is too short';
         break;
       case 'telePhone':
-        tpValid = !(value.length < 10);
+        tpValid = !(value.length < 9);
         fieldValidationErrors[3] = tpValid ? '' : ' is invalid';
         break;
       case 'role':
