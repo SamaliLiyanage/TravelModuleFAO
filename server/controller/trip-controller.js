@@ -183,7 +183,7 @@ module.exports.assignDriver = function (req, res, next) {
   trip.getFullTripDetail(req.body.tripID, (detail) => {
     if (req.body.driverID != '0') {
       emailHelper.sendMessage(
-        detail.User.Username,
+        detail.data.Username,
         'Trip Request ' + req.body.tripID,
         text,
         false
