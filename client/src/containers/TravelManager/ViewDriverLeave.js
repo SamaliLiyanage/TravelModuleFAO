@@ -53,7 +53,7 @@ function DropdownYear(props) {
 	const thisYear = new Date().getFullYear();
 	let dropDown = [];
 
-	for (let year = 2018; year <= thisYear; year++) {
+	for (let year = 2018; year <= (thisYear+1); year++) {
 		dropDown.push(year);
 	}
 
