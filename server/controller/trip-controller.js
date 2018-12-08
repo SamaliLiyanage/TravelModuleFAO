@@ -3,6 +3,7 @@ var user = require('../model/user');
 var cron = require('node-cron');
 var emailHelper = require('../helper/email-helper');
 var mobileHelper = require('../helper/mobile-helper');
+var selectionHelper = require('../helper/selection-helper');
 
 function DriverName(driverNo) {
   var driver = parseInt(driverNo, 10);
@@ -80,7 +81,7 @@ module.exports.newTrip = function (req, res, next) {
         // Send Email and SMS to Travel Requester
         var mailMgr = '<ul><li>Trip ID:' + req.body.tripID +
           '</li><li>Name: ' + userDetails[0].Full_Name +
-          '</li><li>Trip Type: ' + req.body.tripType +
+          '</li><li>Trip Type: ' + selectionHelper.tripType(req.body.tripType) +
           '</li><li>Trip Date: ' + req.body.tripDate +
           '</li><li>Trip Time: ' + req.body.tripTime +
           '</li><li>Destination: ' + destinationList +
