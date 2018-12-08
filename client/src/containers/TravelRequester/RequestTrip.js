@@ -474,7 +474,7 @@ export default class RequestTrip extends React.Component {
         fieldErrors[8] = obNameValid ? '' : ' must only contain letters';
         break;
       case 'obEmail':
-        obEmailVaild = (/^([\w]+)@([\w]+)(\.)([\w]+)$/).test(value);
+        obEmailVaild = (/^([\w\.0-9]+)@([\w]+)(\.)([\w]+)$/).test(value);
         fieldErrors[9] = obEmailVaild ? '' : ' is not valid';
         break;
       case 'obMobile':
