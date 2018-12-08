@@ -77,6 +77,7 @@ module.exports.newTrip = function (req, res, next) {
           fRHTML = '</li><li>Further remarks: '
         }
 
+        // Send Email and SMS to Travel Requester
         var mailMgr = '<ul><li>Trip ID:' + req.body.tripID +
           '</li><li>Name: ' + userDetails[0].Full_Name +
           '</li><li>Trip Type: ' + req.body.tripType +
@@ -86,23 +87,25 @@ module.exports.newTrip = function (req, res, next) {
           '</li><li>Purpose: ' + req.body.tripPurpose +
           fRHTML +
           '</li></ul>';
-        emailHelper.sendMessage(
-          'samali.liyanage93@gmail.com',
-          'Trip Request ' + req.body.tripID,
-          mailMgr,
-          true
-        );
-
-        emailHelper.sendMessage(
+            
+        emailHelper.sendMessage( 
           userDetails[0].Username,
           'Trip Request ' + req.body.tripID,
           mailMgr,
           true
         );
-
+        
+        // Email and SMS to Travel Manager
         var smsMessage = userDetails[0].Full_Name + " has requested a trip with Trip ID: " + req.body.tripID;
-        user.getUsersRole(5, mgrs => {
+        user.getUsersRole(2, mgrs => {
           mgrs.result.forEach(mgr => {
+            emailHelper.sendMessage(
+              mgr.Username,
+              'Trip Request ' + req.body.tripID,
+              mailMgr,
+              true
+            );
+
             mobileHelper.sendMessage("94" + mgr.Mobile_No, smsMessage, (result) => {
               console.log(result);
             });
@@ -180,15 +183,15 @@ module.exports.assignDriver = function (req, res, next) {
     text = DriverName(req.body.driverID) + ' has been assigned to your trip with Trip ID: ' + req.body.tripID;
   }
 
-  trip.getFullTripDetail(req.body.tripID, (detail) => {
+  trip.consolidatedRequested(req.body.tripID, (detail) => {
     if (req.body.driverID != '0') {
       emailHelper.sendMessage(
-        detail.data.Username,
+        detail.username,
         'Trip Request ' + req.body.tripID,
         text,
         false
       );
-      mobileHelper.sendMessage("94" + req.body.Mobile_No, smsMessage, result => {
+      mobileHelper.sendMessage("94" + detail.mobileNumber, smsMessage, result => {
         console.log(result);
       });
     };
@@ -391,6 +394,48 @@ module.exports.cancelTrip = function (req, res, next) {
   trip.cancelTrip(req.body.tripID)
     .then(function (response) {
       if (response.status === 'success') {
+        const message = "Trip with the Trip ID " + req.body.tripID + " has been cancelled";
+        const subject = "Trip Request " + req.body.tripID;
+
+        // Notify with email and SMS to the Traveller and the Driver that the trip has been cancelled
+        trip.consolidatedRequested(req.body.tripID, (detail) => {
+          // Email and SMS to Traveller
+          emailHelper.sendMessage(
+            detail.username,
+            subject,
+            message,
+            false            
+          );
+
+          mobileHelper.sendMessage(
+            detail.mobileNumber,
+            message,
+            (msgResult) => {console.log(msgResult)}
+          );
+
+          //TODO:::: Send messages to driver
+        });
+
+        // Send message to managers indicating that a trip has been cancelled
+        user.getUsersRole(2, (result) => {
+          if(result.status === "success") {
+            result.result.forEach((manager) => {
+              emailHelper.sendMessage(
+                manager.Username,
+                subject,
+                message,
+                false
+              );
+
+              mobileHelper.sendMessage(
+                manager.Mobile_No,
+                message,
+                (msgResult) => { console.log(msgResult) }
+              );
+            });
+          }
+        });
+
         res.send(response);
       } else {
         res.send(response);
@@ -419,7 +464,7 @@ cron.schedule("* * * * *", function () {
         result => {console.log(result)}
       );
 
-      user.getUsersRole(5, respo => {
+      user.getUsersRole(2, respo => {
         respo.result.forEach(manager => {
           emailHelper.sendMessage(
             manager.Username,
