@@ -11,7 +11,13 @@ function SetMenu(props) {
 		if (userType === 1) {
 			return (
 				<Fragment>
-					<NavDropdown id="tripRequests" title="Trips">
+					<LinkContainer to='/viewusers'>
+						<NavItem>View Users</NavItem>
+					</LinkContainer>
+					<LinkContainer to='/newuser'>
+						<NavItem>Add User</NavItem>
+					</LinkContainer>
+					<NavDropdown id="tripRequests" title="My Trips">
 						<LinkContainer to='/requesttrip'>
 							<NavItem>Request Trip</NavItem>
 						</LinkContainer>
@@ -19,13 +25,7 @@ function SetMenu(props) {
 							<NavItem>View Requests</NavItem>
 						</LinkContainer>
 					</NavDropdown>
-					<LinkContainer to='/viewusers'>
-						<NavItem>View Users</NavItem>
-					</LinkContainer>
-					<LinkContainer to='/newuser'>
-						<NavItem>Add User</NavItem>
-					</LinkContainer>
-					<NavDropdown id="userActions" title="User">
+					<NavDropdown id="userActions" title="My Profile">
 						<LinkContainer to='/viewprofile'>
 							<NavItem>View Profile</NavItem>
 						</LinkContainer>
@@ -39,14 +39,6 @@ function SetMenu(props) {
 		} else if (userType === 2) {
 			return (
 				<Fragment>
-					<NavDropdown id="tripRequests" title="Trips">
-						<LinkContainer to='/requesttrip'>
-							<NavItem>Request Trip</NavItem>
-						</LinkContainer>
-						<LinkContainer to='/viewrequests'>
-							<NavItem>View Requests</NavItem>
-						</LinkContainer>
-					</NavDropdown>
 					<LinkContainer to='/viewtrips'>
 						<NavItem>View Trips</NavItem>
 					</LinkContainer>
@@ -61,7 +53,15 @@ function SetMenu(props) {
 							<NavItem>View Leave</NavItem>
 						</LinkContainer>
 					</NavDropdown>
-					<NavDropdown id="userActions" title="User">
+					<NavDropdown id="tripRequests" title="My Trips">
+						<LinkContainer to='/requesttrip'>
+							<NavItem>Request Trip</NavItem>
+						</LinkContainer>
+						<LinkContainer to='/viewrequests'>
+							<NavItem>View Requests</NavItem>
+						</LinkContainer>
+					</NavDropdown>
+					<NavDropdown id="userActions" title="My Profile">
 						<LinkContainer to='/viewprofile'>
 							<NavItem>View Profile</NavItem>
 						</LinkContainer>
@@ -75,7 +75,7 @@ function SetMenu(props) {
 		} else if (userType === 3) {
 			return (
 				<Fragment>
-					<NavDropdown id="tripRequests" title="Trips">
+					<NavDropdown id="tripRequests" title="My Trips">
 						<LinkContainer to='/requesttrip'>
 							<NavItem>Request Trip</NavItem>
 						</LinkContainer>
@@ -83,7 +83,7 @@ function SetMenu(props) {
 							<NavItem>View Requests</NavItem>
 						</LinkContainer>
 					</NavDropdown>
-					<NavDropdown id="userActions" title="User">
+					<NavDropdown id="userActions" title="My Profile">
 						<LinkContainer to='/viewprofile'>
 							<NavItem>View Profile</NavItem>
 						</LinkContainer>
@@ -97,7 +97,7 @@ function SetMenu(props) {
 		} else if (userType === 4) {
 			return (
 				<Fragment>
-					<NavDropdown id="tripRequests" title="Trips">
+					<NavDropdown id="tripRequests" title="My Trips">
 						<LinkContainer to='/requesttrip'>
 							<NavItem>Request Trip</NavItem>
 						</LinkContainer>
@@ -105,15 +105,7 @@ function SetMenu(props) {
 							<NavItem>View Requests</NavItem>
 						</LinkContainer>
 					</NavDropdown>
-					<NavDropdown id="tripRequests" title="Trips">
-						<LinkContainer to='/requesttrip'>
-							<NavItem>Request Trip</NavItem>
-						</LinkContainer>
-						<LinkContainer to='/viewrequests'>
-							<NavItem>View Requests</NavItem>
-						</LinkContainer>
-					</NavDropdown>
-					<NavDropdown id="userActions" title="User">
+					<NavDropdown id="userActions" title="My Profile">
 						<LinkContainer to='/viewprofile'>
 							<NavItem>View Profile</NavItem>
 						</LinkContainer>
@@ -127,26 +119,18 @@ function SetMenu(props) {
 		} else if (userType === 5) {
 			return (
 				<Fragment>
-					<NavDropdown id="tripRequests" title="Trips">
-						<LinkContainer to='/requesttrip'>
-							<NavItem>Request Trip</NavItem>
-						</LinkContainer>
-						<LinkContainer to='/viewrequests'>
-							<NavItem>View Requests</NavItem>
-						</LinkContainer>
-					</NavDropdown>
-					<NavDropdown id="tripRequests" title="Trips">
-						<LinkContainer to='/requesttrip'>
-							<NavItem>Request Trip</NavItem>
-						</LinkContainer>
-						<LinkContainer to='/viewrequests'>
-							<NavItem>View Requests</NavItem>
-						</LinkContainer>
-					</NavDropdown>
 					<LinkContainer to='/viewfrequests'>
 						<NavItem>View Requests</NavItem>
 					</LinkContainer>
-					<NavDropdown id="userActions" title="User">
+					<NavDropdown id="tripRequests" title="My Trips">
+						<LinkContainer to='/requesttrip'>
+							<NavItem>Request Trip</NavItem>
+						</LinkContainer>
+						<LinkContainer to='/viewrequests'>
+							<NavItem>View Requests</NavItem>
+						</LinkContainer>
+					</NavDropdown>
+					<NavDropdown id="userActions" title="My Profile">
 						<LinkContainer to='/viewprofile'>
 							<NavItem>View Profile</NavItem>
 						</LinkContainer>
