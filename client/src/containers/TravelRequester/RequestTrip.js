@@ -217,11 +217,6 @@ export default class RequestTrip extends React.Component {
           authenticate.history.push('/login')
         } else {
           authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
-          if (res.data.Role === 1) {
-            authenticate.history.push('/viewusers');
-          } else if (res.data.Role === 2) {
-            authenticate.history.push('/viewtrips');
-          }
           this.setState({
             rqstrID: res.data.Username,
           });
