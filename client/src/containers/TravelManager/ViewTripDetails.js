@@ -72,7 +72,7 @@ function OnBehalfOf(props) {
             <FormGroup>
                 <Col componentClass={ControlLabel} smOffset={1} sm={2}>Phone:</Col>
                 <Col sm={3}>
-                    <FormControl.Static>{onBehalf.Traveller_Phone}</FormControl.Static>
+                    <FormControl.Static>{onBehalf.Traveller_Mobile}</FormControl.Static>
                 </Col>
                 <Col componentClass={ControlLabel} sm={2}>Email:</Col>
                 <Col sm={2}>
