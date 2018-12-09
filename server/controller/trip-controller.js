@@ -477,7 +477,14 @@ module.exports.cancelTrip = function (req, res, next) {
             (msgResult) => {console.log(msgResult)}
           );
 
-          //TODO:::: Send messages to driver
+          // Send messages to driver
+          user.newGetUser(detail.driverID, driverDetails => {
+            mobileHelper.sendMessage(
+              driverDetails[0].Mobile_No,
+              message,
+              (driverMsgReslt) => {console.log(driverMsgReslt)}
+            );
+          });
         });
 
         // Send message to managers indicating that a trip has been cancelled
