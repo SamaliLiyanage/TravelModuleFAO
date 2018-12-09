@@ -16,7 +16,7 @@ module.exports.newTrip = function (req, res, next) {
     trip.newTrip(req.body.tripID, userDetails[0].Username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.tripDuration, req.body.tripDurationMin, req.body.tripPurpose, req.body.onBehalf, (response) => {
       // If the above is successful continue
       if (response.status === "fail") {
-        return res.send({status: "fail"})
+        return res.send({ status: "fail" })
       }
       if (req.body.onBehalf === true) {
         // If trip is made on behalf of someone
@@ -77,14 +77,14 @@ module.exports.newTrip = function (req, res, next) {
           '</li><li>Purpose: ' + req.body.tripPurpose +
           fRHTML +
           '</li></ul>';
-            
-        emailHelper.sendMessage( 
+
+        emailHelper.sendMessage(
           userDetails[0].Username,
           'Trip Request ' + req.body.tripID,
           mailMgr,
           true
         );
-        
+
         // Email and SMS to Travel Manager
         var smsMessage = userDetails[0].Full_Name + " has requested a trip with Trip ID: " + req.body.tripID;
         user.getUsersRole(2, mgrs => {
@@ -126,36 +126,36 @@ module.exports.newTrip = function (req, res, next) {
             return driverDetail.Username;
           });
           trip.countMonthlyTrips(month.getMonth() + 1, req.body.tripType)
-          .then(function (response) {
-            const monthList = response.result;
-            
-            let sortableDriverList = [];
-            let sortedDriverList = [];
+            .then(function (response) {
+              const monthList = response.result;
 
-            for (let driver in driverList) {
-              if (monthList[driverList[driver]] == null) {
-                sortableDriverList.push([driverList[driver], 0]);
-              } else {
-                sortableDriverList.push([driverList[driver], monthList[driverList[driver]]]);
+              let sortableDriverList = [];
+              let sortedDriverList = [];
+
+              for (let driver in driverList) {
+                if (monthList[driverList[driver]] == null) {
+                  sortableDriverList.push([driverList[driver], 0]);
+                } else {
+                  sortableDriverList.push([driverList[driver], monthList[driverList[driver]]]);
+                }
               }
-            }
 
-            sortableDriverList.sort(function (a, b) {
-              return a[1] - b[1];
+              sortableDriverList.sort(function (a, b) {
+                return a[1] - b[1];
+              })
+
+              sortableDriverList.forEach((driverDetail) => {
+                sortedDriverList.push(driverDetail[0]);
+              })
+
+              console.log("Lists ", sortableDriverList, sortedDriverList);
+
+              let index = 0;
+              process(sortedDriverList, index, req.body.tripTime, req.body.tripDuration, req.body.tripDate, req.body.tripID, userDetails[0].Username, res);
             })
-            
-            sortableDriverList.forEach((driverDetail) => {
-              sortedDriverList.push(driverDetail[0]);
+            .catch(function (error) {
+              console.log(error);
             })
-
-            console.log("Lists ", sortableDriverList, sortedDriverList);
-
-            let index = 0;
-            process(sortedDriverList, index, req.body.tripTime, req.body.tripDuration, req.body.tripDate, req.body.tripID, userDetails[0].Username, res);
-          })
-          .catch(function (error) {
-            console.log(error);
-          })
         });
       } else if (req.body.cabRequested === true) {
         trip.assignDriver(req.body.tripID, 'cab', 5, response => {
@@ -214,12 +214,12 @@ module.exports.assignDriver = function (req, res, next) {
       });
 
       break;
-  
+
     default:
       user.getUser(req.body.driverID, driverDetail => {
         smsMessage = driverDetail.result[0].Full_Name.split(" ")[0] + " has been assigned to your trip with Trip ID: " + req.body.tripID;
         text = driverDetail.result[0].Full_Name.split(" ")[0] + ' has been assigned to your trip with Trip ID: ' + req.body.tripID;
-        
+
         trip.getFullTripDetail(req.body.tripID, (detail) => {
           if (req.body.driverID != '0') {
             emailHelper.sendMessage(
@@ -291,36 +291,36 @@ module.exports.setApproval = function (req, res) {
         });
         const month = new Date(detail.data.Trip_Date);
         trip.countMonthlyTrips(month.getMonth() + 1, detail.data.Trip_Type)
-        .then(function (respo) {
-          const monthList = respo.result;
-          
-          let sortableDriverList = [];
-          let sortedDriverList = [];
+          .then(function (respo) {
+            const monthList = respo.result;
 
-          for (let driver in driverList) {
-            if (monthList[driverList[driver]] == null) {
-              sortableDriverList.push([driverList[driver], 0]);
-            } else {
-              sortableDriverList.push([driverList[driver], monthList[driverList[driver]]]);
+            let sortableDriverList = [];
+            let sortedDriverList = [];
+
+            for (let driver in driverList) {
+              if (monthList[driverList[driver]] == null) {
+                sortableDriverList.push([driverList[driver], 0]);
+              } else {
+                sortableDriverList.push([driverList[driver], monthList[driverList[driver]]]);
+              }
             }
-          }
 
-          sortableDriverList.sort(function (a, b) {
-            return a[1] - b[1];
+            sortableDriverList.sort(function (a, b) {
+              return a[1] - b[1];
+            })
+
+            sortableDriverList.forEach((driverDetail) => {
+              sortedDriverList.push(driverDetail[0]);
+            })
+
+            console.log("Lists ", sortableDriverList, sortedDriverList);
+
+            let index = 0;
+            process(sortedDriverList, index, detail.data.Trip_Time, detail.data.Duration, detail.data.Trip_Date, detail.data.TripID, detail.data.Username, res);
           })
-          
-          sortableDriverList.forEach((driverDetail) => {
-            sortedDriverList.push(driverDetail[0]);
+          .catch(function (error) {
+            console.log(error);
           })
-
-          console.log("Lists ", sortableDriverList, sortedDriverList);
-
-          let index = 0;
-          process(sortedDriverList, index, detail.data.Trip_Time, detail.data.Duration, detail.data.Trip_Date, detail.data.TripID, detail.data.Username, res);
-        })
-        .catch(function (error) {
-          console.log(error);
-        })
       });
 
     });
@@ -426,10 +426,10 @@ function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, 
             var smsMessage = null;
 
             user.newGetUser(ordered_driver_index[index], tripDriverDetail => {
-              if (ordered_driver_index[index]!= '0') {
+              if (ordered_driver_index[index] != '0') {
                 smsMessage = tripDriverDetail[0].Full_Name.split(" ")[0] + " has been assigned to your trip with Trip ID: " + tripID;
                 text = tripDriverDetail[0].Full_Name.split(" ")[0] + ' has been assigned to your trip with Trip ID: ' + tripID;
-              
+
                 user.newGetUser(userName, userDetails => {
                   emailHelper.sendMessage(
                     userDetails[0].Username,
@@ -455,66 +455,68 @@ function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, 
 }
 
 module.exports.cancelTrip = function (req, res, next) {
-  trip.cancelTrip(req.body.tripID)
-    .then(function (response) {
-      if (response.status === 'success') {
-        const message = "Trip with the Trip ID " + req.body.tripID + " has been cancelled";
-        const subject = "Trip Request " + req.body.tripID;
+  trip.consolidatedRequested(req.body.tripID, (detail) => {
+    trip.cancelTrip(req.body.tripID)
+      .then(function (response) {
+        if (response.status === 'success') {
+          const message = "Trip with the Trip ID " + req.body.tripID + " has been cancelled";
+          const subject = "Trip Request " + req.body.tripID;
 
-        // Notify with email and SMS to the Traveller and the Driver that the trip has been cancelled
-        trip.consolidatedRequested(req.body.tripID, (detail) => {
           // Email and SMS to Traveller
           emailHelper.sendMessage(
             detail.username,
             subject,
             message,
-            false            
+            false
           );
 
           mobileHelper.sendMessage(
             detail.mobileNumber,
             message,
-            (msgResult) => {console.log(msgResult)}
+            (msgResult) => { console.log(msgResult) }
           );
 
-          // Send messages to driver
-          user.newGetUser(detail.driverID, driverDetails => {
-            mobileHelper.sendMessage(
-              driverDetails[0].Mobile_No,
-              message,
-              (driverMsgReslt) => {console.log(driverMsgReslt)}
-            );
-          });
-        });
-
-        // Send message to managers indicating that a trip has been cancelled
-        user.getUsersRole(2, (result) => {
-          if(result.status === "success") {
-            result.result.forEach((manager) => {
-              emailHelper.sendMessage(
-                manager.Username,
-                subject,
-                message,
-                false
-              );
-
+          // Send messages to driver if driver has been assigned
+          if (detail.driverID !== '0' && detail.driverID !== 'cab') {
+            user.newGetUser(detail.driverID, driverDetails => {
               mobileHelper.sendMessage(
-                manager.Mobile_No,
+                driverDetails[0].Mobile_No,
                 message,
-                (msgResult) => { console.log(msgResult) }
+                (driverMsgReslt) => { console.log(driverMsgReslt) }
               );
             });
           }
-        });
 
-        res.send(response);
-      } else {
-        res.send(response);
-      }
-    })
-    .catch(function (error) {
-      console.log(error);
-    })
+
+          // Send message to managers indicating that a trip has been cancelled
+          user.getUsersRole(2, (result) => {
+            if (result.status === "success") {
+              result.result.forEach((manager) => {
+                emailHelper.sendMessage(
+                  manager.Username,
+                  subject,
+                  message,
+                  false
+                );
+
+                mobileHelper.sendMessage(
+                  manager.Mobile_No,
+                  message,
+                  (msgResult) => { console.log(msgResult) }
+                );
+              });
+            }
+          });
+
+          res.send(response);
+        } else {
+          res.send(response);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      })
+  });
 }
 
 cron.schedule("* * * * *", function () {
@@ -532,7 +534,7 @@ cron.schedule("* * * * *", function () {
       mobileHelper.sendMessage(
         "94" + element.Mobile_No,
         "Your trip with the number" + element.TripID + " has not started. Please cancel the trip or contact the Travel Manager.",
-        result => {console.log(result)}
+        result => { console.log(result) }
       );
 
       user.getUsersRole(2, respo => {
@@ -547,7 +549,7 @@ cron.schedule("* * * * *", function () {
           mobileHelper.sendMessage(
             "94" + manager.Mobile_No,
             "Trip with the number" + element.TripID + " has not started. Please cancel the trip.",
-            (x) => {console.log(x)}
+            (x) => { console.log(x) }
           );
         });
       });
