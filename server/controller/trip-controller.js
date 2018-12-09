@@ -5,17 +5,6 @@ var emailHelper = require('../helper/email-helper');
 var mobileHelper = require('../helper/mobile-helper');
 var selectionHelper = require('../helper/selection-helper');
 
-function DriverName(driverNo) {
-  var driver = parseInt(driverNo, 10);
-  if (driver === 1) {
-    return 'Anthony';
-  } else if (driver === 2) {
-    return 'Ruchira';
-  } else if (driver === 3) {
-    return 'Dinesh';
-  }
-}
-
 //Insert details on new trip
 module.exports.newTrip = function (req, res, next) {
   let results = {
@@ -132,17 +121,42 @@ module.exports.newTrip = function (req, res, next) {
       }
       let month = new Date(req.body.tripDate)
       if ((req.body.furtherRmrks === "") && (parseInt(req.body.tripType, 10) !== 2) && (req.body.cabRequested === false)) {
-        trip.countMonthlyTrips(month.getMonth() + 1, req.body.tripType)
+        user.getUsersRole(3, driversDetails => {
+          let driverList = driversDetails.result.map((driverDetail) => {
+            return driverDetail.Username;
+          });
+          trip.countMonthlyTrips(month.getMonth() + 1, req.body.tripType)
           .then(function (response) {
-            const result = response.result;
-            const ordered_driver_index = Array.from(Array(result.length).keys())
-              .sort((a, b) => result[a] < result[b] ? -1 : (result[a] > result[b] ? 1 : 0));
+            const monthList = response.result;
+            
+            let sortableDriverList = [];
+            let sortedDriverList = [];
+
+            for (let driver in driverList) {
+              if (monthList[driverList[driver]] == null) {
+                sortableDriverList.push([driverList[driver], 0]);
+              } else {
+                sortableDriverList.push([driverList[driver], monthList[driverList[driver]]]);
+              }
+            }
+
+            sortableDriverList.sort(function (a, b) {
+              return a[1] - b[1];
+            })
+            
+            sortableDriverList.forEach((driverDetail) => {
+              sortedDriverList.push(driverDetail[0]);
+            })
+
+            console.log("Lists ", sortableDriverList, sortedDriverList);
+
             let index = 0;
-            process(ordered_driver_index, index, req.body.tripTime, req.body.tripDuration, req.body.tripDate, req.body.tripID, userDetails[0].Username, res);
+            process(sortedDriverList, index, req.body.tripTime, req.body.tripDuration, req.body.tripDate, req.body.tripID, userDetails[0].Username, res);
           })
           .catch(function (error) {
             console.log(error);
           })
+        });
       } else if (req.body.cabRequested === true) {
         trip.assignDriver(req.body.tripID, 'cab', 5, response => {
           //console.log(response);
@@ -176,27 +190,52 @@ module.exports.assignDriver = function (req, res, next) {
   var text = null;
   var smsMessage = null;
 
-  if (req.body.driverID === 'cab') {
-    smsMessage = "A cab has been assigned to your trip with Trip ID: " + req.body.tripID;
-    text = 'A cab has been assigned to your trip with Trip ID: ' + req.body.tripID;
-  } else if (req.body.driverID != '0') {
-    smsMessage = DriverName(req.body.driverID) + " has been assigned to your trip with Trip ID: " + req.body.tripID;
-    text = DriverName(req.body.driverID) + ' has been assigned to your trip with Trip ID: ' + req.body.tripID;
-  }
-
-  trip.consolidatedRequested(req.body.tripID, (detail) => {
-    if (req.body.driverID != '0') {
-      emailHelper.sendMessage(
-        detail.username,
-        'Trip Request ' + req.body.tripID,
-        text,
-        false
-      );
-      mobileHelper.sendMessage("94" + detail.mobileNumber, smsMessage, result => {
-        console.log(result);
+  switch (req.body.driverID) {
+    case '0', '1', '2', '3', 'cab':
+      if (req.body.driverID === 'cab') {
+        smsMessage = "A cab has been assigned to your trip with Trip ID: " + req.body.tripID;
+        text = 'A cab has been assigned to your trip with Trip ID: ' + req.body.tripID;
+      } else if (req.body.driverID != '0') {
+        smsMessage = DriverName(req.body.driverID) + " has been assigned to your trip with Trip ID: " + req.body.tripID;
+        text = DriverName(req.body.driverID) + ' has been assigned to your trip with Trip ID: ' + req.body.tripID;
+      }
+      trip.getFullTripDetail(req.body.tripID, (detail) => {
+        if (req.body.driverID != '0') {
+          emailHelper.sendMessage(
+            detail.data.Username,
+            'Trip Request ' + req.body.tripID,
+            text,
+            false
+          );
+          mobileHelper.sendMessage("94" + req.body.Mobile_No, smsMessage, result => {
+            console.log(result);
+          });
+        };
       });
-    };
-  });
+
+      break;
+  
+    default:
+      user.getUser(req.body.driverID, driverDetail => {
+        smsMessage = driverDetail.result[0].Full_Name.split(" ")[0] + " has been assigned to your trip with Trip ID: " + req.body.tripID;
+        text = driverDetail.result[0].Full_Name.split(" ")[0] + ' has been assigned to your trip with Trip ID: ' + req.body.tripID;
+        
+        trip.getFullTripDetail(req.body.tripID, (detail) => {
+          if (req.body.driverID != '0') {
+            emailHelper.sendMessage(
+              detail.data.Username,
+              'Trip Request ' + req.body.tripID,
+              text,
+              false
+            );
+            mobileHelper.sendMessage("94" + req.body.Mobile_No, smsMessage, result => {
+              console.log(result);
+            });
+          };
+        });
+      });
+      break;
+  }
 }
 
 //Get the details of the given trip
@@ -236,32 +275,55 @@ module.exports.setApproval = function (req, res) {
   trip.changeComments(req.body.tripID, req.body.comment, response => {
     trip.getFullTripDetail(req.body.tripID, detail => {
       emailHelper.sendMessage(
-        detail.User.Username,
+        detail.data.Username,
         'Trip Request ' + req.body.tripID,
         text,
         false
       );
 
-      mobileHelper.sendMessage("94" + detail.User.Mobile_No, smsMessage, result => {
+      mobileHelper.sendMessage("94" + detail.data.Mobile_No, smsMessage, result => {
         console.log(result);
       });
-    });
 
-    trip.getTrip(req.body.tripID, response => {
-      const data = response.data;
-      trip.countMonthlyTrips(data.Trip_Date.getMonth() + 1, data.Trip_Type)
+      user.getUsersRole(3, driverDetails => {
+        let driverList = driverDetails.result.map((driverDetail) => {
+          return driverDetail.Username;
+        });
+        const month = new Date(detail.data.Trip_Date);
+        trip.countMonthlyTrips(month.getMonth() + 1, detail.data.Trip_Type)
         .then(function (respo) {
-          const result = respo.result;
-          const ordered_driver_index = Array.from(Array(result.length).keys())
-            .sort((a, b) => result[a] < result[b] ? -1 : (result[a] > result[b] ? 1 : 0));
+          const monthList = respo.result;
+          
+          let sortableDriverList = [];
+          let sortedDriverList = [];
+
+          for (let driver in driverList) {
+            if (monthList[driverList[driver]] == null) {
+              sortableDriverList.push([driverList[driver], 0]);
+            } else {
+              sortableDriverList.push([driverList[driver], monthList[driverList[driver]]]);
+            }
+          }
+
+          sortableDriverList.sort(function (a, b) {
+            return a[1] - b[1];
+          })
+          
+          sortableDriverList.forEach((driverDetail) => {
+            sortedDriverList.push(driverDetail[0]);
+          })
+
+          console.log("Lists ", sortableDriverList, sortedDriverList);
+
           let index = 0;
-          process(ordered_driver_index, index, data.Trip_Time, data.Duration, data.Trip_Date, data.TripID, res);
+          process(sortedDriverList, index, detail.data.Trip_Time, detail.data.Duration, detail.data.Trip_Date, detail.data.TripID, detail.data.Username, res);
         })
         .catch(function (error) {
           console.log(error);
         })
-    });
+      });
 
+    });
     //res.send(response);
   })
 
@@ -354,32 +416,33 @@ function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, 
       endTime = endTime + tripTime.slice(-3);
     }
 
-    trip.checkDriverAvailability(ordered_driver_index[index] + 1, tripDate, tripTime, endTime, response => {
+    trip.checkDriverAvailability(ordered_driver_index[index], tripDate, tripTime, endTime, response => {
       //console.log("time", tripTime, endTime);
       if (response.status === 'success' && response.result === 0) {
-        trip.assignDriver(tripID, ordered_driver_index[index] + 1, 2, response => {
+        trip.assignDriver(tripID, ordered_driver_index[index], 2, response => {
           if (response.status === 'success') {
 
             var text = null;
             var smsMessage = null;
 
-            if (ordered_driver_index[index] + 1 != '0') {
-              smsMessage = DriverName(ordered_driver_index[index] + 1) + " has been assigned to your trip with Trip ID: " + tripID;
-              text = DriverName(ordered_driver_index[index] + 1) + ' has been assigned to your trip with Trip ID: ' + tripID;
-            }
-            if (ordered_driver_index[index] + 1 !== 0) {
-              user.newGetUser(userName, userDetails => {
-                emailHelper.sendMessage(
-                  userDetails[0].Username,
-                  'Trip Request ' + tripID,
-                  text,
-                  false
-                );
-                mobileHelper.sendMessage("94" + userDetails[0].Mobile_No, smsMessage, result => {
-                  console.log(result);
+            user.newGetUser(ordered_driver_index[index], tripDriverDetail => {
+              if (ordered_driver_index[index]!= '0') {
+                smsMessage = tripDriverDetail[0].Full_Name.split(" ")[0] + " has been assigned to your trip with Trip ID: " + tripID;
+                text = tripDriverDetail[0].Full_Name.split(" ")[0] + ' has been assigned to your trip with Trip ID: ' + tripID;
+              
+                user.newGetUser(userName, userDetails => {
+                  emailHelper.sendMessage(
+                    userDetails[0].Username,
+                    'Trip Request ' + tripID,
+                    text,
+                    false
+                  );
+                  mobileHelper.sendMessage("94" + userDetails[0].Mobile_No, smsMessage, result => {
+                    console.log(result);
+                  });
                 });
-              });
-            }
+              }
+            });
 
             return (response);
           }

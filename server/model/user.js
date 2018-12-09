@@ -39,7 +39,7 @@ exports.getUsers = function(res) {
 exports.getUsersRole = function(fieldValue, next) {
   value = [fieldValue];
 
-  db.connection.query('SELECT * FROM User WHERE Role=?', value, function(err, results) {
+  db.connection.query('SELECT Username, Full_Name, Mobile_No, Role FROM User WHERE Role=?', value, function(err, results) {
     var temp;
 
     if(err) {
@@ -74,7 +74,7 @@ exports.getUser = function(userName, next) {
         result: results
       }
     }
-    console.log(temp);
+    // console.log(temp);
     next(temp);
   });
 }

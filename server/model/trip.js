@@ -350,7 +350,7 @@ exports.countMonthlyTrips = function (month, type) {
     return new Promise(function (resolve, reject) {
         const values = [month, type];
         var temp;
-        db.connection.query('SELECT Driver_ID, COUNT(*) AS TripCount FROM Trip WHERE Driver_ID!=0 AND MONTH(Trip_Date)=? AND Trip_Type=? GROUP BY Driver_ID', values, function (err, results) {
+        db.connection.query('SELECT Driver_ID, COUNT(*) AS TripCount FROM Trip WHERE Driver_ID!=\'0\' AND MONTH(Trip_Date)=? AND Trip_Type=? GROUP BY Driver_ID', values, function (err, results) {
             if (err) {
                 console.log(err);
                 temp = {
@@ -358,10 +358,9 @@ exports.countMonthlyTrips = function (month, type) {
                 };
                 reject(temp);
             } else {
-                let driverCount = [0, 0, 0];
+                let driverCount = {};
                 results.forEach(driver => {
-                    driverCount[parseInt(driver.Driver_ID, 10) - 1] = parseInt(driver.TripCount, 10);
-
+                    driverCount[driver.Driver_ID] = parseInt(driver.TripCount, 10);
                 });
                 temp = {
                     status: 'success',

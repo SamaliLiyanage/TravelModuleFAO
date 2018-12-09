@@ -38,11 +38,11 @@ function Errors(props) {
  * @param props:: handleDisplay - handles the show/hide property of modals
  * @param props:: trip - trip being adjusted
  * @param props:: driverChange - function to handle driver change
+ * @param props:: driverTuple - tuple with driver detail mappings
  */
 function TripModal(props) {
 	let availableDrivers = props.availableDrivers.map((driver) => {
-		console.log(driver);
-		return (<option key={driver} value={driver}><DriverName driverID={driver.toString()} /></option>);
+		return (<option key={driver} value={driver}><DriverName driverTuple={props.driverTuple} driverID={driver.toString()} /></option>);
 	});
 	return (
 		(props.trip !== null) ?
@@ -343,7 +343,9 @@ export default class DriverAvailability extends React.Component {
 			modalTrip: null,
 			modalShow: false,
 			tripIndex: null,
-			availableDrivers: []
+			availableDrivers: [],
+			driverList: [],
+			driverTuple: {}
 		};
 
 		this.handleSubmit = this.handleSubmit.bind(this);
@@ -370,6 +372,18 @@ export default class DriverAvailability extends React.Component {
 						authenticate.history.push('/requesttrip');
 					}
 				}
+			})
+
+		axios.get('/users/Role/3')
+			.then(res => {
+				let drivers = { '0': 'Unassigned', 'cab': 'Cab Assigned' };
+				res.data.forEach((driverDetail) => {
+					drivers[driverDetail.Username] = driverDetail.Full_Name.split(" ")[0];
+				});
+				this.setState({
+					driverList: res.data,
+					driverTuple: drivers
+				});
 			})
 	}
 
@@ -673,6 +687,12 @@ export default class DriverAvailability extends React.Component {
 	render() {
 		const fieldNames = ['Driver name', 'Leave type', 'Leave start date', 'Leave end date', 'Leave date', 'Time'];
 
+		const driverList = this.state.driverList.map((driverDetail) => {
+			return (
+				<option value={driverDetail.Username}>{driverDetail.Full_Name.split(" ")[0]}</option>
+			);
+		});
+
 		return (
 			<Form horizontal onSubmit={this.handleSubmit} >
 				<Grid>
@@ -685,9 +705,7 @@ export default class DriverAvailability extends React.Component {
 										<Col sm={8}>
 											<FormControl componentClass="select" value={this.state.driver} onChange={this.handleChange} >
 												<option value={0}>Select driver</option>
-												<option value={1}>Anthony</option>
-												<option value={2}>Ruchira</option>
-												<option value={3}>Dinesh</option>
+												{driverList}
 											</FormControl>
 										</Col>
 									</FormGroup>
@@ -719,7 +737,7 @@ export default class DriverAvailability extends React.Component {
 								<Button name="submit" type="submit" disabled={!this.state.formValid}>Submit</Button>
 								<Button name="reset" type="reset">Reset</Button>
 							</FormGroup>
-							<TripModal modalShow={this.state.modalShow} handleDisplay={this.handleModalPopUp} trip={this.state.modalTrip} availableDrivers={this.state.availableDrivers} driverChange={this.handleDriverChange} tripIndex={this.state.tripIndex} />
+							<TripModal modalShow={this.state.modalShow} handleDisplay={this.handleModalPopUp} trip={this.state.modalTrip} availableDrivers={this.state.availableDrivers} driverChange={this.handleDriverChange} tripIndex={this.state.tripIndex} driverTuple={this.state.driverTuple} />
 						</Col>
 					</Row>
 					<Row className="show-grid">
