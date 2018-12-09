@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import { Form, FormGroup, Col, ControlLabel, FormControl, Button, Modal, ButtonToolbar } from 'react-bootstrap';
-import { TripTypes, TripStatus, DriverName } from '../../Selections';
+import { DriverName, TripTypes, TripStatus } from '../../Selections';
 
 function CancelModal(props) {
     var showModal = props.showModal;
@@ -136,8 +136,12 @@ function FurtherRemarks(props) {
     return content;
 }
 
+/**
+ * @description generates the driver list or other relevant placeholder
+ * @param {tripID, driverID, tripDate, tripStatus, onChange, driverList, driverTuple} props 
+ */
 function Driver(props) {
-    //PROPS::: tripID, driverID, tripDate, tripStatus, onChange
+    //PROPS::: tripID, driverID, tripDate, tripStatus, onChange, driverList, driverTuple
 
     var content = null;
     var disabled = false;
@@ -145,6 +149,12 @@ function Driver(props) {
 
     var warningDate = new Date(props.tripDate);
     warningDate.setDate(warningDate.getDate() + 1);
+
+    const driverList = props.driverList.map((driverDetail) => {
+        return (
+            <option value={driverDetail.Username}>{driverDetail.Full_Name.split(" ")[0]}</option>
+        );
+    });
 
     if (today >= warningDate) {
         if (props.driverID === "0") {
@@ -158,7 +168,7 @@ function Driver(props) {
                 <FormGroup>
                     <Col componentClass={ControlLabel} smOffset={1} sm={2}>Driver:</Col>
                     <Col sm={3}>
-                        <FormControl.Static><DriverName driverID={props.driverID} /></FormControl.Static>
+                        <FormControl.Static><DriverName driverTuple={props.driverTuple} driverID={props.driverID} /></FormControl.Static>
                     </Col>
                 </FormGroup>
             );
@@ -175,9 +185,7 @@ function Driver(props) {
                     <Col componentClass={ControlLabel} smOffset={1} sm={2}>Driver:</Col>
                     <Col componentClass="select" value={props.driverID} onChange={(e) => props.onChange(e, props.tripID)} sm={2} disabled={disabled}>
                         <option value="0">Unassigned</option>
-                        <option value="1">Anthony</option>
-                        <option value="2">Ruchira</option>
-                        <option value="3">Dinesh</option>
+                        {driverList}
                         <option value="cab">Cab</option>
                     </Col>
                 </FormGroup>
@@ -187,7 +195,7 @@ function Driver(props) {
                 <FormGroup>
                     <Col componentClass={ControlLabel} smOffset={1} sm={2}>Driver:</Col>
                     <Col sm={3}>
-                        <FormControl.Static><DriverName driverID={props.driverID} /></FormControl.Static>
+                        <FormControl.Static><DriverName driverTuple={props.driverTuple} driverID={props.driverID} /></FormControl.Static>
                     </Col>
                 </FormGroup>
             );
@@ -250,6 +258,8 @@ export default class ViewTripDetails extends React.Component {
             destinations: [],
             onBehalf: null,
             showModal: false,
+            driverList: [],
+            driverTuple: {}
         }
 
         this.handleChange = this.handleChange.bind(this);
@@ -328,6 +338,18 @@ export default class ViewTripDetails extends React.Component {
                         onBehalf: res.data.result,
                     });
                 }
+            })
+
+        axios.get('/users/Role/3')
+            .then(res => {
+                let drivers = {'0': 'Unassigned', 'cab': 'Cab Assigned'};
+                res.data.forEach((driverDetail) => {
+                    drivers[driverDetail.Username] = driverDetail.Full_Name.split(" ")[0];
+                });
+                this.setState({
+                    driverList: res.data,
+                    driverTuple: drivers
+                });
             })
     }
 
@@ -465,7 +487,7 @@ export default class ViewTripDetails extends React.Component {
                     <BudgetingEntity budgetingEntity={this.state.budgetingEntity} projectNumber={this.state.projectNumber} />
                 </FormGroup>
                 <FurtherRemarks exists={this.state.furtherRemarks} remark={this.state.remark} />
-                <Driver userType={this.props.userType} tripID={this.state.tripid} driverID={this.state.tripInfo.Driver_ID} tripDate={tripDate} tripStatus={this.state.tripInfo.Trip_Status} onChange={this.handleChange} />
+                <Driver userType={this.props.userType} tripID={this.state.tripid} driverID={this.state.tripInfo.Driver_ID} tripDate={tripDate} tripStatus={this.state.tripInfo.Trip_Status} onChange={this.handleChange} driverList={this.state.driverList} driverTuple={this.state.driverTuple} />
                 <ApprovalButton userType={this.props.userType} tripStatus={this.state.tripInfo.Trip_Status} remark={this.state.remark} tripID={this.state.tripid} onApprove={this.handleApproval} />
                 <CancelTrip userType={this.props.userType} onClick={this.handleShowModal} onCancel={this.handleCancel} tripStatus={this.state.tripInfo.Trip_Status} showModal={this.state.showModal} tripNumber={this.state.tripid} />
             </Form>

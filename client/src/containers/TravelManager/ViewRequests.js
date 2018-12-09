@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import { TripTypes, TripStatus, DriverName } from '../../Selections';
+import { DriverName, TripTypes, TripStatus} from '../../Selections';
 import { Table, Tab, FormControl, FormGroup, Nav, Row, Col, NavDropdown, MenuItem, Button, Pagination } from 'react-bootstrap';
 
 
@@ -10,14 +10,18 @@ function DriverAssignment(props) {
     const marginBottom = { margin: 0, height: '20pt' };
     const padding = {paddingTop:'0pt', paddingBottom: '0pt'} 
 
+    const driverList = props.driverList.map((driverDetail) => {
+        return (
+            <option value={driverDetail.Username}>{driverDetail.Full_Name.split(" ")[0]}</option>
+        );
+    });
+
     if (today < tripDate) {
         return (
             <FormGroup controlId={props.TripID} bsSize="small" style={marginBottom} >
                 <FormControl style={padding} componentClass="select" value={props.Driver_ID} onChange={(e) => props.onChange(e, props.TripID, props.index)} disabled={props.approved}>
                     <option value="0">Unassigned</option>
-                    <option value="1">Anthony</option>
-                    <option value="2">Ruchira</option>
-                    <option value="3">Dinesh</option>
+                    {driverList}
                     <option value="cab">Cab</option>
                 </FormControl>
             </FormGroup>
@@ -28,7 +32,9 @@ function DriverAssignment(props) {
                 <Button style={padding} bsStyle="danger" disabled>Expired</Button>
             );
         } else {
-            return (<DriverName driverID={props.Driver_ID} />);
+            return (
+                <DriverName driverTuple={props.driverTuple} driverID={props.Driver_ID} />
+            );
         }
     }
 }
@@ -65,7 +71,7 @@ function TripRow(props) {
             <td><TripStatus tripStatus={tableContent.Trip_Status} /></td>
             <td><ViewDetails onClick={props.onClick} tripID={tableContent.TripID} /></td>
             <td>
-                <DriverAssignment tripDate={warningDate} TripID={tableContent.TripID} Driver_ID={tableContent.Driver_ID} onChange={props.onChange} approved={approved} index={props.index} />
+                <DriverAssignment tripDate={warningDate} TripID={tableContent.TripID} Driver_ID={tableContent.Driver_ID} onChange={props.onChange} approved={approved} index={props.index} driverList={props.driverList} driverTuple={props.driverTuple} />
             </td>
         </tr>
     );
@@ -76,7 +82,7 @@ function TableRow(props) {
     const tableContents = props.tableContents;
   
     const content = tableContents.map((item, index) => {
-        return (<TripRow key={item.item.TripID} tableContent={item.item} onChange={props.onChange} index={item.index} onClick={props.onClick} />);
+        return (<TripRow key={item.item.TripID} tableContent={item.item} onChange={props.onChange} index={item.index} onClick={props.onClick} driverList={props.driverList} driverTuple={props.driverTuple} />);
     });
     
     return content;
@@ -101,7 +107,7 @@ function TableRender(props) {
             </tr>
             </thead>
             <tbody>
-                <TableRow tableContents={tableContents} onChange={props.onChange} onClick={props.onClick} />
+                <TableRow tableContents={tableContents} onChange={props.onChange} onClick={props.onClick} driverList={props.driverList} driverTuple={props.driverTuple} />
             </tbody>
         </Table>
     );
@@ -162,7 +168,7 @@ function Paginator(props) {
 
     return (
         <div>
-            <TableRender tableContents={pageContentFinal.slice(10*props.currentPage,10*props.currentPage+10)||pageContentFinal.slice(10*props.currentPage)} onChange={props.onChange} onClick={props.onClick} />
+            <TableRender tableContents={pageContentFinal.slice(10*props.currentPage,10*props.currentPage+10)||pageContentFinal.slice(10*props.currentPage)} onChange={props.onChange} onClick={props.onClick} driverList={props.driverList} driverTuple={props.driverTuple} />
             <Pagination>
                 <PaginationHandler active={props.active} size={pageContentFinal.length} onPage={props.onPage} />
             </Pagination>
@@ -177,7 +183,9 @@ export default class TabbedRequest extends React.Component {
         this.state = {
             key: 0.1,
             tableContent: [],
-            currentPage: 0
+            currentPage: 0,
+            driverList: [],
+            driverTuple: {}
         }
 
         this.handleChange = this.handleChange.bind(this);
@@ -210,6 +218,18 @@ export default class TabbedRequest extends React.Component {
                 tableContent: res.data
             });
         })
+
+        axios.get('/users/Role/3')
+            .then(res => {
+                let drivers = {'0': 'Unassigned', 'cab': 'Cab Assigned'};
+                res.data.forEach((driverDetail) => {
+                    drivers[driverDetail.Username] = driverDetail.Full_Name.split(" ")[0];
+                });
+                this.setState({
+                    driverList: res.data,
+                    driverTuple: drivers
+                });
+            })
     }
 
     handleChange(event, i, index) {
@@ -298,21 +318,21 @@ export default class TabbedRequest extends React.Component {
                         </Nav>
                     </Col>
                     <Tab.Content animation>
-                        <Tab.Pane eventKey={0.1}><Paginator tableContents={this.state.tableContent} type={0} assigned={"all"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
-                        <Tab.Pane eventKey={0.2}><Paginator tableContents={this.state.tableContent} type={0} assigned={"assigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
-                        <Tab.Pane eventKey={0.3}><Paginator tableContents={this.state.tableContent} type={0} assigned={"unassigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
-                        <Tab.Pane eventKey={1.1}><Paginator tableContents={this.state.tableContent} type={1} assigned={"all"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
-                        <Tab.Pane eventKey={1.2}><Paginator tableContents={this.state.tableContent} type={1} assigned={"assigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
-                        <Tab.Pane eventKey={1.3}><Paginator tableContents={this.state.tableContent} type={1} assigned={"unassigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
-                        <Tab.Pane eventKey={2.1}><Paginator tableContents={this.state.tableContent} type={2} assigned={"all"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
-                        <Tab.Pane eventKey={2.2}><Paginator tableContents={this.state.tableContent} type={2} assigned={"assigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
-                        <Tab.Pane eventKey={2.3}><Paginator tableContents={this.state.tableContent} type={2} assigned={"unassigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
-                        <Tab.Pane eventKey={3.1}><Paginator tableContents={this.state.tableContent} type={3} assigned={"all"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
-                        <Tab.Pane eventKey={3.2}><Paginator tableContents={this.state.tableContent} type={3} assigned={"assigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
-                        <Tab.Pane eventKey={3.3}><Paginator tableContents={this.state.tableContent} type={3} assigned={"unassigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
-                        <Tab.Pane eventKey={4.1}><Paginator tableContents={this.state.tableContent} type={4} assigned={"all"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
-                        <Tab.Pane eventKey={4.2}><Paginator tableContents={this.state.tableContent} type={4} assigned={"assigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
-                        <Tab.Pane eventKey={4.3}><Paginator tableContents={this.state.tableContent} type={4} assigned={"unassigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} /></Tab.Pane>
+                        <Tab.Pane eventKey={0.1}><Paginator tableContents={this.state.tableContent} type={0} assigned={"all"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
+                        <Tab.Pane eventKey={0.2}><Paginator tableContents={this.state.tableContent} type={0} assigned={"assigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
+                        <Tab.Pane eventKey={0.3}><Paginator tableContents={this.state.tableContent} type={0} assigned={"unassigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
+                        <Tab.Pane eventKey={1.1}><Paginator tableContents={this.state.tableContent} type={1} assigned={"all"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
+                        <Tab.Pane eventKey={1.2}><Paginator tableContents={this.state.tableContent} type={1} assigned={"assigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
+                        <Tab.Pane eventKey={1.3}><Paginator tableContents={this.state.tableContent} type={1} assigned={"unassigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
+                        <Tab.Pane eventKey={2.1}><Paginator tableContents={this.state.tableContent} type={2} assigned={"all"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
+                        <Tab.Pane eventKey={2.2}><Paginator tableContents={this.state.tableContent} type={2} assigned={"assigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
+                        <Tab.Pane eventKey={2.3}><Paginator tableContents={this.state.tableContent} type={2} assigned={"unassigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
+                        <Tab.Pane eventKey={3.1}><Paginator tableContents={this.state.tableContent} type={3} assigned={"all"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
+                        <Tab.Pane eventKey={3.2}><Paginator tableContents={this.state.tableContent} type={3} assigned={"assigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
+                        <Tab.Pane eventKey={3.3}><Paginator tableContents={this.state.tableContent} type={3} assigned={"unassigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
+                        <Tab.Pane eventKey={4.1}><Paginator tableContents={this.state.tableContent} type={4} assigned={"all"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
+                        <Tab.Pane eventKey={4.2}><Paginator tableContents={this.state.tableContent} type={4} assigned={"assigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
+                        <Tab.Pane eventKey={4.3}><Paginator tableContents={this.state.tableContent} type={4} assigned={"unassigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
                     </Tab.Content>
                 </Row>
             </Tab.Container>

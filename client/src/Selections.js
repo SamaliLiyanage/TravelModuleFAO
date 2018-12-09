@@ -21,12 +21,10 @@ export function TripTypes(props) {
 }
 
 export function DriverName(props) {
-    switch(props.driverID) {
-        case '1': return "Anthony";
-        case '2': return "Ruchira";
-        case '3': return "Dinesh";
-        case 'cab': return "Cab Assigned"
-        default: return "Unassigned";
+    if (props.driverTuple[props.driverID] == null) {
+        return null;
+    } else {
+        return props.driverTuple[props.driverID];
     }
 }
 
