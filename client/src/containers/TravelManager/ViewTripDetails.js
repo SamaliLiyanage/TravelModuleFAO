@@ -278,7 +278,7 @@ export default class ViewTripDetails extends React.Component {
                     auth.history.push('/login');
                 } else {
                     auth.userHasAuthenticated(true, res.data.Username, res.data.Role);
-                    if (res.data.Role === 1) {
+                    /*if (res.data.Role === 1) {
                         auth.history.push('/viewusers');
                     } /*else if (res.data.Role===4) {
                     auth.history.push('/requesttrip');
