@@ -350,7 +350,7 @@ exports.countMonthlyTrips = function (month, type) {
     return new Promise(function (resolve, reject) {
         const values = [month, type];
         var temp;
-        db.connection.query('SELECT Driver_ID, COUNT(*) AS TripCount FROM Trip WHERE Driver_ID!=\'0\' AND MONTH(Trip_Date)=? AND Trip_Type=? GROUP BY Driver_ID', values, function (err, results) {
+        db.connection.query('SELECT Driver_ID, COUNT(*) AS TripCount FROM Trip WHERE (Driver_ID!=\'0\' AND Driver_ID!=\'Dinesh.Pussegoda@fao.org\' AND Driver_ID!=\'driver2@fao.org\') AND MONTH(Trip_Date)=? AND Trip_Type=? GROUP BY Driver_ID', values, function (err, results) {
             if (err) {
                 console.log(err);
                 temp = {

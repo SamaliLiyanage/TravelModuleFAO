@@ -133,10 +133,12 @@ module.exports.newTrip = function (req, res, next) {
               let sortedDriverList = [];
 
               for (let driver in driverList) {
-                if (monthList[driverList[driver]] == null) {
-                  sortableDriverList.push([driverList[driver], 0]);
-                } else {
-                  sortableDriverList.push([driverList[driver], monthList[driverList[driver]]]);
+                if(driverList[driver] !== 'Dinesh.Pussegoda@fao.org' && driverList[driver] !== 'driver2@fao.org') {
+                  if (monthList[driverList[driver]] == null) {
+                    sortableDriverList.push([driverList[driver], 0]);
+                  } else {
+                    sortableDriverList.push([driverList[driver], monthList[driverList[driver]]]);
+                  }
                 }
               }
 
@@ -298,10 +300,12 @@ module.exports.setApproval = function (req, res) {
             let sortedDriverList = [];
 
             for (let driver in driverList) {
-              if (monthList[driverList[driver]] == null) {
-                sortableDriverList.push([driverList[driver], 0]);
-              } else {
-                sortableDriverList.push([driverList[driver], monthList[driverList[driver]]]);
+              if(driverList[driver] !== 'Dinesh.Pussegoda@fao.org' && driverList[driver] !== 'driver2@fao.org') {
+                if (monthList[driverList[driver]] == null) {
+                  sortableDriverList.push([driverList[driver], 0]);
+                } else {
+                  sortableDriverList.push([driverList[driver], monthList[driverList[driver]]]);
+                }
               }
             }
 

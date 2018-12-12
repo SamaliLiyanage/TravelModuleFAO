@@ -107,7 +107,8 @@ exports.sendMessage = function (receiver, message, callback) {
             "msg": message
         }
     };
-
+    console.log(startTime, endTime, authCode);
+    sendMessageRequest(options)
     callback(sendMessageRequest(options));
 }
 
