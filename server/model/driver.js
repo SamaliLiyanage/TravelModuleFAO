@@ -6,17 +6,16 @@ exports.addDriverLeave = function(driverID, leaveDate, leaveTime, leaveType, nex
     if (leaveTime[0]===null){ // No times given
         leaveDate.forEach((date, index) => {
             (index===(leaveDate.length-1))?
-            values += ("("+driverID+", \'"+date+"\',NULL,"+leaveType+")"):
-            values += ("("+driverID+",\'"+date+"\',NULL,"+leaveType+"),");
+            values += ("(\'"+driverID+"\', \'"+date+"\',NULL,"+leaveType+")"):
+            values += ("(\'"+driverID+"\',\'"+date+"\',NULL,"+leaveType+"),");
         });
     } else {
         leaveDate.forEach((date, index) => {
             (index===(leaveDate.length-1))?
-            values += ("("+driverID+", \'"+date+"\', \'"+leaveTime[index]+"\',"+leaveType+")"):
-            values += ("("+driverID+", \'"+date+"\', \'"+leaveTime[index]+"\',"+leaveType+"),");
+            values += ("(\'"+driverID+"\', \'"+date+"\', \'"+leaveTime[index]+"\',"+leaveType+")"):
+            values += ("(\'"+driverID+"\', \'"+date+"\', \'"+leaveTime[index]+"\',"+leaveType+"),");
         });
     }
-    
     connection.query("INSERT INTO DriverLeave (Driver_ID, LeaveDate, LeaveTime, LeaveType) VALUES"+values,(err, result) => {
         var temp;
         if(err){

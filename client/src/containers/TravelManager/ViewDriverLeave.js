@@ -76,6 +76,8 @@ export default class ViewDriverLeave extends React.Component {
 			leaveDates: [],
 			driver: 0,
 			year: tempDate.getFullYear(),
+			driverTuple: {},
+			driverList: []
 		}
 
 		this.handleCancel = this.handleCancel.bind(this);
@@ -98,6 +100,18 @@ export default class ViewDriverLeave extends React.Component {
 						authenticate.history.push('/requesttrip');
 					}
 				}
+			});
+
+		axios.get('/users/Role/3')
+			.then((res) => {
+				let drivers ={'0': 'Select driver'}
+				res.data.forEach((driver) => {
+					drivers[driver.Username] = driver.Full_Name.split(" ")[0]
+				});
+				this.setState({
+					driverList: res.data,
+					driverTuple: drivers
+				});
 			})
 	}
 
@@ -107,8 +121,8 @@ export default class ViewDriverLeave extends React.Component {
 		let value = target.value;
 
 		if (id === "year") {
-			if (parseInt(this.state.driver, 10) > 0) {
-				axios.get('/drivers/getleave/' + parseInt(this.state.driver, 10) + '/' + value)
+			if (this.state.driver != 0) {
+				axios.get('/drivers/getleave/' + this.state.driver + '/' + value)
 					.then((res) => {
 						if (res.data.status === 'success') {
 							this.setState({
@@ -121,8 +135,8 @@ export default class ViewDriverLeave extends React.Component {
 				year: value
 			})
 		} else if (id === "driver") {
-			if (parseInt(value, 10) > 0) {
-				axios.get('/drivers/getleave/' + parseInt(value, 10) + '/' + this.state.year)
+			if (value != 0) {
+				axios.get('/drivers/getleave/' + value + '/' + this.state.year)
 					.then((res) => {
 						if (res.data.status === 'success') {
 							this.setState({
@@ -153,6 +167,11 @@ export default class ViewDriverLeave extends React.Component {
 	}
 
 	render() {
+		const driverList = this.state.driverList.map((driver) => {
+			return (
+				<option value={driver.Username}>{driver.Full_Name.split(" ")[0]}</option>
+			);
+		});
 		return (
 			<Form horizontal>
 				<Grid>
@@ -161,11 +180,9 @@ export default class ViewDriverLeave extends React.Component {
 							<FormGroup controlId="driver">
 								<Col sm={4} componentClass={ControlLabel}>Driver:</Col>
 								<Col sm={8}>
-									<FormControl componentClass="select" value={this.state.driver} onChange={this.handleChange}>
+									<FormControl componentClass="select" value={this.state.driver} onChange={(e) => this.handleChange(e)}>
 										<option value={0}>Select Driver</option>
-										<option value={1}>Anthony</option>
-										<option value={2}>Ruchira</option>
-										<option value={3}>Dinesh</option>
+										{driverList}
 									</FormControl>
 								</Col>
 							</FormGroup>
@@ -175,7 +192,7 @@ export default class ViewDriverLeave extends React.Component {
 							<FormGroup controlId="year">
 								<Col sm={4} componentClass={ControlLabel}>Year:</Col>
 								<Col sm={8}>
-									<FormControl componentClass="select" value={this.state.year} onChange={this.handleChange}>
+									<FormControl componentClass="select" value={this.state.year} onChange={(e) => this.handleChange(e)}>
 										<DropdownYear />
 									</FormControl>
 								</Col>
