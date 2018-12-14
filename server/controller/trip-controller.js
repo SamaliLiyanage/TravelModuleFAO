@@ -185,46 +185,33 @@ module.exports.userTrips = function (req, res, next) {
 
 //Assign a driver for the given driver ID and change the status
 module.exports.assignDriver = function (req, res, next) {
-  trip.assignDriver(req.body.tripID, req.body.driverID, req.body.tripStatus, response => {
-    res.send(response);
-  });
-
-  var text = null;
-  var smsMessage = null;
-
-  switch (req.body.driverID) {
-    case '0', '1', '2', '3', 'cab':
-      if (req.body.driverID === 'cab') {
-        smsMessage = "A cab has been assigned to your trip with Trip ID: " + req.body.tripID;
-        text = 'A cab has been assigned to your trip with Trip ID: ' + req.body.tripID;
-      } else if (req.body.driverID != '0') {
-        smsMessage = DriverName(req.body.driverID) + " has been assigned to your trip with Trip ID: " + req.body.tripID;
-        text = DriverName(req.body.driverID) + ' has been assigned to your trip with Trip ID: ' + req.body.tripID;
+  trip.consolidatedRequested(req.body.tripID, tripDetail => {
+    trip.assignDriver(req.body.tripID, req.body.driverID, req.body.tripStatus, response => {
+      if (tripDetail.driverID != '0' && tripDetail.driverID != 'cab') {
+        emailHelper.sendMessage(
+          tripDetail.driverID,
+          'Trip Request ' + req.body.tripID,
+          "You have been removed from your trip with Trip ID: " + req.body.tripID,
+          false
+        );
       }
-      trip.getFullTripDetail(req.body.tripID, (detail) => {
-        if (req.body.driverID != '0') {
-          emailHelper.sendMessage(
-            detail.data.Username,
-            'Trip Request ' + req.body.tripID,
-            text,
-            false
-          );
-          mobileHelper.sendMessage("94" + req.body.Mobile_No, smsMessage, result => {
-            console.log(result);
-          });
-        };
-      });
-
-      break;
-
-    default:
-      user.getUser(req.body.driverID, driverDetail => {
-        smsMessage = driverDetail.result[0].Full_Name.split(" ")[0] + " has been assigned to your trip with Trip ID: " + req.body.tripID;
-        text = driverDetail.result[0].Full_Name.split(" ")[0] + ' has been assigned to your trip with Trip ID: ' + req.body.tripID;
-
+      res.send(response);
+    });
+  
+    var text = null;
+    var smsMessage = null;
+  
+    switch (req.body.driverID) {
+      case '0', '1', '2', '3', 'cab':
+        if (req.body.driverID === 'cab') {
+          smsMessage = "A cab has been assigned to your trip with Trip ID: " + req.body.tripID;
+          text = 'A cab has been assigned to your trip with Trip ID: ' + req.body.tripID;
+        } else if (req.body.driverID != '0') {
+          smsMessage = DriverName(req.body.driverID) + " has been assigned to your trip with Trip ID: " + req.body.tripID;
+          text = DriverName(req.body.driverID) + ' has been assigned to your trip with Trip ID: ' + req.body.tripID;
+        }
         trip.getFullTripDetail(req.body.tripID, (detail) => {
           if (req.body.driverID != '0') {
-            //Send message to travel requester
             emailHelper.sendMessage(
               detail.data.Username,
               'Trip Request ' + req.body.tripID,
@@ -234,21 +221,44 @@ module.exports.assignDriver = function (req, res, next) {
             mobileHelper.sendMessage("94" + req.body.Mobile_No, smsMessage, result => {
               console.log(result);
             });
-
-            //Send message to driver
-            user.newGetUser(detail.data.Username, (requester) => {
-              emailHelper.sendMessage(
-                driverDetail.result[0].Username,
-                'Trip Request ' + req.body.tripID,
-                "You have been assigned to " + requester[0].Full_Name + "\'s trip with Trip ID " + req.body.tripID,
-                false
-              );
-            });
           };
         });
-      });
-      break;
-  }
+  
+        break;
+  
+      default:
+        user.getUser(req.body.driverID, driverDetail => {
+          smsMessage = driverDetail.result[0].Full_Name.split(" ")[0] + " has been assigned to your trip with Trip ID: " + req.body.tripID;
+          text = driverDetail.result[0].Full_Name.split(" ")[0] + ' has been assigned to your trip with Trip ID: ' + req.body.tripID;
+  
+          trip.getFullTripDetail(req.body.tripID, (detail) => {
+            if (req.body.driverID != '0') {
+              //Send message to travel requester
+              emailHelper.sendMessage(
+                detail.data.Username,
+                'Trip Request ' + req.body.tripID,
+                text,
+                false
+              );
+              mobileHelper.sendMessage("94" + req.body.Mobile_No, smsMessage, result => {
+                console.log(result);
+              });
+  
+              //Send message to driver
+              user.newGetUser(detail.data.Username, (requester) => {
+                emailHelper.sendMessage(
+                  driverDetail.result[0].Username,
+                  'Trip Request ' + req.body.tripID,
+                  "You have been assigned to " + requester[0].Full_Name + "\'s trip with Trip ID " + req.body.tripID,
+                  false
+                );
+              });
+            };
+          });
+        });
+        break;
+    }
+  });
 }
 
 //Get the details of the given trip
