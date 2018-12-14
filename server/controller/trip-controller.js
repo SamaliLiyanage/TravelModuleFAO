@@ -224,6 +224,7 @@ module.exports.assignDriver = function (req, res, next) {
 
         trip.getFullTripDetail(req.body.tripID, (detail) => {
           if (req.body.driverID != '0') {
+            //Send message to travel requester
             emailHelper.sendMessage(
               detail.data.Username,
               'Trip Request ' + req.body.tripID,
@@ -232,6 +233,16 @@ module.exports.assignDriver = function (req, res, next) {
             );
             mobileHelper.sendMessage("94" + req.body.Mobile_No, smsMessage, result => {
               console.log(result);
+            });
+
+            //Send message to driver
+            user.newGetUser(detail.data.Username, (requester) => {
+              emailHelper.sendMessage(
+                driverDetail.result[0].Username,
+                'Trip Request ' + req.body.tripID,
+                "You have been assigned to " + requester[0].Full_Name + "\'s trip with Trip ID " + req.body.tripID,
+                false
+              );
             });
           };
         });
@@ -435,6 +446,7 @@ function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, 
                 text = tripDriverDetail[0].Full_Name.split(" ")[0] + ' has been assigned to your trip with Trip ID: ' + tripID;
 
                 user.newGetUser(userName, userDetails => {
+                  //Send emails to travel requester
                   emailHelper.sendMessage(
                     userDetails[0].Username,
                     'Trip Request ' + tripID,
@@ -444,6 +456,19 @@ function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, 
                   mobileHelper.sendMessage("94" + userDetails[0].Mobile_No, smsMessage, result => {
                     console.log(result);
                   });
+
+                  //Send emails to driver
+                  emailHelper.sendMessage(
+                    tripDriverDetail[0].Username,
+                    'Trip Request ' + tripID,
+                    "You have been assigned to " + userDetails[0].Full_Name + "\'s trip with Trip ID: " + tripID,
+                    false
+                  );
+                  mobileHelper.sendMessage(
+                    "94" + tripDriverDetail[0].Mobile_No,
+                    "You have been assigned to " + userDetails[0].Full_Name + "\'s trip with Trip ID: " + tripID,
+                    result => {console.log(result)}
+                  );
                 });
               }
             });
@@ -483,6 +508,13 @@ module.exports.cancelTrip = function (req, res, next) {
           // Send messages to driver if driver has been assigned
           if (detail.driverID !== '0' && detail.driverID !== 'cab') {
             user.newGetUser(detail.driverID, driverDetails => {
+              emailHelper.sendMessage(
+                driverDetails[0].Username,
+                subject,
+                message,
+                false
+              );
+
               mobileHelper.sendMessage(
                 driverDetails[0].Mobile_No,
                 message,

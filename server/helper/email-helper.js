@@ -36,7 +36,7 @@ exports.sendMessage = function (receiver, subject, message, isHTML) {
             if (err) {
                 return console.log(err);
             } else {
-                return console.log('Email sent: '+ info.response);
+                return console.log('Email sent to ' + receiver + ': '+ info.response);
             }
         });
 };
