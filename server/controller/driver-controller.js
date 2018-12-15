@@ -14,7 +14,7 @@ module.exports.addLeave = function (req, res, next) {
         return date;
     });
 
-    if (leaveType === 3) {
+    if (parseInt(leaveType, 10) === 3) {
         leaveTime = [req.body.leaveTime];
     }
 
