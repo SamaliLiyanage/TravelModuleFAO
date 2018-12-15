@@ -1,3 +1,4 @@
+var timeHelper = require('../helper/time-helper');
 var db = require('../db.js');
 const connection = db.connection;
 
@@ -96,4 +97,32 @@ exports.checkDriverAvailability = function (driverID, date, startTime, endTime) 
             }
         });
     })
+}
+
+exports.isDriverOnLeave = function (driverID, tripDate, tripStartTime, tripType, duration, duration_minute, next) {
+    if (parseInt(tripType, 10) !== 2) {
+        timeHelper.getEndTime(tripStartTime, duration, duration_minute)
+        .then(tripEndTime => {
+            let values = [driverID, tripDate, tripEndTime, tripStartTime];
+            let temp;
+            connection.query("SELECT COUNT(*) AS LeaveCount FROM (SELECT Driver_ID, LeaveDate, LeaveTime AS LeaveStartTime, LeaveType, DATE_ADD(LeaveTime, INTERVAL 4 HOUR) AS LeaveEndTime FROM DriverLeave) AS D WHERE Driver_ID=? AND LeaveDate = ? AND ((LeaveType!=3) OR (LeaveType=3 AND (D.LeaveStartTime <= ? AND D.LeaveEndTime >= ?)))", values, (err, result) => {
+                if (err) {
+                    console.log(err);
+                    temp = {
+                        status: 'fail',
+                        result: err
+                    }
+                } else {
+                    temp = {
+                        status: 'success',
+                        result: result[0].LeaveCount
+                    }
+                }
+                next(temp);
+            });
+        })
+        .catch((error) => {
+            console.log(error);
+        })
+    }
 }

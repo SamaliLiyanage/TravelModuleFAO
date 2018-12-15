@@ -1,5 +1,6 @@
 var trip = require('../model/trip');
 var user = require('../model/user');
+var driver = require('../model/driver');
 var cron = require('node-cron');
 var emailHelper = require('../helper/email-helper');
 var mobileHelper = require('../helper/mobile-helper');
@@ -133,7 +134,7 @@ module.exports.newTrip = function (req, res, next) {
               let sortedDriverList = [];
 
               for (let driver in driverList) {
-                if(driverList[driver] !== 'Dinesh.Pussegoda@fao.org' && driverList[driver] !== 'driver2@fao.org') {
+                if (driverList[driver] !== 'Dinesh.Pussegoda@fao.org' && driverList[driver] !== 'driver2@fao.org') {
                   if (monthList[driverList[driver]] == null) {
                     sortableDriverList.push([driverList[driver], 0]);
                   } else {
@@ -153,7 +154,7 @@ module.exports.newTrip = function (req, res, next) {
               console.log("Lists ", sortableDriverList, sortedDriverList);
 
               let index = 0;
-              process(sortedDriverList, index, req.body.tripTime, req.body.tripDuration, req.body.tripDate, req.body.tripID, userDetails[0].Username, res);
+              process(sortedDriverList, index, req.body.tripTime, req.body.tripType, req.body.tripDuration, req.body.tripDurationMin, req.body.tripDate, req.body.tripID, userDetails[0].Username, res);
             })
             .catch(function (error) {
               console.log(error);
@@ -300,7 +301,7 @@ module.exports.setApproval = function (req, res) {
             let sortedDriverList = [];
 
             for (let driver in driverList) {
-              if(driverList[driver] !== 'Dinesh.Pussegoda@fao.org' && driverList[driver] !== 'driver2@fao.org') {
+              if (driverList[driver] !== 'Dinesh.Pussegoda@fao.org' && driverList[driver] !== 'driver2@fao.org') {
                 if (monthList[driverList[driver]] == null) {
                   sortableDriverList.push([driverList[driver], 0]);
                 } else {
@@ -320,7 +321,7 @@ module.exports.setApproval = function (req, res) {
             console.log("Lists ", sortableDriverList, sortedDriverList);
 
             let index = 0;
-            process(sortedDriverList, index, detail.data.Trip_Time, detail.data.Duration, detail.data.Trip_Date, detail.data.TripID, detail.data.Username, res);
+            process(sortedDriverList, index, detail.data.Trip_Time, detail.data.Trip_Type, detail.data.Duration, detail.data.Duration_Minute, detail.data.Trip_Date, detail.data.TripID, detail.data.Username, res);
           })
           .catch(function (error) {
             console.log(error);
@@ -392,7 +393,7 @@ module.exports.getBudgetEntity = function (req, res) {
   })
 }
 
-function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, tripID, userName, res) {
+function process(ordered_driver_index, index, tripTime, tripType, tripDuration, tripDurationMin, tripDate, tripID, userName, res) {
   if (index >= ordered_driver_index.length) {
     trip.assignDriver(tripID, 'cab', 5, response => {
       smsMessage = "A cab has been assigned to your trip with Trip ID: " + tripID;
@@ -423,36 +424,45 @@ function process(ordered_driver_index, index, tripTime, tripDuration, tripDate, 
     trip.checkDriverAvailability(ordered_driver_index[index], tripDate, tripTime, endTime, response => {
       //console.log("time", tripTime, endTime);
       if (response.status === 'success' && response.result === 0) {
-        trip.assignDriver(tripID, ordered_driver_index[index], 2, response => {
-          if (response.status === 'success') {
+        //check if the driver is on leave
+        driver.isDriverOnLeave(ordered_driver_index[index], tripDate, tripTime, tripType, tripDuration, tripDurationMin, driverLeaveCount => {
+          //if the driver is not on leave assign them to trip
+          if (driverLeaveCount.status === 'success' && driverLeaveCount.result === 0) {
+            trip.assignDriver(tripID, ordered_driver_index[index], 2, response => {
+              if (response.status === 'success') {
 
-            var text = null;
-            var smsMessage = null;
+                var text = null;
+                var smsMessage = null;
 
-            user.newGetUser(ordered_driver_index[index], tripDriverDetail => {
-              if (ordered_driver_index[index] != '0') {
-                smsMessage = tripDriverDetail[0].Full_Name.split(" ")[0] + " has been assigned to your trip with Trip ID: " + tripID;
-                text = tripDriverDetail[0].Full_Name.split(" ")[0] + ' has been assigned to your trip with Trip ID: ' + tripID;
+                user.newGetUser(ordered_driver_index[index], tripDriverDetail => {
+                  if (ordered_driver_index[index] != '0') {
+                    smsMessage = tripDriverDetail[0].Full_Name.split(" ")[0] + " has been assigned to your trip with Trip ID: " + tripID;
+                    text = tripDriverDetail[0].Full_Name.split(" ")[0] + ' has been assigned to your trip with Trip ID: ' + tripID;
 
-                user.newGetUser(userName, userDetails => {
-                  emailHelper.sendMessage(
-                    userDetails[0].Username,
-                    'Trip Request ' + tripID,
-                    text,
-                    false
-                  );
-                  mobileHelper.sendMessage("94" + userDetails[0].Mobile_No, smsMessage, result => {
-                    console.log(result);
-                  });
+                    user.newGetUser(userName, userDetails => {
+                      emailHelper.sendMessage(
+                        userDetails[0].Username,
+                        'Trip Request ' + tripID,
+                        text,
+                        false
+                      );
+                      mobileHelper.sendMessage("94" + userDetails[0].Mobile_No, smsMessage, result => {
+                        console.log(result);
+                      });
+                    });
+                  }
                 });
-              }
-            });
 
-            return (response);
+                return (response);
+              }
+            })
+          } else if (driverLeaveCount.status === 'success' && driverLeaveCount.result !== 0){
+            // if the driver is on leave move on to next driver
+            process(ordered_driver_index, index + 1, tripTime, tripType, tripDuration, tripDurationMin, tripDate, tripID, userName, res);    
           }
-        })
+        });
       } else {
-        process(ordered_driver_index, index + 1, tripTime, tripDuration, tripDate, tripID, userName, res);
+        process(ordered_driver_index, index + 1, tripTime, tripType, tripDuration, tripDurationMin, tripDate, tripID, userName, res);
       }
     })
   }
