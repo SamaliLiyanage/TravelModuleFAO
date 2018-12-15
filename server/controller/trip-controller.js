@@ -446,7 +446,7 @@ function process(ordered_driver_index, index, tripTime, tripType, tripDuration, 
       //console.log("time", tripTime, endTime);
       if (response.status === 'success' && response.result === 0) {
         //check if the driver is on leave
-        driver.isDriverOnLeave(ordered_driver_index[index], tripDate, tripTime, tripType, tripDuration, tripDurationMin, driverLeaveCount => {
+        driver.isDriverOnLeave(ordered_driver_index[index], tripDate, tripTime, tripDuration, tripDurationMin, driverLeaveCount => {
           //if the driver is not on leave assign them to trip
           if (driverLeaveCount.status === 'success' && driverLeaveCount.result === 0) {
             trip.assignDriver(tripID, ordered_driver_index[index], 2, response => {
