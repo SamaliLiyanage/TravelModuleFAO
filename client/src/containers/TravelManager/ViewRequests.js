@@ -1,8 +1,37 @@
 import React from 'react';
 import axios from 'axios';
 import { DriverName, TripTypes, TripStatus} from '../../Selections';
-import { Table, Tab, FormControl, FormGroup, Nav, Row, Col, NavDropdown, MenuItem, Button, Pagination } from 'react-bootstrap';
+import { Table, Tab, FormControl, FormGroup, Nav, Row, Col, NavDropdown, MenuItem, Button, Pagination, Modal, ButtonToolbar } from 'react-bootstrap';
 
+function DriverLeaveModal(props) {
+    let showModal = props.showModal;
+    let tripID = props.tripID;
+    let onOk = props.onOk;
+
+    let content = null;
+
+    if (showModal === true) {
+        content = (
+            <Modal.Dialog show={showModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Driver cannot be allocated</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    This driver is on leave or has been allocated for another trip on the day of Trip ID {tripID}
+                </Modal.Body>
+                <Modal.Footer>
+                    <ButtonToolbar>
+                        <Button onClick={(e)=> onOk(e)}>Ok</Button>
+                    </ButtonToolbar>
+                </Modal.Footer>
+            </Modal.Dialog>
+        );
+    } else {
+        content = null;
+    }
+
+    return content;
+}
 
 function DriverAssignment(props) {
     const today = new Date();
@@ -185,13 +214,16 @@ export default class TabbedRequest extends React.Component {
             tableContent: [],
             currentPage: 0,
             driverList: [],
-            driverTuple: {}
+            driverTuple: {},
+            showOnLeaveModal: false,
+            onLeaveModalTrip: null
         }
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
         this.handleClick = this.handleClick.bind(this);
         this.handlePage = this.handlePage.bind(this);
+        this.handleShowModal = this.handleShowModal.bind(this);
     }
 
     componentDidMount() {
@@ -245,22 +277,47 @@ export default class TabbedRequest extends React.Component {
             tripStatus = 2;
         }
 
-        axios.post('/trips/assigndriver', {
-            tripID: i,
-            driverID: event.target.value,
-            tripStatus: tripStatus,
+        axios.get('/trips/gettrip/' + i)
+        .then ((res) => {
+            if (res.data.status === "success") {
+                const tDate = new Date(res.data.data.Trip_Date);
+                axios.post('/drivers/isonleave', {
+                    driverID: driverID,
+                    tripDate: tDate.getFullYear()+'-'+(tDate.getMonth()+1)+'-'+tDate.getDate(), 
+                    tripStartTime: res.data.data.Trip_Time, 
+                    duration: res.data.data.Duration,
+                    durationMins: res.data.data.Duration_Minute
+                }).then ((leaveRes) => {
+                    if (leaveRes.data.status === "success") {
+                        if (leaveRes.data.isOnLeave) {
+                            this.setState({
+                                showOnLeaveModal: true,
+                                onLeaveModalTrip: i
+                            });
+                        } else {
+                            axios.post('/trips/assigndriver', {
+                                tripID: i,
+                                driverID: driverID,
+                                tripStatus: tripStatus,
+                            })
+                                .then((response) => {
+                                    if (response.data.status === "success") {
+                                        tableContent[index].Driver_ID = driverID;
+                                        tableContent[index].Trip_Status = tripStatus;
+                                        this.setState({
+                                            tableContent: tableContent,
+                                            showOnLeaveModal: false,
+                                            onLeaveModalTrip: null
+                                        });
+                                    } else {
+                                        alert("Ooops!!! Try again later...");
+                                    }
+                                })
+                        }
+                    }
+                })
+            }
         })
-            .then((response) => {
-                if (response.data.status === "success") {
-                    tableContent[index].Driver_ID = driverID;
-                    tableContent[index].Trip_Status = tripStatus;
-                    this.setState({
-                        tableContent: tableContent,
-                    });
-                } else {
-                    alert("Ooops!!! Try again later...");
-                }
-            })
     }
 
     handleSelect(key) {
@@ -277,6 +334,14 @@ export default class TabbedRequest extends React.Component {
     handlePage(event, page) {
         this.setState({
             currentPage: page
+        });
+    }
+
+    handleShowModal(event) {
+        let showModal = this.state.showOnLeaveModal;
+
+        this.setState({
+            showOnLeaveModal: !showModal
         });
     }
 
@@ -334,6 +399,7 @@ export default class TabbedRequest extends React.Component {
                         <Tab.Pane eventKey={4.2}><Paginator tableContents={this.state.tableContent} type={4} assigned={"assigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
                         <Tab.Pane eventKey={4.3}><Paginator tableContents={this.state.tableContent} type={4} assigned={"unassigned"} onChange={this.handleChange} onClick={this.handleClick} active={this.state.currentPage} onPage={this.handlePage} currentPage={this.state.currentPage} driverList={this.state.driverList} driverTuple={this.state.driverTuple} /></Tab.Pane>
                     </Tab.Content>
+                    <DriverLeaveModal showModal={this.state.showOnLeaveModal} tripID={this.state.onLeaveModalTrip} onOk={this.handleShowModal} />
                 </Row>
             </Tab.Container>
         );
