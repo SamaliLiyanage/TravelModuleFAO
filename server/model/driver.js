@@ -99,9 +99,8 @@ exports.checkDriverAvailability = function (driverID, date, startTime, endTime) 
     })
 }
 
-exports.isDriverOnLeave = function (driverID, tripDate, tripStartTime, tripType, duration, duration_minute, next) {
-    if (parseInt(tripType, 10) !== 2) {
-        timeHelper.getEndTime(tripStartTime, duration, duration_minute)
+exports.isDriverOnLeave = function (driverID, tripDate, tripStartTime, duration, duration_minute, next) {
+    timeHelper.getEndTime(tripStartTime, duration, duration_minute)
         .then(tripEndTime => {
             let values = [driverID, tripDate, tripEndTime, tripStartTime];
             let temp;
@@ -124,5 +123,4 @@ exports.isDriverOnLeave = function (driverID, tripDate, tripStartTime, tripType,
         .catch((error) => {
             console.log(error);
         })
-    }
 }

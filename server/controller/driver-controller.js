@@ -96,3 +96,25 @@ module.exports.checkDriverAvailablity = function (req, res, next) {
             console.log(error);
         })
 }
+
+module.exports.isDriverOnLeave = function (req, res, next) {
+    driver.isDriverOnLeave(req.body.driverID, req.body.tripDate, req.body.tripStartTime, req.body.duration, req.body.durationMins, (leaveCount) => {
+        if(leaveCount.status === "success") {
+            if (leaveCount.result === 0) {
+                res.send({
+                    status: "success",
+                    isOnLeave: false
+                });
+            } else {
+                res.send({
+                    status: "success",
+                    isOnLeave: true
+                });
+            }
+        } else {
+            res.send({
+                status: "fail"
+            });
+        }
+    });
+}

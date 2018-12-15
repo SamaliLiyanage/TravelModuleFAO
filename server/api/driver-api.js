@@ -7,5 +7,6 @@ router.post('/gettrips', driverController.getTripsForDriverDate);
 router.get('/getleave/:driverID/:year', driverController.viewLeave);
 router.post('/deleteleave', driverController.deleteLeave);
 router.post('/reassign', driverController.checkDriverAvailablity);
+router.post('/isonleave', driverController.isDriverOnLeave);
 
 module.exports = router;
