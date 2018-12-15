@@ -3,6 +3,36 @@ import axios from 'axios';
 import { Form, FormGroup, Col, ControlLabel, FormControl, Button, Modal, ButtonToolbar } from 'react-bootstrap';
 import { DriverName, TripTypes, TripStatus } from '../../Selections';
 
+function DriverLeaveModal(props) {
+    let showModal = props.showModal;
+    let tripID = props.tripID;
+    let onOk = props.onOk;
+
+    let content = null;
+
+    if (showModal === true) {
+        content = (
+            <Modal.Dialog show={showModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Driver cannot be allocated</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    This driver is on leave or has been allocated for another trip on the day of Trip ID {tripID}
+                </Modal.Body>
+                <Modal.Footer>
+                    <ButtonToolbar>
+                        <Button onClick={(e)=> onOk(e)}>Ok</Button>
+                    </ButtonToolbar>
+                </Modal.Footer>
+            </Modal.Dialog>
+        );
+    } else {
+        content = null;
+    }
+
+    return content;
+}
+
 function CancelModal(props) {
     var showModal = props.showModal;
     //var handleDisplay = props.handleDisplay;
@@ -259,13 +289,15 @@ export default class ViewTripDetails extends React.Component {
             onBehalf: null,
             showModal: false,
             driverList: [],
-            driverTuple: {}
+            driverTuple: {},
+            showOnLeaveModal: false
         }
 
         this.handleChange = this.handleChange.bind(this);
         this.handleApproval = this.handleApproval.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
         this.handleShowModal = this.handleShowModal.bind(this);
+        this.handleShowLeaveModal = this.handleShowLeaveModal.bind(this);
     }
 
     componentWillMount() {
@@ -355,6 +387,7 @@ export default class ViewTripDetails extends React.Component {
 
     handleChange(event, tripID) {
         const driverID = event.target.value;
+        const tDate = new Date(this.state.tripInfo.Trip_Date);
         var tripStatus;
         var tripInfo = this.state.tripInfo;
 
@@ -366,20 +399,37 @@ export default class ViewTripDetails extends React.Component {
             tripStatus = 2;
         }
 
-        axios.post('/trips/assigndriver', {
-            tripID: tripID,
+        axios.post('/drivers/isonleave', {
             driverID: driverID,
-            tripStatus: tripStatus
-        })
-            .then(res => {
-                if (res.data.status === "success") {
-                    tripInfo.Driver_ID = driverID;
-                    tripInfo.Trip_Status = tripStatus;
+            tripDate: tDate.getFullYear()+'-'+(tDate.getMonth()+1)+'-'+tDate.getDate(),
+            tripStartTime: this.state.tripInfo.Trip_Time, 
+            duration: this.state.tripInfo.Duration,
+            durationMins: this.state.tripInfo.Duration_Minute
+        }).then((leaveRes) => {
+            console.log(leaveRes.data);
+            if (leaveRes.data.status === "success") {
+                if (leaveRes.data.isOnLeave) {
                     this.setState({
-                        tripInfo: tripInfo,
+                        showOnLeaveModal: true
+                    });
+                } else {
+                    axios.post('/trips/assigndriver', {
+                        tripID: tripID,
+                        driverID: driverID,
+                        tripStatus: tripStatus
                     })
+                        .then(res => {
+                            if (res.data.status === "success") {
+                                tripInfo.Driver_ID = driverID;
+                                tripInfo.Trip_Status = tripStatus;
+                                this.setState({
+                                    tripInfo: tripInfo,
+                                })
+                            }
+                        })
                 }
-            })
+            }
+        })
     }
 
     handleApproval(event, tripID, comment, approve) {
@@ -425,6 +475,14 @@ export default class ViewTripDetails extends React.Component {
         this.setState({
             showModal: !showModal
         });
+    }
+
+    handleShowLeaveModal(event) {
+        let showModal = this.state.showOnLeaveModal;
+
+        this.setState({
+            showOnLeaveModal: !showModal
+        })
     }
 
     render() {
@@ -490,6 +548,7 @@ export default class ViewTripDetails extends React.Component {
                 <Driver userType={this.props.userType} tripID={this.state.tripid} driverID={this.state.tripInfo.Driver_ID} tripDate={tripDate} tripStatus={this.state.tripInfo.Trip_Status} onChange={this.handleChange} driverList={this.state.driverList} driverTuple={this.state.driverTuple} />
                 <ApprovalButton userType={this.props.userType} tripStatus={this.state.tripInfo.Trip_Status} remark={this.state.remark} tripID={this.state.tripid} onApprove={this.handleApproval} />
                 <CancelTrip userType={this.props.userType} onClick={this.handleShowModal} onCancel={this.handleCancel} tripStatus={this.state.tripInfo.Trip_Status} showModal={this.state.showModal} tripNumber={this.state.tripid} />
+                <DriverLeaveModal showModal={this.state.showOnLeaveModal} tripID={this.state.tripInfo.TripID} onOk={this.handleShowLeaveModal} />
             </Form>
         );
     }
