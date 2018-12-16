@@ -11,12 +11,14 @@ function SetMenu(props) {
 		if (userType === 1) {
 			return (
 				<Fragment>
-					<LinkContainer to='/viewusers'>
-						<NavItem>View Users</NavItem>
-					</LinkContainer>
-					<LinkContainer to='/newuser'>
-						<NavItem>Add User</NavItem>
-					</LinkContainer>
+					<NavDropdown id="userAdministration" title="User Administration">
+						<LinkContainer to='/viewusers'>
+							<NavItem>View Users</NavItem>
+						</LinkContainer>
+						<LinkContainer to='/newuser'>
+							<NavItem>Add User</NavItem>
+						</LinkContainer>
+					</NavDropdown>
 					<NavDropdown id="tripRequests" title="My Trips">
 						<LinkContainer to='/requesttrip'>
 							<NavItem>Request Trip</NavItem>
