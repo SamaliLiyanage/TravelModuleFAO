@@ -680,3 +680,13 @@ module.exports.filterTrips = function (req, res) {
     res.send(result);
   });
 }
+
+module.exports.driverAvailabilityAll = function (req, res) {
+  trip.checkDriverAvailabilityAllTypes(req.body.driverID, req.body.tripDate, req.body.tripTime, req.body.tripType, req.body.duration, req.body.durationMinutes, result => {
+    if (result.status === "success" && result.result === 0) {
+      trip.assignDriver(req.body.tripID, req.body.driverID, req.body.tripStatus, response => {
+        return res.send(response);
+      });
+    }
+  });
+}
