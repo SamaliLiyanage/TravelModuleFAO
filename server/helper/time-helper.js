@@ -18,3 +18,18 @@ module.exports.getEndTime = function (startTime, durationHrs, durationMins) {
         resolve(endTime);
     });
 }
+
+module.exports.getEndDate = function (startDateParam, duration) {
+    return new Promise((resolve, reject) => {
+        let startDate = new Date(startDateParam);
+        let endDate = new Date();
+
+        console.log("Start ", startDate.getDate(), duration, parseInt(startDate.getDate(), 10) + parseInt(duration, 10));
+
+        endDate.setFullYear(startDate.getFullYear());
+        endDate.setMonth(startDate.getMonth());
+        endDate.setDate(parseInt(startDate.getDate(), 10) + parseInt(duration, 10));
+
+        resolve(endDate);
+    });
+}
