@@ -656,3 +656,27 @@ module.exports.consolidatedRequest = function (req, res) {
     return res.send(response);
   });
 }
+
+module.exports.filterTrips = function (req, res) {
+  const driver = req.query.driverID;
+  const tripType = req.query.tripType;
+  const tripStatus = req.query.tripStatus;
+
+  let queries = {}
+
+  if (driver != null) {
+    queries['Driver_ID'] = driver;
+  }
+
+  if (tripType != null) {
+    queries['Trip_Type'] = tripType;
+  }
+
+  if (tripStatus != null) {
+    queries['Trip_Status'] = tripStatus;
+  }
+
+  trip.filterTrips(queries, result => {
+    res.send(result);
+  });
+}

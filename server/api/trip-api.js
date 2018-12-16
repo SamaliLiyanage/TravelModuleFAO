@@ -19,5 +19,6 @@ router.post('/canceltrip', tripController.cancelTrip);
 router.post('/fetchStatus', tripController.fetchStatus);
 router.post('/testing', tripController.testMobile);
 router.get('/consReq/:tripID', tripController.consolidatedRequest);
+router.get('/filterTrip', tripController.filterTrips);
 
 module.exports = router;

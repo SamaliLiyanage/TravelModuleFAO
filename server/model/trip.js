@@ -578,3 +578,30 @@ exports.consolidatedRequested = function (tripID, next) {
         }
     });
 }
+
+exports.filterTrips = function (queries, next) {
+    let query = 'SELECT * FROM Trip WHERE ';
+    const queryKeys = Object.keys(queries);
+    queryKeys.forEach((queryKey, index) => {
+        if (queryKeys.length !== (index+1)) {
+            query += (queryKey + '=' + queries[queryKey] + ' AND ');
+        } else {
+            query += (queryKey + '=' + queries[queryKey]);
+        }
+    });
+    
+    connection.query(query, (err, results) => {
+        if (err) {
+            next({
+                status: 'fail',
+                result: err
+            });
+        } else {
+            next({
+                status: 'success',
+                result: results
+            });
+        }
+        
+    });
+}
