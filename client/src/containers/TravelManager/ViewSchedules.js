@@ -58,8 +58,9 @@ export default class DriverSchedule extends React.Component {
         super (props);
 
         this.state = {
-            tabKey: 1,
+            tabKey: null,
             tableContents:[],
+            driverList: []
         }
 
         this.handleSelect = this.handleSelect.bind(this);
@@ -89,6 +90,14 @@ export default class DriverSchedule extends React.Component {
                 tableContents: res.data,
             });
         });
+
+        axios.get('/users/Role/3')
+            .then(driverRes => {
+                this.setState({
+                    driverList: driverRes.data,
+                    tabKey: driverRes.data[0].Username
+                });
+            });
     }
 
     handleSelect(key) {
@@ -98,17 +107,17 @@ export default class DriverSchedule extends React.Component {
     }
 
     render () {
+        const content = this.state.driverList.map((driver) => {
+            return (
+                <Tab eventKey={driver.Username} title={driver.Full_Name.split(" ")[0]}>
+                    <DriverTable tableContents={this.state.tableContents} type={driver.Username} />
+                </Tab>
+            );
+        });
+
         return (
             <Tabs activeKey={this.state.tabKey} onSelect={this.handleSelect} id="driver-schedules">
-                <Tab eventKey={1} title="Driver 1">
-                    <DriverTable tableContents={this.state.tableContents} type={'1'} />
-                </Tab>
-                <Tab eventKey={2} title="Driver 2">
-                    <DriverTable tableContents={this.state.tableContents} type={'2'} />
-                </Tab>
-                <Tab eventKey={3} title="Driver 3">
-                    <DriverTable tableContents={this.state.tableContents} type={'3'} />
-                </Tab>
+                {content}
             </Tabs>
         );
     }
