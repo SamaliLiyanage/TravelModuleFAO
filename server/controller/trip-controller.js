@@ -674,11 +674,7 @@ module.exports.filterTrips = function (req, res) {
 }
 
 module.exports.driverAvailabilityAll = function (req, res) {
-  trip.checkDriverAvailabilityAllTypes(req.body.driverID, req.body.tripDate, req.body.tripTime, req.body.tripType, req.body.duration, req.body.durationMinutes, result => {
-    if (result.status === "success" && result.result === 0) {
-      trip.assignDriver(req.body.tripID, req.body.driverID, req.body.tripStatus, response => {
-        return res.send(response);
-      });
-    }
+  trip.checkDriverAvailabilityAllTypes(req.query.driverID, req.query.tripDate, req.query.tripTime, req.query.tripType, req.query.duration, req.query.durationMinutes, result => {
+    return res.send(result)
   });
 }

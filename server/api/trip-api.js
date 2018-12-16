@@ -15,7 +15,7 @@ router.post('/approval', tripController.setApproval);
 router.get('/destinations/:tripID', tripController.getDestinations);
 router.get('/bentity/:tripID', tripController.getBudgetEntity);
 router.post('/checkavailability', tripController.driverAvailability);
-router.post('/checkavailabilityall', tripController.driverAvailabilityAll);
+router.get('/checkavailabilityall', tripController.driverAvailabilityAll);
 router.post('/canceltrip', tripController.cancelTrip);
 router.post('/fetchStatus', tripController.fetchStatus);
 router.post('/testing', tripController.testMobile);
