@@ -36,10 +36,11 @@ export default class Login extends Component {
           authenticate.userHasAuthenticated(false, null, null);
           authenticate.history.push('/login');
         } else {
-          console.log(res.data.Username, res.data.Role)
           authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
           if (res.data.Role === 1) {
             authenticate.history.push('/viewusers');
+          } else if (res.data.Role === 3) {
+            authenticate.history.push('/viewschedule');
           } else if (res.data.Role === 4) {
             authenticate.history.push('/requesttrip');
           } else if (res.data.Role === 2) {
@@ -70,12 +71,13 @@ export default class Login extends Component {
       password: this.state.password,
     })
       .then(function (res) {
-        console.log(res);
         var data = res.data.result;
         if (res.data.status === "success") {
           authenticate.userHasAuthenticated(true, data[0].Username, data[0].Role);
           if ((data[0].Role) === 1) {
             authenticate.history.push('/viewusers');
+          } else if ((data[0].Role) === 3) {
+            authenticate.history.push('/viewschedule');
           } else if ((data[0].Role) === 4) {
             authenticate.history.push('/requesttrip');
           } else if ((data[0].Role) === 2) {
@@ -84,7 +86,6 @@ export default class Login extends Component {
             authenticate.history.push('/viewfrequests');
           }
         } else if (res.data.status === "fail") {
-          console.log("In here");
           this.setState({
             username: "",
             password: "",
@@ -92,7 +93,6 @@ export default class Login extends Component {
           });
           authenticate.userHasAuthenticated(false, null, null);
         } else {
-          console.log("In here");
           this.setState({
             username: "",
             password: "",
@@ -103,7 +103,6 @@ export default class Login extends Component {
         }
       })
       .catch((error) => {
-        console.log("Response error::::", error);
         this.setState({
           username: "",
           password: "",

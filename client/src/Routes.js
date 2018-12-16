@@ -20,6 +20,7 @@ import DriverAvailability from './containers/TravelManager/DriverAvailability';
 import ViewDriverLeave from './containers/TravelManager/ViewDriverLeave';
 import UserProfile from './containers/UserProfile';
 import ViewProfile from './containers/ViewProfile';
+import ThisDriverSchedule from './containers/Driver/ThisDriverSchedule';
 
 export default ({ childProps }) =>
   <Switch>
@@ -41,5 +42,6 @@ export default ({ childProps }) =>
     <AppliedRoute path='/viewleave' exact component={ViewDriverLeave} props={childProps} />
     <AppliedRoute path='/changepassword/:mismatch' exact component={UserProfile} props={childProps} />
     <AppliedRoute path='/viewprofile' exact component={ViewProfile} props={childProps} />
+    <AppliedRoute path='/viewschedule' exact component={ThisDriverSchedule} props={childProps} />
     <Route component={NotFound} />
   </Switch>;

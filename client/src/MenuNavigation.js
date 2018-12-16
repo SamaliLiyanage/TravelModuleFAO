@@ -75,6 +75,9 @@ function SetMenu(props) {
 		} else if (userType === 3) {
 			return (
 				<Fragment>
+					<LinkContainer to='/viewschedule'>
+						<NavItem>My Trip Schedule</NavItem>
+					</LinkContainer>
 					<NavDropdown id="tripRequests" title="My Trips">
 						<LinkContainer to='/requesttrip'>
 							<NavItem>Request Trip</NavItem>
