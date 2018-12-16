@@ -121,7 +121,7 @@ module.exports.newTrip = function (req, res, next) {
         })
       }
       let month = new Date(req.body.tripDate)
-      if ((req.body.furtherRmrks === "") && (parseInt(req.body.tripType, 10) !== 2) && (req.body.cabRequested === false)) {
+      if ((req.body.furtherRmrks === "") && (req.body.cabRequested === false)) {
         user.getUsersRole(3, driversDetails => {
           let driverList = driversDetails.result.map((driverDetail) => {
             return driverDetail.Username;
@@ -435,15 +435,7 @@ function process(ordered_driver_index, index, tripTime, tripType, tripDuration, 
       return (response);
     });
   } else {
-    var endTime = parseInt(tripTime.slice(0, 2), 10) + parseInt(tripDuration, 10);
-    if (endTime.toString().length === 1) {
-      endTime = '0' + endTime + tripTime.slice(-3);
-    } else {
-      endTime = endTime + tripTime.slice(-3);
-    }
-
-    trip.checkDriverAvailability(ordered_driver_index[index], tripDate, tripTime, endTime, response => {
-      //console.log("time", tripTime, endTime);
+    trip.checkDriverAvailabilityAllTypes(ordered_driver_index[index], tripDate, tripTime, tripType, tripDuration, tripDurationMin, response => {
       if (response.status === 'success' && response.result === 0) {
         //check if the driver is on leave
         driver.isDriverOnLeave(ordered_driver_index[index], tripDate, tripTime, tripDuration, tripDurationMin, driverLeaveCount => {

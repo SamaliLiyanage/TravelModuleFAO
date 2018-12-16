@@ -359,9 +359,8 @@ exports.checkDriverAvailabilityAllTypes = function (
             timeHelper.getEndDate(tripDate, duration)
             .then ((endDate) => {
                 const values =[driverID, endDate, tripDate, driverID, endDate, tripDate];
-                console.log(values);
     
-                connection.query("SELECT(SELECT COUNT(*) FROM (SELECT TripID, Username, Trip_Status, Trip_Date, Trip_Time, Duration, Driver_ID, Duration_Minute, DATE_ADD(Trip_Date, INTERVAL Duration Day) AS End_Date FROM Trip WHERE Driver_ID=? AND Trip_Type=2) AS T WHERE Trip_Date<=? OR End_Date>=?) AS COUNT_1, (SELECT COUNT(*) FROM (SELECT TripID, Username, Trip_Status, Trip_Date, Trip_Time, Duration, Driver_ID, Duration_Minute FROM Trip WHERE Driver_ID=? AND Trip_Type!=2) AS T2 WHERE Trip_Date<=? AND Trip_Date>=?) AS COUNT_2", values, (err, result) => {
+                connection.query("SELECT(SELECT COUNT(*) FROM (SELECT TripID, Username, Trip_Status, Trip_Date, Trip_Time, Duration, Driver_ID, Duration_Minute, DATE_ADD(Trip_Date, INTERVAL Duration Day) AS End_Date FROM Trip WHERE Driver_ID=? AND Trip_Type=2) AS T WHERE Trip_Date<=? AND End_Date>=?) AS COUNT_1, (SELECT COUNT(*) FROM (SELECT TripID, Username, Trip_Status, Trip_Date, Trip_Time, Duration, Driver_ID, Duration_Minute FROM Trip WHERE Driver_ID=? AND Trip_Type!=2) AS T2 WHERE Trip_Date<=? AND Trip_Date>=?) AS COUNT_2", values, (err, result) => {
                     if (err) {
                         next({
                             status: 'fail',
@@ -378,10 +377,9 @@ exports.checkDriverAvailabilityAllTypes = function (
         } else if (parseInt(tripType, 10) !== 2) {
             timeHelper.getEndTime(tripTime, duration, durationMinutes)
             .then ((endTime) => {
-                const values =[driverID, endTime, tripTime, driverID, tripDate, tripDate];
-                console.log(values);
-
-                connection.query("SELECT(SELECT COUNT(*) FROM (SELECT TripID, Username, Trip_Status, Trip_Date, Trip_Time, Duration, Driver_ID, Duration_Minute, DATE_ADD(DATE_ADD(Trip_Time, INTERVAL Duration HOUR), INTERVAL Duration_Minute MINUTE) AS End_Time FROM Trip WHERE Driver_ID=? AND Trip_Type!=2) AS T WHERE Trip_Time<=? OR End_Time>=?) AS COUNT_1, (SELECT COUNT(*) FROM (SELECT TripID, Username, Trip_Status, Trip_Date, Trip_Time, Duration, Driver_ID, DATE_ADD(Trip_Date, INTERVAL Duration Day) AS End_Date FROM Trip WHERE Driver_ID=? AND Trip_Type=2) AS T2 WHERE Trip_Date<=? AND End_Date>=?) AS COUNT_2", values, (err, result) => {
+                const values =[driverID, tripDate, endTime, tripTime, driverID, tripDate, tripDate];
+                
+                connection.query("SELECT(SELECT COUNT(*) FROM (SELECT TripID, Username, Trip_Status, Trip_Date, Trip_Time, Duration, Driver_ID, Duration_Minute, DATE_ADD(DATE_ADD(Trip_Time, INTERVAL Duration HOUR), INTERVAL Duration_Minute MINUTE) AS End_Time FROM Trip WHERE Driver_ID=? AND Trip_Type!=2) AS T WHERE Trip_Date=? AND (Trip_Time<=? AND End_Time>=?)) AS COUNT_1, (SELECT COUNT(*) FROM (SELECT TripID, Username, Trip_Status, Trip_Date, Trip_Time, Duration, Driver_ID, DATE_ADD(Trip_Date, INTERVAL Duration Day) AS End_Date FROM Trip WHERE Driver_ID=? AND Trip_Type=2) AS T2 WHERE Trip_Date<=? AND End_Date>=?) AS COUNT_2", values, (err, result) => {
                     if (err) {
                         next({
                             status: 'fail',
@@ -390,7 +388,7 @@ exports.checkDriverAvailabilityAllTypes = function (
                     } else {
                         next({
                             status: 'success',
-                            result: result
+                            result: result[0].COUNT_1 + result[0].COUNT_2
                         });
                     }
                 });
