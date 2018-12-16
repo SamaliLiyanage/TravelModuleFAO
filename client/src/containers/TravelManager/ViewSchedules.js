@@ -76,10 +76,8 @@ export default class DriverSchedule extends React.Component {
             authenticate.history.push('/login')
         } else {
             authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
-            if(res.data.Role===1) {
-            authenticate.history.push('/viewusers');
-            } else if (res.data.Role===4) {
-            authenticate.history.push('/requesttrip');
+            if (res.data.Role===4) {
+                authenticate.history.push('/requesttrip');
             } 
         }
         })

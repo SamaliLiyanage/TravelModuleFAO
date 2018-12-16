@@ -116,9 +116,7 @@ export default class AdminView extends React.Component {
                 infor.history.push('/login');
             } else {
                 infor.userHasAuthenticated(true, res.data.Username, res.data.Role);
-                if (res.data.Role==1) {
-                    infor.history.push('/viewusers');
-                } else if (res.data.Role==2) {
+                if (res.data.Role==2) {
                     infor.history.push('/viewtrips');
                 } else if (res.data.Role==4) {
                     infor.history.push('/requesttrip');

@@ -19,6 +19,27 @@ function SetMenu(props) {
 							<NavItem>Add User</NavItem>
 						</LinkContainer>
 					</NavDropdown>
+					<NavDropdown id="travelManager" title="Travel Manager">
+						<LinkContainer to='/viewtrips'>
+							<NavItem>View Trips</NavItem>
+						</LinkContainer>
+						<LinkContainer to='/viewschedules'>
+							<NavItem>Driver Schedules</NavItem>
+						</LinkContainer>
+					</NavDropdown>
+					<NavDropdown id="travelAdministrator" title="Travel Admin">
+						<LinkContainer to='/viewfrequests'>
+							<NavItem>View Requests</NavItem>
+						</LinkContainer>
+					</NavDropdown>
+					<NavDropdown id="driverLeave" title="Driver Leave">
+						<LinkContainer to='/driveravailability'>
+							<NavItem>Record Leave</NavItem>
+						</LinkContainer>
+						<LinkContainer to='/viewleave'>
+							<NavItem>View Leave</NavItem>
+						</LinkContainer>
+					</NavDropdown>
 					<NavDropdown id="tripRequests" title="My Trips">
 						<LinkContainer to='/requesttrip'>
 							<NavItem>Request Trip</NavItem>
