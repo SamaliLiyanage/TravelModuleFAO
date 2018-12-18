@@ -474,7 +474,7 @@ function process(ordered_driver_index, index, tripTime, tripType, tripDuration, 
                             destinationList += (' ' + destination.Destination + ', ' + destination.Destination_Town)
                         });
 
-                        driverMessage = '<ul><li>Trip ID:' + tripID +
+                        driverMessage = 'You have been assigned to the following trip: <ul><li>Trip ID:' + tripID +
                         '</li><li>Username: ' + userName +
                         '</li><li>Trip Date: ' + tripDate +
                         '</li><li>Trip Time: ' + tripTime +
