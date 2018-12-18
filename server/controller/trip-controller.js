@@ -446,6 +446,7 @@ function process(ordered_driver_index, index, tripTime, tripType, tripDuration, 
 
                 var text = null;
                 var smsMessage = null;
+                var driverMessage = null;
 
                 user.newGetUser(ordered_driver_index[index], tripDriverDetail => {
                   if (ordered_driver_index[index] != '0') {
@@ -464,17 +465,34 @@ function process(ordered_driver_index, index, tripTime, tripType, tripDuration, 
                       });
 
                       //Send emails to driver
-                      emailHelper.sendMessage(
-                        tripDriverDetail[0].Username,
-                        'Trip Request ' + tripID,
-                        "You have been assigned to " + userDetails[0].Full_Name + "\'s trip with Trip ID: " + tripID,
-                        false
-                      );
-                      mobileHelper.sendMessage(
-                        "94" + tripDriverDetail[0].Mobile_No,
-                        "You have been assigned to " + userDetails[0].Full_Name + "\'s trip with Trip ID: " + tripID,
-                        result => {console.log(result)}
-                      );
+                      trip.getDestinations(tripID, result => {
+                        console.log(result);
+                        let destinationList = "";
+                        result.data.forEach((destination, index) => {
+                          (index < (result.data.length - 1)) ?
+                            destinationList += (' ' + destination.Destination + ', ' + destination.Destination_Town+ '\n') :
+                            destinationList += (' ' + destination.Destination + ', ' + destination.Destination_Town)
+                        });
+
+                        driverMessage = '<ul><li>Trip ID:' + tripID +
+                        '</li><li>Username: ' + userName +
+                        '</li><li>Trip Date: ' + tripDate +
+                        '</li><li>Trip Time: ' + tripTime +
+                        '</li><li>Destination: ' + destinationList +
+                        '</li></ul>';
+
+                        emailHelper.sendMessage(
+                          tripDriverDetail[0].Username,
+                          'Trip Request ' + tripID,
+                          driverMessage,
+                          true
+                        );
+                        mobileHelper.sendMessage(
+                          "94" + tripDriverDetail[0].Mobile_No,
+                          "You have been assigned to " + userDetails[0].Full_Name + "\'s trip with Trip ID: " + tripID,
+                          result => {console.log(result)}
+                        );
+                      });
                     });
                   }
                 });
