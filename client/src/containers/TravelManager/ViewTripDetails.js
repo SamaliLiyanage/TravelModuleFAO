@@ -3,6 +3,30 @@ import axios from 'axios';
 import { Form, FormGroup, Col, ControlLabel, FormControl, Button, Modal, ButtonToolbar } from 'react-bootstrap';
 import { DriverName, TripTypes, TripStatus } from '../../Selections';
 
+function TripDuration(props) {
+    var content = null;
+    if (props.fieldTrip) {
+        content = (
+            <FormGroup>
+                <Col componentClass={ControlLabel} smOffset={1} sm={2}>Duration:</Col>
+                <Col sm={3}>
+                    <FormControl.Static>{props.duration} Days</FormControl.Static>
+                </Col>
+            </FormGroup>
+        );
+    } else {
+        content = (
+            <FormGroup>
+                <Col componentClass={ControlLabel} smOffset={1} sm={2}>Duration:</Col>
+                <Col sm={3}>
+                    <FormControl.Static>{props.duration} Hours {props.durationMins} Minutes</FormControl.Static>
+                </Col>
+            </FormGroup>
+        );
+    }
+    return content;
+}
+
 function DriverLeaveModal(props) {
     let showModal = props.showModal;
     let tripID = props.tripID;
@@ -513,6 +537,7 @@ export default class ViewTripDetails extends React.Component {
                         <FormControl.Static>{this.state.tripInfo.Trip_Time}</FormControl.Static>
                     </Col>
                 </FormGroup>
+                <TripDuration fieldTrip={parseInt(this.state.tripInfo.Trip_Type, 10) === 2} duration={this.state.tripInfo.Duration} durationMins={this.state.tripInfo.Duration_Minute} />
                 <FormGroup>
                     <Col componentClass={ControlLabel} smOffset={1} sm={2}>Trip Type:</Col>
                     <Col sm={3}>
