@@ -124,3 +124,137 @@ exports.isDriverOnLeave = function (driverID, tripDate, tripStartTime, duration,
             console.log(error);
         })
 }
+
+exports.getDriverBlockedStatus = function (driverIDs, next) {
+    let queries = "";
+    let countQueries = driverIDs.length - 1 ;
+
+    driverIDs.forEach((driverID, index) => {
+        console.log(countQueries !== index);
+        if(countQueries !== index) {
+            queries += "SELECT * FROM (SELECT * FROM DriverBlocked WHERE DriverID=\'"+driverID+"\' ORDER BY Date DESC Limit 1) AS T" + index + " UNION ";            
+        } else {
+            queries += "SELECT * FROM (SELECT * FROM DriverBlocked WHERE DriverID=\'"+driverID+"\' ORDER BY Date DESC  Limit 1) AS T" + index ;
+        }
+    });
+    connection.query(queries, (err, result) => {
+        let temp;
+
+        if (err) {
+            temp = {
+                status: "fail",
+                result: err
+            }
+        } else {
+            temp = {
+                status: "success",
+                result: result
+            }
+        }
+
+        next(temp);
+    });
+}
+
+exports.getDriverBlockedHistory = function (next) {
+    connection.query("SELECT * FROM DriverBlocked ORDER BY Date DESC", (err, result) => {
+        let temp;
+
+        if(err) {
+            temp = {
+                status: "fail",
+                result: err
+            }
+        } else {
+            temp = {
+                status: "success",
+                result: result
+            }
+        }
+
+        next(temp);
+    });
+}
+
+exports.getCurrentResidentDriver = function (year, month, next) {
+    const values = [year, month];
+
+    connection.query("SELECT * FROM ResidentDriver WHERE YEAR(Date)=? AND MONTH(Date)=? ORDER BY Date DESC Limit 1", values, (err, result) => {
+        let temp;
+
+        if(err) {
+            temp = {
+                status: "fail",
+                result: err
+            }
+        } else {
+            temp = {
+                status: "success",
+                result: result[0]
+            }
+        }
+
+        next(temp);
+    })
+}
+
+exports.getResidentDriverHistory = function (next) {
+    connection.query("SELECT * FROM ResidentDriver ORDER BY Date DESC", (err, result) => {
+        let temp;
+
+        if (err) {
+            temp = {
+                status: "fail",
+                result: err
+            }
+        } else {
+            temp = {
+                status: "success",
+                result: result
+            }
+        }
+
+        next(temp);
+    });
+}
+
+exports.saveDriverBlock = function (driverID, date, blocked, next) {
+    const values = [driverID, date, blocked];
+
+    connection.query("INSERT INTO DriverBlocked(DriverID, Date, Blocked) VALUES (?, ?, ?)", values, (err, result) => {
+        let temp;
+        if (err) {
+            temp = {
+                status: "fail",
+                result: err
+            }
+        } else {
+            temp = {
+                status: "success",
+                result: result
+            }
+        }
+        next(temp);
+    });
+}
+
+exports.saveResidentDriver = function (driverID, date, next) {
+    const values = [driverID, date];
+
+    connection.query("INSERT INTO ResidentDriver(DriverID, Date) VALUES (?, ?)", values, (err, result) => {
+        let temp;
+        if (err) {
+            temp = {
+                status: "fail",
+                result: err
+            }
+        } else {
+            temp = {
+                status: "success",
+                result: result
+            }
+        }
+
+        next(temp);
+    });
+}

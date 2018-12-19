@@ -1,5 +1,6 @@
 var driver = require('../model/driver');
 var trip = require('../model/trip');
+var user = require('../model/user');
 var timeHelper = require('../helper/time-helper');
 
 module.exports.addLeave = function (req, res, next) {
@@ -116,5 +117,70 @@ module.exports.isDriverOnLeave = function (req, res, next) {
                 status: "fail"
             });
         }
+    });
+}
+
+module.exports.getDriverBlockStatus = function (req, res, next) {
+    user.getUsersRole(3, (users) => {
+        if(users.status === "success") {
+            let driverIDs = [];
+            users.result.forEach((driverDetail) => {
+                driverIDs.push(driverDetail.Username);
+            });
+
+            driver.getDriverBlockedStatus(driverIDs, (result) => {
+                if (result.status === "success") {
+                    res.send({
+                        status: "success",
+                        result: result.result
+                    });
+                } else {
+                    res.send({
+                        status: "fail",
+                        result: result.result
+                    })
+                }
+            })
+        }
+    })
+}
+
+module.exports.getDriverBlockHistory = function (req, res, next) {
+    driver.getDriverBlockedHistory((result) => {
+        res.send(result);
+    });
+}
+
+module.exports.getCurrentResidentDriver = function (req, res, next) {
+    const curDate = new Date();
+
+    driver.getCurrentResidentDriver(curDate.getFullYear(), curDate.getMonth()+1, result => {
+        if (result.status === "success") {
+            res.send(result);
+        } else {
+            res.send({
+                status: "success",
+                result: result.result
+            })
+        }
+    });
+}
+
+module.exports.getResidentDriverHistory = function (req, res, next) {
+    driver.getResidentDriverHistory((history) => {
+        res.send(history);
+    });
+}
+
+module.exports.setDriverBlockStatus = function (req, res, next) {
+    driver.saveDriverBlock(req.body.driverID, new Date(), req.body.blocked, response => {
+        res.send(response);
+    });
+}
+
+module.exports.setResidentDriver = function (req, res, next) {
+    const curDate = new Date();
+    driver.saveResidentDriver(req.body.driverID, curDate, response => {
+        res.send(response);
     });
 }
