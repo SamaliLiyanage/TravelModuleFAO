@@ -68,6 +68,9 @@ function SetMenu(props) {
 					<LinkContainer to='/viewschedules'>
 						<NavItem>Driver Schedules</NavItem>
 					</LinkContainer>
+					<LinkContainer to='/blockdrivers'>
+						<NavItem>Block Drivers</NavItem>
+					</LinkContainer>
 					<NavDropdown id="driverLeave" title="Driver Leave">
 						<LinkContainer to='/driveravailability'>
 							<NavItem>Record Leave</NavItem>

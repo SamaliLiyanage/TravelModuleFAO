@@ -386,7 +386,7 @@ export default class TabbedRequest extends React.Component {
                                 <MenuItem eventKey={0.2}>Assigned</MenuItem>
                                 <MenuItem eventKey={0.3}>Unassigned</MenuItem>
                             </NavDropdown>
-                            <NavDropdown eventKey={1} title="Day Trips" >
+                            <NavDropdown eventKey={1} title="City Trips" >
                                 <MenuItem eventKey={1.1}>All</MenuItem>
                                 <MenuItem eventKey={1.2}>Assigned</MenuItem>
                                 <MenuItem eventKey={1.3}>Unassigned</MenuItem>
