@@ -632,13 +632,15 @@ cron.schedule("* * * * *", function () {
 
       mobileHelper.sendMessage(
         "94" + element.Mobile_No,
-        "You only have 30 minutes left in the allocated time for your trip with the Trip ID " + element.TripID
+        "You only have 30 minutes left in the allocated time for your trip with the Trip ID " + element.TripID,
+        (x) => {console.log(x)}
       );
 
       user.getUser("driver" + element.Driver_ID + "@fao.org", response => {
         mobileHelper.sendMessage(
           "94" + response.Mobile_No,
-          "You only have 30 minutes left in the allocated time for your current trip with the Trip ID " + element.TripID
+          "You only have 30 minutes left in the allocated time for your current trip with the Trip ID " + element.TripID,
+          (x) => {console.log(x)}
         );
       });
     });
