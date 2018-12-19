@@ -360,7 +360,7 @@ module.exports.setApproval = function (req, res) {
 
 //Trip start and end
 module.exports.fetchStatus = function (req, res) {
-  const message = req.body.response;
+  const message = req.body.response.trim();
   var state, tripID, mileage;
   console.log(message);
 
