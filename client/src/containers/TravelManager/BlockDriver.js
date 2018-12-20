@@ -5,7 +5,7 @@ import { DriverName } from "../../Selections";
 
 /**
  * @description Display if the driver has been blocked or not
- * @param {driverTuple, driverBlockStatus, changeBlockStatus} props 
+ * @param {driverTuple, driverList, driverBlockStatus, changeBlockStatus} props 
  */
 function BlockDriverFromSystem(props) {
     const driverTuple = props.driverTuple;
@@ -15,7 +15,7 @@ function BlockDriverFromSystem(props) {
     const content = driverBlockStatus.map((blockDetail, index) => {
         return (
             <Row>
-                <FormGroup controlId={blockDetail.driverID}>
+                <FormGroup controlId={blockDetail.DriverID}>
                     <Col sm={5} componentClass={ControlLabel}><DriverName driverTuple={driverTuple} driverID={blockDetail.DriverID} /></Col>
                     <Col sm={4}>
                         <FormControl componentClass="select" value={parseInt(blockDetail.Blocked, 10)} onChange={(e)=>{changeBlockStatus(e, blockDetail.DriverID, index)}} >
@@ -273,14 +273,37 @@ export default class BlockDriver extends React.Component {
     componentWillMount() {
         axios.get('/users/Role/3')
             .then((driverRes) => {
-                let driverTuple = {}
+                let driverTuple = {};
+                let tempBlockStatus = {};
+                let finalBlockStatus = [];
+
                 driverRes.data.map((driver) => {
                     driverTuple[driver.Username] = driver.Full_Name.split(" ")[0];
+                    tempBlockStatus[driver.Username] = 0;
                 });
 
                 this.setState({
                     driverTuple: driverTuple,
                     driverList: driverRes.data
+                })
+
+                axios.get('/drivers/blockStatus')
+                .then((status) => {
+                    if (status.data.result) {
+                        status.data.result.forEach((driver) => {
+                            tempBlockStatus[driver.DriverID] = driver.Blocked;
+                        });
+                    }
+                    let keys = Object.keys(tempBlockStatus);
+                    keys.forEach((key) => {
+                        finalBlockStatus.push({
+                            DriverID: key,
+                            Blocked: tempBlockStatus[key]
+                        });
+                    }); 
+                    this.setState({
+                        driverBlockStatus: finalBlockStatus
+                    });
                 })
             });
 
