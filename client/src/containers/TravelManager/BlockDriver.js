@@ -30,6 +30,8 @@ function BlockDriverFromSystem(props) {
 
     return (
         <Row className="show-grid">
+            {"Block Drivers from Being Assigned"}
+            <br />
             <Form horizontal>
                 {content}
             </Form>
@@ -66,6 +68,8 @@ function DriverForResident(props) {
     if (driverForResident !== "0") {
         return (
             <Row className="show-grid">
+                {"Driver for FAO Resident"}
+                <br />
                 <Form horizontal>
                     <Row>
                         <FormGroup controlId="driverForResident">
@@ -81,9 +85,11 @@ function DriverForResident(props) {
         );
     } else if ((driverForResident === "0") || isChanging) {
         return (
-            <Row>
+            <Row className="show-grid">
+                {"Driver for FAO Resident"}
+                <br />
                 <Form horizontal>
-                    <Row className="show-grid">
+                    <Row>
                         <FormGroup controlId="driverForResident">
                             <Col sm={5} componentClass={ControlLabel}>For the month of {(assignedDate.getMonth() + 1)}, {assignedDate.getFullYear()}</Col>
                             <Col sm={4}>
