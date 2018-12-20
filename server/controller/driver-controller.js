@@ -130,10 +130,24 @@ module.exports.getDriverBlockStatus = function (req, res, next) {
 
             driver.getDriverBlockedStatus(driverIDs, (result) => {
                 if (result.status === "success") {
-                    res.send({
-                        status: "success",
-                        result: result.result
-                    });
+                    if (result.result.length === 0) {
+                        let finalArray = [];
+                        driverIDs.forEach((driver) => {
+                            finalArray.push({
+                                DriverID: driver,
+                                Blocked: 0
+                            });
+                        });
+                        res.send({
+                            status: "success",
+                            result: finalArray
+                        });
+                    } else {
+                        res.send({
+                            status: "success",
+                            result: result.result
+                        });
+                    }
                 } else {
                     res.send({
                         status: "fail",
