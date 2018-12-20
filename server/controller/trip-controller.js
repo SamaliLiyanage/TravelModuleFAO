@@ -538,7 +538,7 @@ module.exports.cancelTrip = function (req, res, next) {
           if (detail.driverID !== '0' && detail.driverID !== 'cab') {
             user.newGetUser(detail.driverID, driverDetails => {
               emailHelper.sendMessage(
-                driverDetails[0].Username,
+                detail.driverID,
                 subject,
                 message,
                 false
