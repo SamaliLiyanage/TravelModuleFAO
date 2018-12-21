@@ -71,7 +71,7 @@ function sendMessageRequest (receiver, message) {
                             console.log("Sending message failed");
                             reject(err);
                         } else if (resp.body.error === "0") {
-                            resolve({ result: "success" });
+                            resolve({ result: "success", phone: receiver.toString() });
                         } else {
                             reject("Sending message failed with error code " + resp.body);
                         }
