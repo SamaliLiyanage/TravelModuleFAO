@@ -1,131 +1,114 @@
-var request = require('request');
-var cron = require('node-cron');
 require('dotenv').config();
+var cron = require('node-cron');
+var request = require('request');
+var fs = require('fs');
 
-var offset = new Date().getTimezoneOffset();
-var startTimeDate = new Date();
-//startTimeDate.setMinutes(startTimeDate.getMinutes());
-var endTimeDate = new Date(startTimeDate);
-endTimeDate.setMinutes(endTimeDate.getMinutes() + 5);
-
-let authCode = null;
-
-var startTime = startTimeDate.getFullYear() + '-' + (startTimeDate.getMonth() + 1) + '-' + startTimeDate.getDate() + ' ' + startTimeDate.getHours() + ':' + startTimeDate.getMinutes() + ':' + startTimeDate.getSeconds();
-var endTime = endTimeDate.getFullYear() + '-' + (endTimeDate.getMonth() + 1) + '-' + endTimeDate.getDate() + ' ' + endTimeDate.getHours() + ':' + endTimeDate.getMinutes() + ':' + endTimeDate.getSeconds();
-
-function getAuthorization(callback) {
-    const options = {
-        url: 'https://digitalreachapi.dialog.lk/refresh_token.php',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        json: {
-            "u_name": "fao_api",
-            "passwd": process.env.SMS_PASSWORD
+// function that will return a promise with the authorization token when successful
+function getAuthToken () {
+    return new Promise ((resolve, reject) => {
+        const options = {
+            url: 'https://digitalreachapi.dialog.lk/refresh_token.php',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            json: {
+                'u_name': 'fao_api',
+                'passwd': process.env.SMS_PASSWORD
+            }
         }
-    };
+        request.post(options, (err, resp, body) => {
+            if (err) {
+                console.log("Problem in retrieving authorization token");
+                reject(err);
+            } else {
+                console.log("Authorization token successfully ", resp.body);
+                fs.writeFile(__dirname + '/../logs/sms_auth.txt', resp.body.access_token, (err) => {
+                    if (err) {
+                        reject (err);
+                    } else {
+                        resolve(resp.body.access_token);
+                    }
+                });
+            }
+        });
+    }); 
+}
 
-    let x = 0;
-
-    request.post(options, (err, resp, body) => {
-        if (err) {
-            console.log('authorization error ', err.body);
-            authcode = null;
-            callback(null);
-        } else {
-            console.log("Authorization Success", resp.body);
-            authCode = resp.body.access_token;
-            callback(resp.body.access_token);
-        };
+// function that will return a promise with the message status when successful
+function sendMessageRequest (receiver, message) {
+    var startTimeDate = new Date();
+    //startTimeDate.setMinutes(startTimeDate.getMinutes());
+    var endTimeDate = new Date(startTimeDate);
+    endTimeDate.setMinutes(endTimeDate.getMinutes() + 5);
+    
+    var startTime = startTimeDate.getFullYear() + '-' + (startTimeDate.getMonth() + 1) + '-' + startTimeDate.getDate() + ' ' + startTimeDate.getHours() + ':' + startTimeDate.getMinutes() + ':' + startTimeDate.getSeconds();
+    var endTime = endTimeDate.getFullYear() + '-' + (endTimeDate.getMonth() + 1) + '-' + endTimeDate.getDate() + ' ' + endTimeDate.getHours() + ':' + endTimeDate.getMinutes() + ':' + endTimeDate.getSeconds();
+    return new Promise ((resolve, reject) => {
+        try{
+            fs.readFile(__dirname + '/../logs/sms_auth.txt',(err, data) =>{
+                console.log(startTime, endTime, receiver.toString(), message, data.toString());
+                if (err) {
+                    reject("Error reading authorization token from file");
+                } else {
+                    var options = {
+                        url: 'https://digitalreachapi.dialog.lk/camp_req.php',
+                        headers: {
+                            'Authorization': data.toString(),
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        json: {
+                            'msisdn': receiver.toString(),
+                            'mt_port': "FAO",
+                            'channel': "1",
+                            's_time': startTime,
+                            'e_time': endTime,
+                            'msg': message
+                        }
+                    }
+                    request.post(options, (err, resp, body) => {
+                        if (err) {
+                            console.log("Sending message failed");
+                            reject(err);
+                        } else if (resp.body.error === "0") {
+                            resolve({ result: "success" });
+                        } else {
+                            reject("Sending message failed with error code " + resp.body);
+                        }
+                    });
+                }
+            });
+        } catch (err) {
+            console.log("Sending message failed!", err);
+            reject("Authentication code problem " + err);
+        }            
     });
 }
 
-function sendMessageRequest(options) {
-    request.post(options, (err, resp, body) => {
-        if (err) {
-            console.log("Err ", err.body);
-        } else if (resp.body.error === "0") {
-            return ({ result: "success" });
-        } else if (resp.body.error === "108") {
-            var get_Auth = new Promise((resolve, reject) => {
-                getAuthorization(value => {
-                    if (value === null) {
-                        reject(null);
-                    } else {
-                        resolve(value)
-                    }
-                });
-            })
-            get_Auth.then((value) => {
-                authCode = value;
-            }).catch((value) => {
-                console.log("Problem !!!");
-            })
-            console.log("XXX ", authCode);
-            sendMessageRequest(options);
-        } else {
-            return({ error: resp.body.error });
-        }
+// Export function to use on startup
+exports.onStartUp = function() {
+    let authToken = getAuthToken();
+    authToken.then((value) => {
+        console.log("Authentication code is ", value);
+    }).catch((err) => {
+        console.log("Auth token problem ", err);
     });
+}
+
+exports.sendMessage = function (receiver, message, callback) {
+    sendMessageRequest (receiver, message)
+    .then((response) => {
+        callback (response);
+    }).catch((error) => {
+        callback (error);
+    })
 }
 
 cron.schedule("0 0 * * *", () => {
-    var get_Auth = new Promise((resolve, reject) => {
-        getAuthorization(value => {
-            if (value === null) {
-                reject(null);
-            } else {
-                resolve(value)
-            }
-        });
-    })
-    get_Auth.then((value) => {
-        authCode = value;
-    }).catch((value) => {
-        console.log("Problem !!!");
-    })
-    console.log("XXX ", authCode);
+    let authToken = getAuthToken();
+    authToken.then((value) => {
+        console.log("Authentication code is ", value);
+    }).catch((err) => {
+        console.log("Auth token problem ", err);
+    });
 });
-
-exports.sendMessage = function (receiver, message, callback) {
-    while (authCode === null) {
-        getAuthorization();
-    }
-    const options = {
-        url: 'https://digitalreachapi.dialog.lk/camp_req.php',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': authCode,
-            'Accept': 'application/json'
-        },
-        json: {
-            "msisdn": receiver.toString(),
-            "mt_port": "FAO",
-            "channel": "1",
-            "s_time": startTime,
-            "e_time": endTime,
-            "msg": message
-        }
-    };
-    console.log(startTime, endTime, authCode);
-    sendMessageRequest(options)
-    callback(sendMessageRequest(options));
-}
-
-exports.onStartUp = function () {
-    var get_Auth = new Promise((resolve, reject) => {
-        getAuthorization(value => {
-            if (value === null) {
-                reject(null);
-            } else {
-                resolve(value)
-            }
-        });
-    })
-    get_Auth.then((value) => {
-        authCode = value;
-    }).catch((value) => {
-        console.log("Problem !!!");
-    })
-    console.log("XXX ", authCode);
-}
