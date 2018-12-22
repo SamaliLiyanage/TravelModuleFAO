@@ -126,7 +126,7 @@ module.exports.newTrip = function (req, res, next) {
           let driverList = driversDetails.result.map((driverDetail) => {
             return driverDetail.Username;
           });
-          trip.countMonthlyTrips(month.getMonth() + 1, req.body.tripType)
+          trip.countMonthlyTripsForAvailableDrivers(month.getFullYear(), month.getMonth() + 1, req.body.tripType, driverList)
             .then(function (response) {
               const monthList = response.result;
 
@@ -134,13 +134,9 @@ module.exports.newTrip = function (req, res, next) {
               let sortedDriverList = [];
 
               for (let driver in driverList) {
-                if (driverList[driver] !== 'Dinesh.Pussegoda@fao.org' && driverList[driver] !== 'driver2@fao.org') {
-                  if (monthList[driverList[driver]] == null) {
-                    sortableDriverList.push([driverList[driver], 0]);
-                  } else {
+                if (monthList[driverList[driver]] != null) {
                     sortableDriverList.push([driverList[driver], monthList[driverList[driver]]]);
                   }
-                }
               }
 
               sortableDriverList.sort(function (a, b) {
@@ -314,7 +310,7 @@ module.exports.setApproval = function (req, res) {
           return driverDetail.Username;
         });
         const month = new Date(detail.data.Trip_Date);
-        trip.countMonthlyTrips(month.getMonth() + 1, detail.data.Trip_Type)
+        trip.countMonthlyTripsForAvailableDrivers(month.getFullYear(), month.getMonth() + 1, detail.data.Trip_Type, driverList)
           .then(function (respo) {
             const monthList = respo.result;
 
@@ -322,13 +318,9 @@ module.exports.setApproval = function (req, res) {
             let sortedDriverList = [];
 
             for (let driver in driverList) {
-              if (driverList[driver] !== 'Dinesh.Pussegoda@fao.org' && driverList[driver] !== 'driver2@fao.org') {
-                if (monthList[driverList[driver]] == null) {
-                  sortableDriverList.push([driverList[driver], 0]);
-                } else {
+                if (monthList[driverList[driver]] != null) {
                   sortableDriverList.push([driverList[driver], monthList[driverList[driver]]]);
                 }
-              }
             }
 
             sortableDriverList.sort(function (a, b) {
@@ -696,5 +688,19 @@ module.exports.filterTrips = function (req, res) {
 module.exports.driverAvailabilityAll = function (req, res) {
   trip.checkDriverAvailabilityAllTypes(req.query.driverID, req.query.tripDate, req.query.tripTime, req.query.tripType, req.query.duration, req.query.durationMinutes, result => {
     return res.send(result)
+  });
+}
+
+module.exports.abcd = function (req, res) {
+  user.getUsersRole(3, driverDetails => {
+    let driverList = driverDetails.result.map((driverDetail) => {
+      return driverDetail.Username;
+    });
+
+    trip.countMonthlyTripsForAvailableDrivers(req.body.year, req.body.month, req.body.type, driverList)
+    .then((result) => {
+      console.log(result);
+      res.send(result);
+    })
   });
 }

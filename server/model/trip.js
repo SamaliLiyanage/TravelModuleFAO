@@ -422,6 +422,51 @@ exports.countMonthlyTrips = function (month, type) {
     });
 }
 
+exports.countMonthlyTripsForAvailableDrivers = function (year, month, type, driverList) {
+    const driverNumber = driverList.length - 1;
+
+    let blockedDriverQuery = "(SELECT * FROM (";
+    let driverQuery = "SELECT DriverID FROM (";
+    
+    driverList.forEach((driver, index) => {
+        console.log("AAAAAAAAA", index, driverNumber);
+        if (index !== driverNumber) {
+            driverQuery += "SELECT * FROM (SELECT * FROM DriverBlocked WHERE DriverID=\'" + driver + "\' ORDER BY Date DESC Limit 1) AS T" + index + " UNION ";
+        } else {
+            driverQuery += "SELECT * FROM (SELECT * FROM DriverBlocked WHERE DriverID=\'" + driver + "\' ORDER BY Date DESC Limit 1) AS T" + index;
+        }
+
+    });
+
+    driverQuery += ") AS T WHERE Blocked=1) AS TA";
+
+    blockedDriverQuery += (driverQuery + " UNION SELECT DriverID FROM (SELECT * FROM ResidentDriver WHERE YEAR(Date)=" + year + " AND MONTH(Date)=" + month + " ORDER BY Date DESC Limit 1) AS TB)");
+    console.log(blockedDriverQuery);
+
+    return new Promise (function (resolve, reject) {
+        const values = [year, month, type];
+        connection.query("SELECT TX.Username, IFNULL(COUNT(TY.Driver_ID), 0) AS TripCount FROM (SELECT Username FROM User WHERE Role=3 AND Username NOT IN " + blockedDriverQuery + " ) AS TX LEFT JOIN (SELECT TripID, Driver_ID FROM Trip WHERE YEAR(Trip_Date)=? AND MONTH(Trip_Date)=? AND Trip_Type=?) AS TY ON TX.Username = TY.Driver_ID GROUP BY TX.Username", values, (err, results) => {
+            if (err) {
+                console.log(err);
+                temp = {
+                    status: 'fail'
+                };
+                reject(temp);
+            } else {
+                let driverCount = {};
+                results.forEach(driver => {
+                    driverCount[driver.Username] = parseInt(driver.TripCount, 10);
+                });
+                temp = {
+                    status: 'success',
+                    result: driverCount
+                };
+                resolve(temp);
+            }
+        });
+    });
+}
+
 exports.cancelTrip = function (tripID) {
     return new Promise(function (resolve, reject) {
         var temp;
