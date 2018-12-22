@@ -690,17 +690,3 @@ module.exports.driverAvailabilityAll = function (req, res) {
     return res.send(result)
   });
 }
-
-module.exports.abcd = function (req, res) {
-  user.getUsersRole(3, driverDetails => {
-    let driverList = driverDetails.result.map((driverDetail) => {
-      return driverDetail.Username;
-    });
-
-    trip.countMonthlyTripsForAvailableDrivers(req.body.year, req.body.month, req.body.type, driverList)
-    .then((result) => {
-      console.log(result);
-      res.send(result);
-    })
-  });
-}

@@ -21,6 +21,5 @@ router.post('/fetchStatus', tripController.fetchStatus);
 router.post('/testing', tripController.testMobile);
 router.get('/consReq/:tripID', tripController.consolidatedRequest);
 router.get('/filterTrip', tripController.filterTrips);
-router.post('/abcd', tripController.abcd);
 
 module.exports = router;
