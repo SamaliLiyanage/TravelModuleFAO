@@ -377,17 +377,17 @@ module.exports.fetchStatus = function (req, res) {
       if ((response.Start !== null) && (response.End === null)) {
         trip.setTripStatus(tripID, state, mileage, 4, resp => {
           console.log(resp);
-          mobileHelper.sendMessage('Successfully recorded trip end', req.body.source, result => {
+          mobileHelper.sendMessage(req.body.source, 'Successfully recorded trip end', result => {
             res.send(result);
           });
         })
       } else {
-        mobileHelper.sendMessage('Error in format of text message', req.body.source, result => {
+        mobileHelper.sendMessage(req.body.source, 'Error in format of text message', result => {
           res.send(result);
         });
       }
     } else {
-      mobileHelper.sendMessage('Error in format of text message', req.body.source, result => {
+      mobileHelper.sendMessage(req.body.source, 'Error in format of text message', result => {
         res.send(result);
       });
     }
@@ -521,7 +521,7 @@ module.exports.cancelTrip = function (req, res, next) {
           );
 
           mobileHelper.sendMessage(
-            detail.mobileNumber,
+            "94" + detail.mobileNumber,
             message,
             (msgResult) => { console.log(msgResult) }
           );
@@ -537,7 +537,7 @@ module.exports.cancelTrip = function (req, res, next) {
               );
 
               mobileHelper.sendMessage(
-                driverDetails[0].Mobile_No,
+                "94" + driverDetails[0].Mobile_No,
                 message,
                 (driverMsgReslt) => { console.log(driverMsgReslt) }
               );
@@ -557,7 +557,7 @@ module.exports.cancelTrip = function (req, res, next) {
                 );
 
                 mobileHelper.sendMessage(
-                  manager.Mobile_No,
+                  "94" + manager.Mobile_No,
                   message,
                   (msgResult) => { console.log(msgResult) }
                 );
