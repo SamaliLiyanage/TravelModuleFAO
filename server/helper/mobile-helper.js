@@ -73,7 +73,7 @@ function sendMessageRequest (receiver, message) {
                         } else if (resp.body.error === "0") {
                             resolve({ result: "success", phone: receiver.toString() });
                         } else {
-                            reject("Sending message failed with error code " + resp.body);
+                            reject("Sending message failed with error code " + resp.body.error);
                         }
                     });
                 }
