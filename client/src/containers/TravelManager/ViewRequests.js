@@ -53,6 +53,11 @@ function DriverAssignment(props) {
     });
 
     if (today < tripDate) {
+        if (props.started) {
+            return (
+                <DriverName driverTuple={props.driverTuple} driverID={props.Driver_ID} />
+            );
+        }
         return (
             <FormGroup controlId={props.TripID} bsSize="small" style={marginBottom} >
                 <FormControl style={padding} componentClass="select" value={props.Driver_ID} onChange={(e) => props.onChange(e, props.TripID, props.index)} disabled={props.approved}>
@@ -84,7 +89,8 @@ function TripRow(props) {
     const tableContent = props.tableContent;
     const tripDate = new Date(tableContent.Trip_Date);
     const driver_ID = tableContent.Driver_ID;
-    const approved = (tableContent.Trip_Status === 6) ? true : false;
+    const approved = (tableContent.Trip_Status === 6 || tableContent.Trip_Status === 7) ? true : false;
+    const started = (tableContent.Trip_Status === 3 || tableContent.Trip_Status === 4) ? true : false;
     const today = new Date();
 
     var warningDate = new Date (tableContent.Trip_Date);
@@ -107,7 +113,7 @@ function TripRow(props) {
             <td><TripStatus tripStatus={tableContent.Trip_Status} /></td>
             <td><ViewDetails onClick={props.onClick} tripID={tableContent.TripID} /></td>
             <td>
-                <DriverAssignment tripDate={warningDate} TripID={tableContent.TripID} Driver_ID={tableContent.Driver_ID} onChange={props.onChange} approved={approved} index={props.index} driverList={props.driverList} driverTuple={props.driverTuple} />
+                <DriverAssignment tripDate={warningDate} TripID={tableContent.TripID} Driver_ID={tableContent.Driver_ID} onChange={props.onChange} approved={approved} started={started} index={props.index} driverList={props.driverList} driverTuple={props.driverTuple} />
             </td>
         </tr>
     );
