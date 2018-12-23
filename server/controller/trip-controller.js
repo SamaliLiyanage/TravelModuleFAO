@@ -121,7 +121,7 @@ module.exports.newTrip = function (req, res, next) {
         })
       }
       let month = new Date(req.body.tripDate)
-      if ((req.body.furtherRmrks === "") && (req.body.cabRequested === false)) {
+      if ((req.body.furtherRmrks === "") && (req.body.cabRequested === false) && !req.body.outsideOfficeHours) {
         user.getUsersRole(3, driversDetails => {
           let driverList = driversDetails.result.map((driverDetail) => {
             return driverDetail.Username;
