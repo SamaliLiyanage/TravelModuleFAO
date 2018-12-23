@@ -91,7 +91,7 @@ function CancelModal(props) {
 function CancelTrip(props) {
     //PROPS::: userType, onClick, onCancel, tripStatus, showModal, tripNumber
 
-    if(props.userType !== 5 && (props.tripStatus===1||props.tripStatus===2||props.tripStatus===5||props.tripStatus===6)) {
+    if(props.tripStatus===1||props.tripStatus===2||props.tripStatus===5||props.tripStatus===6) {
         return(
             <div>
                 <FormGroup>
