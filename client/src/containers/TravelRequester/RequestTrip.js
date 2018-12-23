@@ -79,7 +79,7 @@ function TimeWarning(props) {
   const today = new Date(props.date);
   var colors = { color: "#a94442", fontWeight: 'bold' };
 
-  if (today.getDay() < 5) {
+  if (today.getDay() < 6 && today.getDay() > 0) {
     if (today.getHours() >= 8 && today.getHours() < 16) {
       return (null);
     } else {
