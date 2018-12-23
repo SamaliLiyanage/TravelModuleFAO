@@ -321,6 +321,24 @@ export default class RequestTrip extends React.Component {
       }
     }
 
+    if (id === "tripDate") {
+      let tripDate = new Date(value);
+      console.log (tripDate.getDay());
+      if(tripDate.getDay() === 0 || tripDate.getDay() === 6) {
+        formErrors[11] = 'Requests for trips outside office hours will first be sent to the Administrator.';
+        this.setState({
+          outsideOfficeHours: true,
+          formErrors: formErrors
+        });
+      } else {
+        formErrors[11] = '';
+        this.setState({
+          outsideOfficeHours: false,
+          formErrors: formErrors
+        });
+      }
+    }
+
     this.setState(
       { [id]: value },
       () => { this.validateField(id, value) }
