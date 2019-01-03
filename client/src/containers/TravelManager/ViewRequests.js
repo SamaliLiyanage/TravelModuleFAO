@@ -208,7 +208,7 @@ function Paginator(props) {
         return item!==null;
     })
 
-    const prevPage = (props.active === 0) ? 0: props.acive - 1;
+    const prevPage = (props.active === 0) ? 0: props.active - 1;
     const nextpage = (props.active === (Math.ceil(pageContentFinal.length/10)-1)) ? props.active: props.active + 1;
 
     return (
