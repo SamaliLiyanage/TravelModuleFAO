@@ -249,6 +249,10 @@ module.exports.assignDriver = function (req, res, next) {
                   "You have been assigned to " + requester[0].Full_Name + "\'s trip with Trip ID " + req.body.tripID,
                   false
                 );
+                mobileHelper.sendMessage(
+                  "94" + driverDetail.result[0].Mobile_No,
+                  "You have been assigned to " + requester[0].Full_Name + "\'s trip with Trip ID " + req.body.tripID                  
+                );
               });
             };
           });
