@@ -208,11 +208,18 @@ function Paginator(props) {
         return item!==null;
     })
 
+    const prevPage = (props.active === 0) ? 0: props.acive - 1;
+    const nextpage = (props.active === (Math.ceil(pageContentFinal.length/10)-1)) ? props.active: props.active + 1;
+
     return (
         <div>
             <TableRender tableContents={pageContentFinal.slice(10*props.currentPage,10*props.currentPage+10)||pageContentFinal.slice(10*props.currentPage)} onChange={props.onChange} onClick={props.onClick} driverList={props.driverList} driverTuple={props.driverTuple} />
             <Pagination>
+                <Pagination.First onClick={(e)=>{props.onPage(e, 0)}} />
+                <Pagination.Prev onClick={(e)=>{props.onPage(e, prevPage)}} />
                 <PaginationHandler active={props.active} size={pageContentFinal.length} onPage={props.onPage} />
+                <Pagination.Next onClick={(e)=>{props.onPage(e, nextpage)}} />
+                <Pagination.Last onClick={(e)=>{props.onPage(e, Math.ceil(pageContentFinal.length/10)-1)}} />
             </Pagination>
         </div>
     );
