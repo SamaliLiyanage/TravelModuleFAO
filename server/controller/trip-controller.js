@@ -76,7 +76,7 @@ module.exports.newTrip = function (req, res, next) {
           '</li><li>Trip Time: ' + req.body.tripTime +
           '</li><li>Destination: ' + destinationList +
           '</li><li>Purpose: ' + req.body.tripPurpose +
-          fRHTML +
+          fRHTML + fRemark +
           '</li></ul>';
 
         emailHelper.sendMessage(
@@ -117,8 +117,38 @@ module.exports.newTrip = function (req, res, next) {
         }
         trip.addFurtherComments(req.body.tripID, furtherRmrk);
         trip.changeStatus(req.body.tripID, 6, response => {
-          //res.send(response);
-        })
+          var destinationList = '';
+          req.body.destinations.forEach((destination, index) => {
+            (index < (req.body.destinations.length - 1)) ?
+              destinationList += (' ' + destination + ', ' + req.body.destinationTowns[index] + '\n') :
+              destinationList += (' ' + destination + ', ' + req.body.destinationTowns[index])
+          });
+
+          var mailMgr = 'The following trip requires your approval <br> <ul><li>Trip ID:' + req.body.tripID +
+          '</li><li>Name: ' + userDetails[0].Full_Name +
+          '</li><li>Trip Type: ' + selectionHelper.tripType(req.body.tripType) +
+          '</li><li>Trip Date: ' + req.body.tripDate +
+          '</li><li>Trip Time: ' + req.body.tripTime +
+          '</li><li>Destination: ' + destinationList +
+          '</li><li>Purpose: ' + req.body.tripPurpose +
+          '</li><li>Further Remark: ' + furtherRmrk +
+          '</li></ul>';
+
+          if (response.success === true) {
+            user.getUsersRole(5, travAdminDetails => {
+              travAdminDetails.result.forEach(travAdmin => {
+                emailHelper.sendMessage(
+                  travAdmin.Username,
+                  'Trip Request ' + req.body.tripID,
+                  mailMgr,
+                  true
+                );
+
+                mobileHelper.sendMessage("94" + travAdmin.Mobile_No, "Trip ID " + req.body.tripID + " is awaiting your approval.", (taResult) => {console.log(taResult)});
+              });
+            });
+          }
+        });
       }
       let month = new Date(req.body.tripDate)
       if ((req.body.furtherRmrks === "") && (req.body.cabRequested === false) && !req.body.outsideOfficeHours) {
