@@ -538,7 +538,7 @@ exports.checkNotStarted = function (next) {
         time = hours + ':' + minutes + ':00';
     }
 
-    connection.query('SELECT Trip.TripID AS TripID, User.Mobile_No AS Mobile_No, User.Username AS Username FROM Trip, User WHERE Start IS NULL AND Trip_Date=? AND DATE_ADD(Trip_Time, INTERVAL 15 MINUTE)=? AND Trip.Username=User.Username', [date, time], (err, results) => {
+    connection.query('SELECT Trip.TripID AS TripID, User.Mobile_No AS Mobile_No, User.Username AS Username FROM Trip, User WHERE Trip_Status=2 AND Start IS NULL AND Trip_Date=? AND DATE_ADD(Trip_Time, INTERVAL 15 MINUTE)=? AND Trip.Username=User.Username', [date, time], (err, results) => {
         var temp;
         if (err) {
             temp = {
