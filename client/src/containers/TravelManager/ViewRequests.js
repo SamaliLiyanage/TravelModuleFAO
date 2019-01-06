@@ -161,10 +161,60 @@ function PaginationHandler(props) {
     let pager = [];
     const pageLimit = Math.ceil(props.size/10);
 
-    for (let i=0; i<pageLimit; i++){
-        pager.push(
-            <Pagination.Item key={i} active={i===active} onClick={(e)=>{props.onPage(e, i)}} >{i+1}</Pagination.Item>
-        );
+    if (pageLimit <= 10) {
+        for (let i=0; i<pageLimit; i++){
+            pager.push(
+                <Pagination.Item key={i} active={i===active} onClick={(e)=>{props.onPage(e, i)}} >{i+1}</Pagination.Item>
+            );
+        }
+    } else {
+        if (active < 5) {
+            for (let i=0; i<(active+2); i++){
+                pager.push(
+                    <Pagination.Item key={i} active={i==active} onClick={(e)=>{props.onPage(e, i)}}>{i+1}</Pagination.Item>
+                );
+            }
+            // Ellipses
+            pager.push(<Pagination.Item disabled>...</Pagination.Item>);
+            for (let j=pageLimit-2; j<pageLimit; j++){
+                pager.push(
+                    <Pagination.Item key={j} active={j==active} onClick={(e)=>{props.onPage(e, j)}}>{j+1}</Pagination.Item>
+                );
+            }
+        } else if (active > pageLimit-6) {
+            for (let i=0; i<2; i++){
+                pager.push(
+                    <Pagination.Item key={i} active={i==active} onClick={(e)=>{props.onPage(e, i)}}>{i+1}</Pagination.Item>
+                );
+            }
+            // Ellipses
+            pager.push(<Pagination.Item disabled>...</Pagination.Item>);
+            for (let j=active-1; j<pageLimit; j++){
+                pager.push(
+                    <Pagination.Item key={j} active={j==active} onClick={(e)=>{props.onPage(e, j)}}>{j+1}</Pagination.Item>
+                );
+            }
+        } else {
+            for (let i=0; i<2; i++){
+                pager.push(
+                    <Pagination.Item key={i} active={i==active} onClick={(e)=>{props.onPage(e, i)}}>{i+1}</Pagination.Item>
+                );
+            }
+            // Ellipses
+            pager.push(<Pagination.Item disabled>...</Pagination.Item>);
+            for (let k=active-1; k<active+2; k++){
+                pager.push(
+                    <Pagination.Item key={k} active={k==active} onClick={(e)=>{props.onPage(e, k)}}>{k+1}</Pagination.Item>
+                );
+            }
+            // Ellipses
+            pager.push(<Pagination.Item disabled>...</Pagination.Item>);
+            for (let j=pageLimit-2; j<pageLimit; j++){
+                pager.push(
+                    <Pagination.Item key={j} active={j==active} onClick={(e)=>{props.onPage(e, j)}}>{j+1}</Pagination.Item>
+                );
+            }
+        }
     }
 
     return (pager);
