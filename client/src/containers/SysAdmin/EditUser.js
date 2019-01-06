@@ -34,6 +34,8 @@ export default class EditUser extends React.Component {
       passWord: '',
       telePhone: null,
       role: '',
+      tripsForFAOR: null,
+      generateReport: null,
       formErrors: ['', '', '', '', ''],
       rnValid: true,
       unValid: true,
@@ -59,6 +61,8 @@ export default class EditUser extends React.Component {
       passWord: this.state.passWord,
       telePhone: this.state.telePhone,
       role: parseInt(this.state.role, 10),
+      tripsForFAOR: this.state.tripsForFAOR,
+      generateReport: this.state.generateReport,
     })
       .then(function (response) {
         console.log("Response start", response, "Response end");
@@ -167,7 +171,9 @@ export default class EditUser extends React.Component {
           userName: res.data.result[0].Username,
           passWord: res.data.result[0].Password,
           telePhone: res.data.result[0].Mobile_No,
-          role: res.data.result[0].Role
+          role: res.data.result[0].Role,
+          tripsForFAOR: res.data.result[0].PlaceTripForFAOR,
+          generateReport: res.data.result[0].GenerateReport,
         });
       });
   }
@@ -215,6 +221,26 @@ export default class EditUser extends React.Component {
               <option value="3">Driver</option>
               <option value="4">Requester</option>
               <option value="5">Travel Admin</option>
+            </FormControl>
+          </Col>
+        </FormGroup>
+
+        <FormGroup controlId="tripsForFAOR">
+          <Col componentClass={ControlLabel} smOffset={2} sm={2}> Place trips for FAOR: </Col>
+          <Col sm={2}>
+            <FormControl componentClass="select" value={this.state.tripsForFAOR} placeholder={this.state.tripsForFAOR} onChange={this.handleChange}>
+              <option value={0}>No</option>
+              <option value={1}>Yes</option>
+            </FormControl>
+          </Col>
+        </FormGroup>
+
+        <FormGroup controlId="generateReport">
+          <Col componentClass={ControlLabel} smOffset={2} sm={2}> Generate Reports: </Col>
+          <Col sm={2}>
+            <FormControl componentClass="select" value={this.state.generateReport} placeholder={this.state.generateReport} onChange={this.handleChange}>
+              <option value={0}>No</option>
+              <option value={1}>Yes</option>
             </FormControl>
           </Col>
         </FormGroup>
