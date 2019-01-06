@@ -440,7 +440,7 @@ exports.countMonthlyTripsForAvailableDrivers = function (year, month, type, driv
 
     driverQuery += ") AS T WHERE Blocked=1) AS TA";
 
-    blockedDriverQuery += (driverQuery + " UNION SELECT DriverID FROM (SELECT * FROM ResidentDriver WHERE YEAR(Date)=" + year + " AND MONTH(Date)=" + month + " ORDER BY Date DESC Limit 1) AS TB)");
+    blockedDriverQuery += (driverQuery + ")");
     console.log(blockedDriverQuery);
 
     return new Promise (function (resolve, reject) {
