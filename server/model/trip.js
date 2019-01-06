@@ -117,7 +117,7 @@ exports.getTrip = function (tripID, next) {
 }
 
 exports.getFurtherComments = function (next) {
-    db.connection.query('SELECT * FROM Trip, FurtherRemark WHERE Trip.TripID=FurtherRemark.TripID', [], function (err, result, temp) {
+    db.connection.query('SELECT * FROM Trip, FurtherRemark WHERE Trip.TripID=FurtherRemark.TripID ORDER BY Trip.TripID DESC', [], function (err, result, temp) {
         var temp;
         if (err) {
             temp = {
