@@ -1,10 +1,10 @@
 var db = require('../db.js');
 var connection = db.connection;
 
-exports.addUser = function(userName, fullName, passWord, telePhone, role, res) {
-  var values = [userName, fullName, passWord, telePhone, role];
+exports.addUser = function(userName, fullName, passWord, telePhone, role, tripsForFAOR, generateReport, res) {
+  var values = [userName, fullName, passWord, telePhone, role, tripsForFAOR, generateReport];
   //console.log(values);
-  db.connection.query('INSERT INTO User (Username, Full_Name, Password, Mobile_No, Role) VALUES (?, ?, ?, ?, ?)', values, function(err, results) {
+  db.connection.query('INSERT INTO User (Username, Full_Name, Password, Mobile_No, Role, PlaceTripForFAOR, GenerateReport) VALUES (?, ?, ?, ?, ?, ?, ?)', values, function(err, results) {
     if(err) {
       console.log(err);
       return res.send(err);
@@ -92,10 +92,10 @@ exports.newGetUser = function(userName, next) {
   });
 }
 
-exports.updateUser = function(oldUserName, userName, realName, passWord, telePhone, role, res) {
-  const values = [userName, realName, passWord, telePhone, role, oldUserName];
+exports.updateUser = function(oldUserName, userName, realName, passWord, telePhone, role, tripsForFAOR, generateReport, res) {
+  const values = [userName, realName, passWord, telePhone, role, tripsForFAOR, generateReport, oldUserName];
 
-  db.connection.query('UPDATE User SET Username=?, Full_Name=?, Password=?, Mobile_No=?, Role=? WHERE Username=?', values, function (err, results) {
+  db.connection.query('UPDATE User SET Username=?, Full_Name=?, Password=?, Mobile_No=?, Role=?, PlaceTripForFAOR=?, GenerateReport=? WHERE Username=?', values, function (err, results) {
     if(err) {
       console.log(err);
       return res.send(err);
