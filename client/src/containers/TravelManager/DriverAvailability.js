@@ -365,8 +365,10 @@ export default class DriverAvailability extends React.Component {
 					authenticate.userHasAuthenticated(false, null, null, null, null);
 					authenticate.history.push('/login')
 				} else {
-					authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
-					if (res.data.Role === 4) {
+					authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role, res.data.PlaceTripForFAOR, res.data.GenerateReport);
+					if (res.data.Role === 1) {
+						authenticate.history.push('/viewusers');
+					} else if (res.data.Role === 4) {
 						authenticate.history.push('/requesttrip');
 					}
 				}
