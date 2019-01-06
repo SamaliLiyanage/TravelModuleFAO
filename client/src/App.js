@@ -14,14 +14,18 @@ class App extends Component {
       isAuthenticated: false,
       userType: null,
       userName: null,
+      tripsForFAOR: null,
+      generateReport: null,
     };
   }
 
-  userHasAuthenticated = (authenticated, username, type) => {
+  userHasAuthenticated = (authenticated, username, type, tripsForFAOR, generateReport) => {
     this.setState({
       isAuthenticated: authenticated,
       userName: username,
       userType: type,
+      tripsForFAOR: tripsForFAOR, 
+      generateReport: generateReport,
     });
     //console.log("Inside userhasauthentiated", authenticated, username, type);
   }
@@ -30,7 +34,7 @@ class App extends Component {
     axios.get('/logout')
     .then ( res => {
       if(res.data==="success") {
-        this.userHasAuthenticated(false, null, null);
+        this.userHasAuthenticated(false, null, null, null, null);
         this.props.history.push('/login');
       }
     })
@@ -42,6 +46,8 @@ class App extends Component {
       userName: this.state.userName,
       userType: this.state.userType,
       userHasAuthenticated: this.userHasAuthenticated,
+      tripsForFAOR: this.state.tripsForFAOR, 
+      generateReport: this.state.generateReport,
     };
 
     return (

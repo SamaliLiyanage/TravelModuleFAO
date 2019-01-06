@@ -529,10 +529,10 @@ export default class ViewTripDetails extends React.Component {
         axios.get('/loggedin')
             .then(res => {
                 if (res.data == "") {
-                    auth.userHasAuthenticated(false, null, null);
+                    auth.userHasAuthenticated(false, null, null, null, null);
                     auth.history.push('/login');
                 } else {
-                    auth.userHasAuthenticated(true, res.data.Username, res.data.Role);
+                    auth.userHasAuthenticated(true, res.data.Username, res.data.Role, res.data.PlaceTripForFAOR, res.data.GenerateReport);
                     /*if (res.data.Role === 1) {
                         auth.history.push('/viewusers');
                     } /*else if (res.data.Role===4) {
