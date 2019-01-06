@@ -700,3 +700,46 @@ exports.filterTrips = function (queries, next) {
         
     });
 }
+
+exports.getAffectedTrips = function (driverID, tripType, tripDate, tripTime, tripDuration, tripDurationMin, next) {
+    if (parseInt(tripType, 10) !== 2) {
+        timeHelper.getEndTime(tripTime, tripDuration, tripDurationMin)
+        .then((trip_time) => {
+            let values = [driverID, tripDate, tripDate, driverID, tripDate, tripTime, trip_time]
+            connection.query("SELECT * FROM (SELECT TripID FROM (SELECT TripID, Trip_Date, DATE_ADD(Trip_Date, INTERVAL Duration DAY) AS End_Date FROM Trip WHERE Trip_Type=2 AND Driver_ID=?) AS T1 WHERE End_Date>=? AND Trip_Date<=?) AS A UNION SELECT * FROM (SELECT TripID FROM (SELECT TripID, Trip_Time, DATE_ADD(DATE_ADD(Trip_Time, INTERVAL Duration HOUR), INTERVAL Duration_Minute MINUTE) AS End_Time FROM Trip WHERE Trip_Type!=2 AND Driver_ID=? AND Trip_Date=?) AS T2 WHERE Trip_Time<=? AND End_Time>=?) AS B", values, (err, results) => {
+                let temp;
+                if (err) {
+                    temp = {
+                        status: "fail",
+                        result: err
+                    }
+                } else {
+                    temp = {
+                        status: "success",
+                        result: results
+                    }
+                }
+                next(temp);
+            });
+        });
+    } else {
+        timeHelper.getEndDate(tripDate, tripDuration)
+        .then((end_date) => {
+            let values = [driverID, tripDate, end_date, driverID, tripDate, end_date]
+            connection.query("SELECT * FROM (SELECT TripID FROM (SELECT TripID, Trip_Date, DATE_ADD(Trip_Date, INTERVAL Duration DAY) AS End_Date FROM Trip WHERE Trip_Type=2 AND Driver_ID=?) AS T1 WHERE End_Date>=? AND Trip_Date<=?) AS A UNION SELECT * FROM (SELECT TripID FROM Trip WHERE Driver_ID=? AND Trip_Date<=? AND Trip_Date>=?) AS B", values, (err, results) => {
+                let temp;
+                if (err) {
+                    temp = {
+                        status: "fail",
+                        result: err
+                    }
+                } else {
+                    temp = {
+                        status: "success",
+                        result: results
+                    }
+                }
+            });
+        })
+    }
+}

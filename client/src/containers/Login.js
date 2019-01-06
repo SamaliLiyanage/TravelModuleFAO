@@ -33,10 +33,10 @@ export default class Login extends Component {
     axios.get('/loggedin')
       .then(function (res) {
         if (res.data == "") {
-          authenticate.userHasAuthenticated(false, null, null);
+          authenticate.userHasAuthenticated(false, null, null, null, null);
           authenticate.history.push('/login');
         } else {
-          authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
+          authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role, res.data.PlaceTripForFAOR, res.data.GenerateReport);
           if (res.data.Role === 1) {
             authenticate.history.push('/viewusers');
           } else if (res.data.Role === 3) {
@@ -73,7 +73,7 @@ export default class Login extends Component {
       .then(function (res) {
         var data = res.data.result;
         if (res.data.status === "success") {
-          authenticate.userHasAuthenticated(true, data[0].Username, data[0].Role);
+          authenticate.userHasAuthenticated(true, data[0].Username, data[0].Role, data[0].PlaceTripForFAOR, data[0].GenerateReport);
           if ((data[0].Role) === 1) {
             authenticate.history.push('/viewusers');
           } else if ((data[0].Role) === 3) {
@@ -91,7 +91,7 @@ export default class Login extends Component {
             password: "",
             loginFail: true
           });
-          authenticate.userHasAuthenticated(false, null, null);
+          authenticate.userHasAuthenticated(false, null, null, null, null);
         } else {
           this.setState({
             username: "",
@@ -99,7 +99,7 @@ export default class Login extends Component {
             loginFail: true,
             message: res.data.info
           });
-          authenticate.userHasAuthenticated(false, null, null);
+          authenticate.userHasAuthenticated(false, null, null, null, null);
         }
       })
       .catch((error) => {
@@ -108,7 +108,7 @@ export default class Login extends Component {
           password: "",
           loginFail: true
         });
-        authenticate.userHasAuthenticated(false, null, null);
+        authenticate.userHasAuthenticated(false, null, null, null, null);
       })
 
 
