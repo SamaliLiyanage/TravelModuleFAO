@@ -28,6 +28,8 @@ export default class UserForm extends React.Component {
       passWord: '',
       telePhone: null,
       role: 0,
+      tripsForFAOR: 0,
+      generateReport: 0,
       formErrors: ['', '', '', '', ''],
       rnValid: false,
       unValid: false,
@@ -62,6 +64,8 @@ export default class UserForm extends React.Component {
         passWord: this.state.passWord,
         telePhone: this.state.telePhone,
         role: parseInt(this.state.role, 10),
+        tripsForFAOR: this.state.tripsForFAOR,
+        generateReport: this.state.generateReport,
       })
       .then(function (response) {
         //console.log("Response", response);
@@ -191,6 +195,26 @@ export default class UserForm extends React.Component {
               <option value="5">Travel Admin</option>
             </FormControl>
             <FormControl.Feedback />
+          </Col>
+        </FormGroup>
+
+        <FormGroup controlId="tripsForFAOR">
+          <Col componentClass={ControlLabel} smOffset={2} sm={2}> Place trips for FAOR: </Col>
+          <Col sm={2}>
+            <FormControl componentClass="select" placeholder={this.state.tripsForFAOR} onChange={this.handleChange}>
+              <option value={0}>No</option>
+              <option value={1}>Yes</option>
+            </FormControl>
+          </Col>
+        </FormGroup>
+
+        <FormGroup controlId="generateReport">
+          <Col componentClass={ControlLabel} smOffset={2} sm={2}> Generate Reports: </Col>
+          <Col sm={2}>
+            <FormControl componentClass="select" placeholder={this.state.generateReport} onChange={this.handleChange}>
+              <option value={0}>No</option>
+              <option value={1}>Yes</option>
+            </FormControl>
           </Col>
         </FormGroup>
         
