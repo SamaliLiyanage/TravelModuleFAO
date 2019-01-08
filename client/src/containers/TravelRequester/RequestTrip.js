@@ -80,7 +80,7 @@ function TimeWarning(props) {
   var colors = { color: "#a94442", fontWeight: 'bold' };
 
   if (today.getDay() < 6 && today.getDay() > 0) {
-    if (today.getHours() >= 8 && today.getHours() < 16) {
+    if (today.getHours() >= 7 && today.getHours() < 17) {
       return (null);
     } else {
       return (<div className="col-md-6 col-md-offset-3">
