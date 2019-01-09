@@ -117,7 +117,7 @@ exports.getTrip = function (tripID, next) {
 }
 
 exports.getFurtherComments = function (next) {
-    db.connection.query('SELECT * FROM Trip, FurtherRemark WHERE Trip.TripID=FurtherRemark.TripID AND Trip.Trip_Status=6', [], function (err, result, temp) {
+    db.connection.query('SELECT * FROM Trip, FurtherRemark WHERE Trip.TripID=FurtherRemark.TripID ORDER BY Trip.TripID DESC', [], function (err, result, temp) {
         var temp;
         if (err) {
             temp = {
@@ -440,7 +440,7 @@ exports.countMonthlyTripsForAvailableDrivers = function (year, month, type, driv
 
     driverQuery += ") AS T WHERE Blocked=1) AS TA";
 
-    blockedDriverQuery += (driverQuery + " UNION SELECT DriverID FROM (SELECT * FROM ResidentDriver WHERE YEAR(Date)=" + year + " AND MONTH(Date)=" + month + " ORDER BY Date DESC Limit 1) AS TB)");
+    blockedDriverQuery += (driverQuery + ")");
     console.log(blockedDriverQuery);
 
     return new Promise (function (resolve, reject) {

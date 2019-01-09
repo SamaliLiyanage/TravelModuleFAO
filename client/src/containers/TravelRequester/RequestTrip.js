@@ -80,7 +80,7 @@ function TimeWarning(props) {
   var colors = { color: "#a94442", fontWeight: 'bold' };
 
   if (today.getDay() < 6 && today.getDay() > 0) {
-    if (today.getHours() >= 8 && today.getHours() < 16) {
+    if (today.getHours() >= 7 && today.getHours() < 17) {
       return (null);
     } else {
       return (<div className="col-md-6 col-md-offset-3">
@@ -321,24 +321,40 @@ export default class RequestTrip extends React.Component {
     if (id === "tripTime") {
       let hour = parseInt(value.substring(0, 2), 10);
       let minute = parseInt(value.substring(3), 10);
-      if (hour < 8) {
+      if (hour < 7) {
         formErrors[11] = 'Requests for trips outside office hours will first be sent to the Administrator.'
         this.setState({
           outsideOfficeHours: true,
           formErrors: formErrors
         });
-      } else if ((hour >= 16) && (minute >= 0)) {
+      } else if ((hour >= 17) && (minute >= 0)) {
         formErrors[11] = 'Requests for trips outside office hours will first be sent to the Administrator.'
         this.setState({
           outsideOfficeHours: true,
           formErrors: formErrors
         });
       } else {
-        formErrors[11] = '';
-        this.setState({
-          outsideOfficeHours: false,
-          formErrors: formErrors
-        })
+        if(hour === 7) {
+          if (minute < 30) {
+            formErrors[11] = 'Requests for trips outside office hours will first be sent to the Administrator.'
+            this.setState({
+              outsideOfficeHours: true,
+              formErrors: formErrors
+            });
+          } else {
+            formErrors[11] = '';
+            this.setState({
+              outsideOfficeHours: false,
+              formErrors: formErrors
+            });
+          }
+        } else {
+          formErrors[11] = '';
+          this.setState({
+            outsideOfficeHours: false,
+            formErrors: formErrors
+          });
+        }
       }
     }
 

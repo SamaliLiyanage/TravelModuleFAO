@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import { Table, Button, FormGroup } from 'react-bootstrap';
+import { Table, Button, FormGroup, Pagination } from 'react-bootstrap';
 import { TripStatus } from '../../Selections';
 
 function CancelTrip (props) {
@@ -58,7 +58,92 @@ function TableRender (props) {
         return <TableRow key={index} rowContent = {rowContent} onClick={props.onClick} onSubmit={props.onSubmit} onDetails={props.onDetails} index={index} onDelete={props.onDelete} />
     })
 
-    return content;
+    return (
+        <Table condensed striped bordered hover>
+            <thead>
+                <tr>
+                    <th>Trip ID</th>
+                    <th>Username</th>
+                    <th>Trip Date</th>
+                    <th>Further Remarks</th>
+                    <th>Driver Assignment</th>
+                    <th>Details</th>
+                    <th>Approved</th>
+                    <th>Cancel Trip</th>
+                </tr>
+            </thead>
+            <tbody>
+                {content}
+            </tbody>
+        </Table>
+    );
+}
+
+function PaginationHandler (props) {
+    let active = props.active;
+    let numberOfPages = props.numberOfPages;
+
+    let pager = [];
+
+    if (numberOfPages <= 10) {
+        for (let i=0; i<numberOfPages; i++) {
+            pager.push(<Pagination.Item key={i} active={i===active} onClick={(e) => {props.onPage(e, i)}} >{i+1}</Pagination.Item>);
+        }
+    } else {
+        if (active < 5) {
+            for (let i=0; i<(active+2); i++) {
+                pager.push(<Pagination.Item key={i} active={i===active} onClick={(e) => {props.onPage(e, i)}} >{i+1}</Pagination.Item>);
+            }
+            pager.push(<Pagination.Item disabled>...</Pagination.Item>)
+            for (let j=numberOfPages-2; j<numberOfPages; j++) {
+                pager.push(<Pagination.Item key={j} active={j===active} onClick={(e) => {props.onPage(e, j)}} >{j+1}</Pagination.Item>);
+            }
+        } else if (active > numberOfPages-6) {
+            for (let i=0; i<2; i++) {
+                pager.push(<Pagination.Item key={i} active={i===active} onClick={(e) => {props.onPage(e, i)}} >{i+1}</Pagination.Item>);
+            }
+            pager.push(<Pagination.Item disabled>...</Pagination.Item>)
+            for (let j=active-1; j<numberOfPages; j++) {
+                pager.push(<Pagination.Item key={j} active={j===active} onClick={(e) => {props.onPage(e, j)}} >{j+1}</Pagination.Item>);                
+            }
+        } else {
+            for (let i=0; i<2; i++) {
+                pager.push(<Pagination.Item key={i} active={i===active} onClick={(e) => {props.onPage(e, i)}} >{i+1}</Pagination.Item>);
+            }
+            pager.push(<Pagination.Item disabled>...</Pagination.Item>);
+            for (let j=active-1; j<active+2; j++) {
+                pager.push(<Pagination.Item key={j} active={j===active} onClick={(e) => {props.onPage(e, j)}} >{j+1}</Pagination.Item>)
+            }
+            pager.push(<Pagination.Item disabled>...</Pagination.Item>);
+            for (let k=numberOfPages-2; k<numberOfPages; k++) {
+                pager.push(<Pagination.Item key={k} active={k===active} onClick={(e) => {props.onPage(e, k)}} >{k+1}</Pagination.Item>)
+            }
+        }
+    }
+    return pager;
+}
+
+function Paginator (props) {
+    const tableContents = props.tableContents;
+    const active = props.active;
+
+    let numberOfPages = Math.ceil(tableContents.length/10);
+
+    let prevPage = (active===0)? 0: active-1;
+    let nextPage = (active===(numberOfPages-1))? active: active+1;
+
+    return (
+        <div>
+            <TableRender tableContents={tableContents.slice(10*active, 10*active+10)} onClick={props.onClick} onSubmit={props.onSubmit} onDetails={props.onDetails} onDelete={props.onDelete} />
+            <Pagination>
+                <Pagination.First onClick={(e)=>{props.onPage(e, 0)}} />
+                <Pagination.Prev onClick={(e)=>{props.onPage(e, prevPage)}} />
+                <PaginationHandler active={active} numberOfPages={numberOfPages} onPage={props.onPage} />
+                <Pagination.Next onClick={(e)=>{props.onPage(e, nextPage)}} />
+                <Pagination.Last onClick={(e)=>{props.onPage(e, numberOfPages-1)}} />
+            </Pagination>
+        </div>
+    );
 }
 
 export default class AdminView extends React.Component {
@@ -67,12 +152,14 @@ export default class AdminView extends React.Component {
 
         this.state = {
             tableContents: [],
+            active: 0
         }
 
         this.handleDeny = this.handleDeny.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleDetails = this.handleDetails.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
+        this.handlePageChange = this.handlePageChange.bind(this);
     }
 
     handleDelete (event, tripID, index) {
@@ -130,6 +217,12 @@ export default class AdminView extends React.Component {
         this.props.history.push('/viewtrip/'+tripID);
     }
 
+    handlePageChange (event, page) {
+        this.setState({
+            active: page
+        })
+    }
+
     componentWillMount () {
         const infor = this.props;
         //console.log("Hello");
@@ -164,23 +257,7 @@ export default class AdminView extends React.Component {
 
     render () {
         return (
-            <Table condensed striped bordered hover>
-                <thead>
-                    <tr>
-                        <th>Trip ID</th>
-                        <th>Username</th>
-                        <th>Trip Date</th>
-                        <th>Further Remarks</th>
-                        <th>Driver Assignment</th>
-                        <th>Details</th>
-                        <th>Approved</th>
-                        <th>Cancel Trip</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <TableRender tableContents={this.state.tableContents} onClick={this.handleDeny} onSubmit={this.handleSubmit} onDetails={this.handleDetails} onDelete={this.handleDelete} />
-                </tbody>
-            </Table>
+            <Paginator active={this.state.active} tableContents={this.state.tableContents} onClick={this.handleDeny} onSubmit={this.handleSubmit} onDetails={this.handleDetails} onDelete={this.handleDelete} onPage={this.handlePageChange} />
         );
     }
 }
