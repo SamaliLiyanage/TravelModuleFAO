@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import { LeaveType } from "../../Selections"
 import { Row, Col, Form, FormGroup, ControlLabel, Grid, Table, Button, FormControl } from 'react-bootstrap';
 
 /**
@@ -17,7 +18,7 @@ function LeaveDate(props) {
 				<tr key={index}>
 					<td>{finalDate}</td>
 					<td>{leave.LeaveTime}</td>
-					<td>{leave.LeaveType}</td>
+					<td><LeaveType leaveType={parseInt(leave.LeaveType, 10)} /></td>
 					<td><Button type="button" name="cancelLeave" onClick={(e) => { props.handleCancel(e, props.driverID, finalDate, index) }}>Cancel Leave</Button></td>
 				</tr>
 			);
