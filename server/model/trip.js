@@ -700,3 +700,27 @@ exports.filterTrips = function (queries, next) {
         
     });
 }
+
+exports.updateTrip = function (tripID, username, tripStatus, driverID, tripType, requestedDate, tripDate, tripTime, duration, durationMinute, purpose, onBehalf, start, end, startMileage, endMileage, next) {
+    const values = [username, tripStatus, driverID, tripType, requestedDate, tripDate, tripTime, duration, durationMinute, purpose, onBehalf, start, end, startMileage, endMileage, tripID];
+
+    var temp = null
+
+    connection.query("UPDATE Trip SET Username = ?, Trip_Status = ?, Driver_ID = ?, Trip_Type = ?, Requested_Date = ?, Trip_Date = ?, Trip_Time = ?, Duration = ?, Duration_Minute = ?, Purpose = ?, OnBehalf = ?, Start = ?, End = ?, Start_Mileage = ?, End_Mileage = ? WHERE TripID =?", values, (err, result) => {
+        if (err) {
+            console.log(err);
+    
+            temp = {
+                status: "fail",
+                result: err
+            }
+        } else {
+            temp = {
+                status: 'success',
+                result: result
+            }
+        }
+    });
+
+    next(temp);
+}

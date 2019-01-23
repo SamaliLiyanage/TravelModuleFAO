@@ -394,6 +394,29 @@ module.exports.fetchStatus = function (req, res) {
   [state, tripID, mileage] = message.split(" ");
   state = state.substr(0, 1).toUpperCase() + state.slice(1).toLowerCase();
 
+  trip.getTrip(tripID, resp => {
+    let tripDate = new Date(resp.data.Trip_Date);
+    let tripTime = resp.data.Trip_Time;
+    let nowDate = new Date();
+    
+    tripDate.setHours(tripTime.slice(0, 2));
+    tripDate.setMinutes(tripTime.slice(3,5));
+
+    if (!((tripDate.getFullYear() === nowDate.getFullYear()) && (tripDate.getMonth() === nowDate.getMonth()) && (tripDate.getDate() === nowDate.getDate()))) {
+      mobileHelper.sendMessage('The date for trip ' + tripID + ' is not today.', req.body.source, result => {
+        return res.send(result);
+      });
+    } else {
+      var diff = (tripDate.getTime() - nowDate.getTime())/60000;
+      
+      if (diff<-30 || diff>30) {
+        mobileHelper.sendMessage('The time for the trip ' + tripID + ' is not valid. Please check trip details.', req.body.source, result => {
+          return res.send(result);
+        });
+      }
+    }
+  });
+
   trip.getTripStatus(tripID, response => {
     if (state === 'Start') {
       if ((response.End === null) && (response.Start === null)) {
@@ -716,6 +739,29 @@ module.exports.filterTrips = function (req, res) {
   }
 
   trip.filterTrips(queries, result => {
+    res.send(result);
+  });
+}
+
+module.exports.updateTrip = function (req, res) {
+  var tripID = req.body.tripID;
+  var username = req.body.username;
+  var tripStatus = req.body.trip_Status;
+  var driverID = req.body.driver_ID;
+  var tripType = req.body.trip_Type;
+  var requestedDate = req.body.requested_Date;
+  var tripDate = req.body.trip_Date;
+  var tripTime = req.body.trip_Time;
+  var duration = req.body.duration;
+  var durationMinute = req.body.duration_Minute;
+  var purpose = req.body.purpose;
+  var onBehalf = req.body.onBehalf;
+  var start = req.body.start;
+  var end = req.body.end;
+  var startMileage = req.body.start_Mileage;
+  var endMileage = req.body.end_Mileage;
+
+  trip.updateTrip(tripID, username, tripStatus, driverID, tripType, requestedDate, tripDate, tripTime,duration, durationMinute, purpose, onBehalf, start, end, startMileage, endMileage, (result) => {
     res.send(result);
   });
 }
