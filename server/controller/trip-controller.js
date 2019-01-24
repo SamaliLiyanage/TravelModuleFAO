@@ -762,6 +762,7 @@ module.exports.updateTrip = function (req, res) {
   var endMileage = req.body.end_Mileage;
 
   trip.updateTrip(tripID, username, tripStatus, driverID, tripType, requestedDate, tripDate, tripTime,duration, durationMinute, purpose, onBehalf, start, end, startMileage, endMileage, (result) => {
+    console.log(result);
     res.send(result);
   });
 }

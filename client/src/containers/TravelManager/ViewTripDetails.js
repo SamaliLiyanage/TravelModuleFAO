@@ -7,13 +7,28 @@ function StartEndChangeModal(props) {
     const start = new Date (props.start);
     const end = new Date (props.end);
 
-    var startDate = (start.getMonth() + 1) + "/" + start.getDate() + "/" + start.getFullYear();
-    var endDate = end.getDate() + "-" + (end.getMonth() + 1) + "-" + end.getFullYear();
+    var startMonth = null;
+    var endMonth = null;
+
+    if (start.getMonth()<9) {
+        startMonth = "0" + (start.getMonth() + 1).toString();
+    } else {
+        startMonth = (start.getMonth() + 1).toString();
+    }
+
+    if (end.getMonth()<9) {
+        endMonth = "0" + (end.getMonth() + 1).toString();
+    } else {
+        endMonth = (end.getMonth() + 1).toString();
+    }
+
+    var startDate = start.getFullYear()+ "-" + startMonth + "-" + start.getDate();
+    var endDate = end.getFullYear() + "-" + endMonth + "-" + end.getDate();
 
     var startTime = null;
     var endTime = null;
 
-    if (start.getMinutes().toString().length === 1) {
+    if (start.getMinutes().toString() < 10) {
         startTime = start.getHours() + ":0" + start.getMinutes();
     } else {
         startTime = start.getHours() + ":" + start.getMinutes();
@@ -158,7 +173,11 @@ function TripStartEnd(props) {
             <FormGroup>
                 <Col componentClass={ControlLabel} smOffset={1} sm={2}>Start:</Col>
                 <Col sm={3}>
-                    <FormControl.Static>{start}</FormControl.Static>
+                    <FormControl.Static>{renderStart}</FormControl.Static>
+                </Col>
+                <Col componentClass={ControlLabel} sm={2}>Start Mileage:</Col>
+                <Col sm={3}>
+                    <FormControl.Static>{start_mileage + " km"}</FormControl.Static>
                 </Col>
             </FormGroup>
         );
@@ -675,41 +694,66 @@ export default class ViewTripDetails extends React.Component {
 
     handleStartEndChange(event) {
         var tripInfo = this.state.tripInfo;
-        var start_temp = tripInfo.Start;
-        var start = new Date(tripInfo.Start);
-        var end = new Date(tripInfo.End);
+        var start = null;
+        var end = null;
+
+        if (tripInfo.Start === null) {
+            start = new Date();
+        } else {
+            start = new Date(tripInfo.Start)
+        }
+
+        if (tripInfo.End === null) {
+            end = new Date();
+        } else {
+            end = new Date(tripInfo.End);
+        }
 
         switch (event.target.id) {
             case 'start_date':
                 var newStart = new Date(event.target.value);
+                start.setFullYear(newStart.getFullYear());
+                start.setMonth(newStart.getMonth());
                 start.setDate(newStart.getDate());
-                tripInfo.Start = start;
+                tripInfo.Start = new Date(start);
                 break;
             case 'start_time':
                 var newStart = event.target.value;
-                start.setHours(newStart.slice(0, 2));
-                start.setMinutes(newStart.slice(3,5));
-                tripInfo.Start = start;
+                start.setHours(parseInt(newStart.slice(0, 2), 10));
+                start.setMinutes(parseInt(newStart.slice(3,5), 10));
+                tripInfo.Start = new Date(start);
                 break;
             case 'start_mileage':
                 tripInfo.Start_Mileage = event.target.value;
                 break;
             case 'end_date':
                 var newEnd = new Date(event.target.value);
+                end.setFullYear(newEnd.getFullYear());
+                end.setMonth(newEnd.getMonth());
                 end.setDate(newEnd.getDate());
-                tripInfo.End = end;
+                tripInfo.End = new Date(end);
                 break;
             case 'end_time':
                 var newEnd = event.target.value;
-                end.setHours(newEnd.slice(0, 2));
-                end.setMinutes(newEnd.slice(3,5));
-                tripInfo.End = end;
+                end.setHours(parseInt(newEnd.slice(0, 2)), 10);
+                end.setMinutes(parseInt(newEnd.slice(3,5), 10));
+                tripInfo.End = new Date(end);
                 break;
             case 'end_mileage':
                 tripInfo.End_Mileage = event.target.value;
                 break;
             default:
                 break;
+        }
+
+        if (end !== null) {
+            tripInfo.Trip_Status = 4;
+        } else {
+            if (start !== null) {
+                tripInfo.Trip_Status = 3;
+            } else {
+                tripInfo.TripStatus = 2;
+            }
         }
 
         this.setState({
@@ -791,7 +835,7 @@ export default class ViewTripDetails extends React.Component {
         axios.post('/trips/updateTrip', {
             tripID: this.state.tripInfo.TripID,
             username: this.state.tripInfo.Username,
-            trip_Status: this.state.tripInfo.Trip_Status,
+            trip_Status: 2,
             driver_ID: this.state.tripInfo.Driver_ID,
             trip_Type: this.state.tripInfo.Trip_Type,
             requested_Date: requestedDate.getFullYear() + "-" + (requestedDate.getMonth() + 1) + "-" + requestedDate.getDate(),
@@ -806,6 +850,7 @@ export default class ViewTripDetails extends React.Component {
             start_Mileage: null,
             end_Mileage: null
         }).then((result) => {
+            console.log(result)
             if (result.data.status === "success") {
                 let showTimeChangeModal = this.state.showTimeChangeModal;
                 this.setState({
