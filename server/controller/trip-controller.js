@@ -394,62 +394,73 @@ module.exports.fetchStatus = function (req, res) {
   [state, tripID, mileage] = message.split(" ");
   state = state.substr(0, 1).toUpperCase() + state.slice(1).toLowerCase();
 
-  trip.getTrip(tripID, resp => {
-    let tripDate = new Date(resp.data.Trip_Date);
-    let tripTime = resp.data.Trip_Time;
-    let nowDate = new Date();
+  trip.tripExists(tripID, exists => {
+    if ((exists.status === "success") && (exists.data === false)) {
+      console.log("exists", exists);
+      mobileHelper.sendMessage(req.body.source, "Trip ID does not exist", exist => {
+        return res.send(exist);
+      });
+    } else if ((exists.status === "success") && (exists.data === true)) {
+      trip.getTrip(tripID, resp => {
+        let tripDate = new Date(resp.data.Trip_Date);
+        let tripTime = resp.data.Trip_Time;
+        let nowDate = new Date();
+        
+        tripDate.setHours(tripTime.slice(0, 2));
+        tripDate.setMinutes(tripTime.slice(3,5));
     
-    tripDate.setHours(tripTime.slice(0, 2));
-    tripDate.setMinutes(tripTime.slice(3,5));
-
-    if (!((tripDate.getFullYear() === nowDate.getFullYear()) && (tripDate.getMonth() === nowDate.getMonth()) && (tripDate.getDate() === nowDate.getDate()))) {
-      mobileHelper.sendMessage('The date for trip ' + tripID + ' is not today.', req.body.source, result => {
-        return res.send(result);
+        if (!((tripDate.getFullYear() === nowDate.getFullYear()) && (tripDate.getMonth() === nowDate.getMonth()) && (tripDate.getDate() === nowDate.getDate()))) {
+          mobileHelper.sendMessage(req.body.source, 'The date for trip ' + tripID + ' is not today.', result => {
+            return res.send(result);
+          });
+        } else {
+          var diff = (tripDate.getTime() - nowDate.getTime())/60000;
+          
+          if (diff<-30 || diff>30) {
+            mobileHelper.sendMessage(req.body.source, 'The time for the trip ' + tripID + ' is not valid. Please check trip details.', result => {
+              return res.send(result);
+            });
+          } else {
+            trip.getTripStatus(tripID, response => {
+              if (state === 'Start') {
+                if ((response.End === null) && (response.Start === null)) {
+                  trip.setTripStatus(tripID, state, mileage, 3, resp => {
+                    console.log(resp);
+                    mobileHelper.sendMessage(req.body.source, 'Successfully recorded trip start', result => {
+                      res.send(result);
+                    });
+                  })
+                } else {
+                  mobileHelper.sendMessage(req.body.source, 'Error in format of text message', result => {
+                    res.send(result);
+                  });
+                }
+              } else if (state === 'End') {
+                if ((response.Start !== null) && (response.End === null)) {
+                  trip.setTripStatus(tripID, state, mileage, 4, resp => {
+                    console.log(resp);
+                    mobileHelper.sendMessage(req.body.source, 'Successfully recorded trip end', result => {
+                      res.send(result);
+                    });
+                  })
+                } else {
+                  mobileHelper.sendMessage(req.body.source, 'Error in format of text message', result => {
+                    res.send(result);
+                  });
+                }
+              } else {
+                mobileHelper.sendMessage(req.body.source, 'Error in format of text message', result => {
+                  res.send(result);
+                });
+              }
+            })
+          }
+        }
       });
     } else {
-      var diff = (tripDate.getTime() - nowDate.getTime())/60000;
-      
-      if (diff<-30 || diff>30) {
-        mobileHelper.sendMessage('The time for the trip ' + tripID + ' is not valid. Please check trip details.', req.body.source, result => {
-          return res.send(result);
-        });
-      }
+      return res.send({err: "Problem"});
     }
   });
-
-  trip.getTripStatus(tripID, response => {
-    if (state === 'Start') {
-      if ((response.End === null) && (response.Start === null)) {
-        trip.setTripStatus(tripID, state, mileage, 3, resp => {
-          console.log(resp);
-          mobileHelper.sendMessage('Successfully recorded trip start', req.body.source, result => {
-            res.send(result);
-          });
-        })
-      } else {
-        mobileHelper.sendMessage('Error in format of text message', req.body.source, result => {
-          res.send(result);
-        });
-      }
-    } else if (state === 'End') {
-      if ((response.Start !== null) && (response.End === null)) {
-        trip.setTripStatus(tripID, state, mileage, 4, resp => {
-          console.log(resp);
-          mobileHelper.sendMessage(req.body.source, 'Successfully recorded trip end', result => {
-            res.send(result);
-          });
-        })
-      } else {
-        mobileHelper.sendMessage(req.body.source, 'Error in format of text message', result => {
-          res.send(result);
-        });
-      }
-    } else {
-      mobileHelper.sendMessage(req.body.source, 'Error in format of text message', result => {
-        res.send(result);
-      });
-    }
-  })
 }
 
 module.exports.getDestinations = function (req, res) {

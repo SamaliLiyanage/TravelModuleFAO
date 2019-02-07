@@ -724,3 +724,29 @@ exports.updateTrip = function (tripID, username, tripStatus, driverID, tripType,
 
     next(temp);
 }
+
+exports.tripExists = function (tripID, next) {
+    let temp = null;
+    connection.query("SELECT COUNT(*) AS TripCount FROM Trip WHERE TripID=?", tripID, (err, result) => {
+        if (err) {
+            temp = {
+                status: "fail",
+                data: err
+            }
+        } else {
+            if(parseInt(result[0].TripCount, 10) !== 0) {
+                temp = {
+                    status: "success",
+                    data: true
+                }
+            } else {
+                temp = {
+                    status: "success",
+                    data: false
+                }
+            }
+        }
+
+        next(temp);
+    });
+}
