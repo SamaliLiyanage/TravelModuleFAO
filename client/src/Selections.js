@@ -40,3 +40,12 @@ export function TripStatus(props) {
         default: return "Error";
     }
 }
+
+export function LeaveType(props) {
+    switch(props.leaveType) {
+        case 1: return "Mutiple Days";
+        case 2: return "Full Day";
+        case 3: return "Half Day";
+        default: return "Undefined";
+    }
+}

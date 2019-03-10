@@ -1,27 +1,212 @@
 import React from 'react';
 import axios from 'axios';
-import { Form, FormGroup, Col, ControlLabel, FormControl, Button, Modal, ButtonToolbar } from 'react-bootstrap';
+import { Form, FormGroup, Col, ControlLabel, FormControl, Button, Modal, ButtonToolbar, Row } from 'react-bootstrap';
 import { DriverName, TripTypes, TripStatus } from '../../Selections';
+
+function StartEndChangeModal(props) {
+    const start = new Date (props.start);
+    const end = new Date (props.end);
+
+    var startMonth = null;
+    var endMonth = null;
+
+    if (start.getMonth()<9) {
+        startMonth = "0" + (start.getMonth() + 1).toString();
+    } else {
+        startMonth = (start.getMonth() + 1).toString();
+    }
+
+    if (end.getMonth()<9) {
+        endMonth = "0" + (end.getMonth() + 1).toString();
+    } else {
+        endMonth = (end.getMonth() + 1).toString();
+    }
+
+    var startDate = start.getFullYear()+ "-" + startMonth + "-" + start.getDate();
+    var endDate = end.getFullYear() + "-" + endMonth + "-" + end.getDate();
+
+    var startTime = null;
+    var endTime = null;
+
+    if (start.getMinutes().toString() < 10) {
+        startTime = start.getHours() + ":0" + start.getMinutes();
+    } else {
+        startTime = start.getHours() + ":" + start.getMinutes();
+    }
+
+    if (end.getMinutes().toString().length === 1) {
+        endTime = end.getHours() + ":0" + end.getMinutes();
+    } else {
+        endTime = end.getHours() + ":" + end.getMinutes();
+    }
+
+    var content = null;
+
+    if (props.showModal) {
+        content = (
+            <Modal.Dialog show={props.showModal.toString()}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Change Start/End Time</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Row>
+                        <Col sm={8}>
+                            <FormGroup controlId="start_date">
+                                <Col componentClass={ControlLabel} sm={4}>Start: </Col>
+                                <Col sm={6}>
+                                    <FormControl type="date" value={startDate} onChange={(e) => props.handleStartEndChange(e)} />                        
+                                </Col>
+                            </FormGroup>
+                        </Col>
+                        <Col sm={4}>
+                            <FormGroup controlId="start_time">
+                                <Col sm={12}>
+                                    <FormControl type="time" value={startTime} onChange={(e) => props.handleStartEndChange(e)} />                        
+                                </Col>
+                            </FormGroup>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col sm={8}>
+                            <FormGroup controlId="start_mileage">
+                                <Col componentClass={ControlLabel} sm={4}>Start Mileage: </Col>
+                                <Col sm={6}>
+                                    <FormControl type="text" value={props.start_mileage} onChange={(e) => props.handleStartEndChange(e)} />
+                                </Col>
+                            </FormGroup>
+                        </Col> 
+                    </Row>
+                    <Row>
+                        <Col sm={8}>
+                            <FormGroup controlId="end_date">
+                                <Col componentClass={ControlLabel} sm={4}>End: </Col>
+                                <Col sm={6}>
+                                    <FormControl type="date" value={endDate} onChange={(e) => props.handleStartEndChange(e)} />                        
+                                </Col>
+                            </FormGroup>
+                        </Col>
+                        <Col sm={4}>
+                            <FormGroup controlId="end_time">
+                                <Col sm={12}>
+                                    <FormControl type="time" value={endTime} onChange={(e) => props.handleStartEndChange(e)} />                        
+                                </Col>
+                            </FormGroup>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col sm={8}>
+                            <FormGroup controlId="end_mileage">
+                                <Col componentClass={ControlLabel} sm={4}>End Mileage: </Col>
+                                <Col sm={6}>
+                                    <FormControl type="text" value={props.end_mileage} onChange={(e) => props.handleStartEndChange(e)} />
+                                </Col>
+                            </FormGroup>
+                        </Col>
+                    </Row>
+                </Modal.Body>
+                <Modal.Footer>
+                    <ButtonToolbar>
+                        <Button onClick={(e) => props.handleConfirmTimeChange(e)}>Change</Button>
+                        <Button onClick={(e) => props.handleRemoveStartEnd(e)}>Remove all data</Button>
+                        <Button onClick={(e) => props.onCancel(e)}>Cancel</Button>
+                    </ButtonToolbar>
+                </Modal.Footer>
+            </Modal.Dialog>
+        );
+    } else {
+        content = null;
+    }
+
+    return content; 
+}
+
+function TripStartEnd(props) {
+    const status = props.status;
+    const start = new Date(props.start);
+    const end = new Date(props.end);
+    const start_mileage = props.start_mileage;
+    const end_mileage = props.end_mileage;
+
+    var content = null;
+    var renderStart = null;
+    var renderEnd = null;
+
+    if (start.getMinutes().toString(10).length === 1) {
+        renderStart = start.getFullYear() + "-" + (start.getMonth() + 1) + "-" + start.getDate() + " " + start.getHours() + ":0" + start.getMinutes();
+    } else {
+        renderStart = start.getFullYear() + "-" + (start.getMonth() + 1) + "-" + start.getDate() + " " + start.getHours() + ":" + start.getMinutes();
+    }
+
+    if (end.getMinutes().toString(10).length === 1) {
+        renderEnd = end.getFullYear() + "-" + (end.getMonth() + 1) + "-" + end.getDate() + " " + end.getHours() + ":0" + end.getMinutes();
+    } else {
+        renderEnd = end.getFullYear() + "-" + (end.getMonth() + 1) + "-" + end.getDate() + " " + end.getHours() + ":" + end.getMinutes();
+    }
+
+    if (status === 4) {
+        content = (
+            <div>
+            <FormGroup>
+                <Col componentClass={ControlLabel} smOffset={1} sm={2}>Start:</Col>
+                <Col sm={3}>
+                    <FormControl.Static>{renderStart}</FormControl.Static>
+                </Col>
+                <Col componentClass={ControlLabel} sm={2}>Start Mileage:</Col>
+                <Col sm={3}>
+                    <FormControl.Static>{start_mileage + " km"}</FormControl.Static>
+                </Col>
+            </FormGroup>
+            <FormGroup>
+                <Col componentClass={ControlLabel} smOffset={1} sm={2}>End:</Col>
+                <Col sm={3}>
+                    <FormControl.Static>{renderEnd}</FormControl.Static>
+                </Col>
+                <Col componentClass={ControlLabel} sm={2}>End Mileage:</Col>
+                <Col sm={3}>
+                    <FormControl.Static>{end_mileage + " km"}</FormControl.Static>
+                </Col>
+            </FormGroup>
+            </div>
+        );
+    } else if (status === 3){
+        content = (
+            <FormGroup>
+                <Col componentClass={ControlLabel} smOffset={1} sm={2}>Start:</Col>
+                <Col sm={3}>
+                    <FormControl.Static>{renderStart}</FormControl.Static>
+                </Col>
+                <Col componentClass={ControlLabel} sm={2}>Start Mileage:</Col>
+                <Col sm={3}>
+                    <FormControl.Static>{start_mileage + " km"}</FormControl.Static>
+                </Col>
+            </FormGroup>
+        );
+    } else {
+        content = null;
+    }
+
+    return content;
+}
 
 function TripDuration(props) {
     var content = null;
     if (props.fieldTrip) {
         content = (
-            <FormGroup>
-                <Col componentClass={ControlLabel} smOffset={1} sm={2}>Duration:</Col>
+            <div>
+                <Col componentClass={ControlLabel} sm={2}>Duration:</Col>
                 <Col sm={3}>
                     <FormControl.Static>{props.duration} Days</FormControl.Static>
                 </Col>
-            </FormGroup>
+            </div>
         );
     } else {
         content = (
-            <FormGroup>
-                <Col componentClass={ControlLabel} smOffset={1} sm={2}>Duration:</Col>
+            <div>
+                <Col componentClass={ControlLabel} sm={2}>Duration:</Col>
                 <Col sm={3}>
                     <FormControl.Static>{props.duration} Hours {props.durationMins} Minutes</FormControl.Static>
                 </Col>
-            </FormGroup>
+            </div>
         );
     }
     return content;
@@ -89,7 +274,7 @@ function CancelModal(props) {
 }
 
 function CancelTrip(props) {
-    //PROPS::: userType, onClick, onCancel, tripStatus, showModal, tripNumber
+    //PROPS::: userType, onClick, onCancel, tripStatus, showModal, tripNumber, onTimeCancel, showTimeModal
 
     if(props.tripStatus===1||props.tripStatus===2||props.tripStatus===5||props.tripStatus===6) {
         return(
@@ -103,7 +288,16 @@ function CancelTrip(props) {
             </div>
         );
     } else {
-        return null;
+        return (
+            <div>
+                <FormGroup>
+                    <Col sm={3} smOffset={9}>
+                        <Button bsStyle="info" onClick={(e) => props.onTimeCancel(e)}>Change Start/End</Button>
+                    </Col>
+                </FormGroup>
+                <StartEndChangeModal onCancel={props.onTimeCancel} showModal={props.showTimeModal} start={props.start} end={props.end} start_mileage={props.start_mileage} end_mileage={props.end_mileage} handleStartEndChange={props.handleStartEndChange} handleConfirmTimeChange={props.handleConfirmTimeChange} handleRemoveStartEnd={props.handleRemoveStartEnd} />
+            </div>
+        );
     }
 }
 
@@ -276,7 +470,7 @@ function BudgetingEntity(props) {
                 </Col>
             </div> :
             <div>
-                <Col sm={4}>
+                <Col sm={2}>
                     <FormControl.Static>Regular Program Funded</FormControl.Static>
                 </Col>
             </div>
@@ -314,14 +508,19 @@ export default class ViewTripDetails extends React.Component {
             showModal: false,
             driverList: [],
             driverTuple: {},
-            showOnLeaveModal: false
+            showOnLeaveModal: false,
+            showTimeChangeModal: false
         }
 
         this.handleChange = this.handleChange.bind(this);
         this.handleApproval = this.handleApproval.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
+        this.handleStartEndChange = this.handleStartEndChange.bind(this);
         this.handleShowModal = this.handleShowModal.bind(this);
         this.handleShowLeaveModal = this.handleShowLeaveModal.bind(this);
+        this.handleTimeChangeModal = this.handleTimeChangeModal.bind(this);
+        this.handleConfirmTimeChange = this.handleConfirmTimeChange.bind(this);
+        this.handleRemoveStartEnd = this.handleRemoveStartEnd.bind(this);
     }
 
     componentWillMount() {
@@ -493,6 +692,75 @@ export default class ViewTripDetails extends React.Component {
             })
     }
 
+    handleStartEndChange(event) {
+        var tripInfo = this.state.tripInfo;
+        var start = null;
+        var end = null;
+
+        if (tripInfo.Start === null) {
+            start = new Date();
+        } else {
+            start = new Date(tripInfo.Start)
+        }
+
+        if (tripInfo.End === null) {
+            end = new Date();
+        } else {
+            end = new Date(tripInfo.End);
+        }
+
+        switch (event.target.id) {
+            case 'start_date':
+                var newStart = new Date(event.target.value);
+                start.setFullYear(newStart.getFullYear());
+                start.setMonth(newStart.getMonth());
+                start.setDate(newStart.getDate());
+                tripInfo.Start = new Date(start);
+                break;
+            case 'start_time':
+                var newStart = event.target.value;
+                start.setHours(parseInt(newStart.slice(0, 2), 10));
+                start.setMinutes(parseInt(newStart.slice(3,5), 10));
+                tripInfo.Start = new Date(start);
+                break;
+            case 'start_mileage':
+                tripInfo.Start_Mileage = event.target.value;
+                break;
+            case 'end_date':
+                var newEnd = new Date(event.target.value);
+                end.setFullYear(newEnd.getFullYear());
+                end.setMonth(newEnd.getMonth());
+                end.setDate(newEnd.getDate());
+                tripInfo.End = new Date(end);
+                break;
+            case 'end_time':
+                var newEnd = event.target.value;
+                end.setHours(parseInt(newEnd.slice(0, 2)), 10);
+                end.setMinutes(parseInt(newEnd.slice(3,5), 10));
+                tripInfo.End = new Date(end);
+                break;
+            case 'end_mileage':
+                tripInfo.End_Mileage = event.target.value;
+                break;
+            default:
+                break;
+        }
+
+        if (end !== null) {
+            tripInfo.Trip_Status = 4;
+        } else {
+            if (start !== null) {
+                tripInfo.Trip_Status = 3;
+            } else {
+                tripInfo.TripStatus = 2;
+            }
+        }
+
+        this.setState({
+            tripInfo: tripInfo
+        });
+    }
+
     handleShowModal(event) {
         let showModal = this.state.showModal;
 
@@ -507,6 +775,91 @@ export default class ViewTripDetails extends React.Component {
         this.setState({
             showOnLeaveModal: !showModal
         })
+    }
+
+    handleTimeChangeModal(event) {
+        let showTimeChangeModal = this.state.showTimeChangeModal;
+
+        axios.get('/trips/gettrip/' + this.state.tripid)
+            .then(res => {
+                if (res.data.status === "success") {
+                    this.setState({
+                        tripInfo: res.data.data,
+                        showTimeChangeModal: !showTimeChangeModal
+                    })
+                } else {
+                    console.log(res.data.status, res.data.data);
+                }
+            });
+    }
+
+    handleConfirmTimeChange(event) {
+        var tripDate = new Date(this.state.tripInfo.Trip_Date);
+        var requestedDate = new Date(this.state.tripInfo.Requested_Date);
+        var startDate = new Date(this.state.tripInfo.Start);
+        var endDate = new Date(this.state.tripInfo.End);
+
+        axios.post('/trips/updateTrip', {
+            tripID: this.state.tripInfo.TripID,
+            username: this.state.tripInfo.Username,
+            trip_Status: this.state.tripInfo.Trip_Status,
+            driver_ID: this.state.tripInfo.Driver_ID,
+            trip_Type: this.state.tripInfo.Trip_Type,
+            requested_Date: requestedDate.getFullYear() + "-" + (requestedDate.getMonth() + 1) + "-" + requestedDate.getDate(),
+            trip_Date: tripDate.getFullYear() + "-" + (tripDate.getMonth() + 1) + "-" + tripDate.getDate(),
+            trip_Time: this.state.tripInfo.Trip_Time,
+            duration: this.state.tripInfo.Duration,
+            duration_Minute: this.state.tripInfo.Duration_Minute,
+            purpose: this.state.tripInfo.Purpose,
+            onBehalf: this.state.tripInfo.OnBehalf,
+            start: startDate.getFullYear() + "-" + (startDate.getMonth() + 1) + "-" + startDate.getDate() + " " + startDate.getHours() + ":" + startDate.getMinutes(),
+            end: endDate.getFullYear() + "-" + (endDate.getMonth() + 1) + "-" + endDate.getDate() + " " + endDate.getHours() + ":" + endDate.getMinutes(),
+            start_Mileage: this.state.tripInfo.Start_Mileage,
+            end_Mileage: this.state.tripInfo.End_Mileage
+        }).then((result) => {
+            if (result.data.status === "success") {
+                let showTimeChangeModal = this.state.showTimeChangeModal;
+                this.setState({
+                    showTimeChangeModal: !showTimeChangeModal
+                });
+            }
+        }).catch((err) => {
+            console.log(err);
+        });
+    }
+
+    handleRemoveStartEnd(event) {
+        var tripDate = new Date(this.state.tripInfo.Trip_Date);
+        var requestedDate = new Date(this.state.tripInfo.Requested_Date);
+
+        axios.post('/trips/updateTrip', {
+            tripID: this.state.tripInfo.TripID,
+            username: this.state.tripInfo.Username,
+            trip_Status: 2,
+            driver_ID: this.state.tripInfo.Driver_ID,
+            trip_Type: this.state.tripInfo.Trip_Type,
+            requested_Date: requestedDate.getFullYear() + "-" + (requestedDate.getMonth() + 1) + "-" + requestedDate.getDate(),
+            trip_Date: tripDate.getFullYear() + "-" + (tripDate.getMonth() + 1) + "-" + tripDate.getDate(),
+            trip_Time: this.state.tripInfo.Trip_Time,
+            duration: this.state.tripInfo.Duration,
+            duration_Minute: this.state.tripInfo.Duration_Minute,
+            purpose: this.state.tripInfo.Purpose,
+            onBehalf: this.state.tripInfo.OnBehalf,
+            start: null,
+            end: null,
+            start_Mileage: null,
+            end_Mileage: null
+        }).then((result) => {
+            console.log(result)
+            if (result.data.status === "success") {
+                let showTimeChangeModal = this.state.showTimeChangeModal;
+                this.setState({
+                    showTimeChangeModal: !showTimeChangeModal
+                });
+            }
+        }).catch((err) => {
+            console.log(err);
+        });
     }
 
     render() {
@@ -537,12 +890,12 @@ export default class ViewTripDetails extends React.Component {
                         <FormControl.Static>{this.state.tripInfo.Trip_Time}</FormControl.Static>
                     </Col>
                 </FormGroup>
-                <TripDuration fieldTrip={parseInt(this.state.tripInfo.Trip_Type, 10) === 2} duration={this.state.tripInfo.Duration} durationMins={this.state.tripInfo.Duration_Minute} />
                 <FormGroup>
-                    <Col componentClass={ControlLabel} smOffset={1} sm={2}>Trip Type:</Col>
+                    <Col componentClass={ControlLabel} smOffset={1}  sm={2}>Trip Type:</Col>
                     <Col sm={3}>
                         <FormControl.Static><TripTypes tripType={this.state.tripInfo.Trip_Type} /></FormControl.Static>
                     </Col>
+                    <TripDuration fieldTrip={parseInt(this.state.tripInfo.Trip_Type, 10) === 2} duration={this.state.tripInfo.Duration} durationMins={this.state.tripInfo.Duration_Minute} />
                 </FormGroup>
                 <FormGroup>
                     <Col componentClass={ControlLabel} smOffset={1} sm={2}>Destinations:</Col>
@@ -571,8 +924,9 @@ export default class ViewTripDetails extends React.Component {
                 </FormGroup>
                 <FurtherRemarks exists={this.state.furtherRemarks} remark={this.state.remark} />
                 <Driver userType={this.props.userType} tripID={this.state.tripid} driverID={this.state.tripInfo.Driver_ID} tripDate={tripDate} tripStatus={this.state.tripInfo.Trip_Status} onChange={this.handleChange} driverList={this.state.driverList} driverTuple={this.state.driverTuple} />
+                <TripStartEnd status={this.state.tripInfo.Trip_Status} start={this.state.tripInfo.Start} end={this.state.tripInfo.End} start_mileage={this.state.tripInfo.Start_Mileage} end_mileage={this.state.tripInfo.End_Mileage} />
                 <ApprovalButton userType={this.props.userType} tripStatus={this.state.tripInfo.Trip_Status} remark={this.state.remark} tripID={this.state.tripid} onApprove={this.handleApproval} />
-                <CancelTrip userType={this.props.userType} onClick={this.handleShowModal} onCancel={this.handleCancel} tripStatus={this.state.tripInfo.Trip_Status} showModal={this.state.showModal} tripNumber={this.state.tripid} />
+                <CancelTrip userType={this.props.userType} onClick={this.handleShowModal} onCancel={this.handleCancel} tripStatus={this.state.tripInfo.Trip_Status} showModal={this.state.showModal} tripNumber={this.state.tripid} onTimeCancel={this.handleTimeChangeModal} showTimeModal={this.state.showTimeChangeModal} start={this.state.tripInfo.Start} end={this.state.tripInfo.End} start_mileage={this.state.tripInfo.Start_Mileage} end_mileage={this.state.tripInfo.End_Mileage} handleStartEndChange={this.handleStartEndChange} handleConfirmTimeChange={this.handleConfirmTimeChange} handleRemoveStartEnd={this.handleRemoveStartEnd} />
                 <DriverLeaveModal showModal={this.state.showOnLeaveModal} tripID={this.state.tripInfo.TripID} onOk={this.handleShowLeaveModal} />
             </Form>
         );
