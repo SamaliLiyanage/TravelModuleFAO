@@ -416,7 +416,7 @@ module.exports.fetchStatus = function (req, res) {
         } else {
           var diff = (tripDate.getTime() - nowDate.getTime())/60000;
           
-          if (diff<-30 || diff>30) {
+          if ((state === 'Start') && (diff<-30 || diff>30)) {
             mobileHelper.sendMessage(req.body.source, 'The time for the trip ' + tripID + ' is not valid. Please check trip details.', result => {
               return res.send(result);
             });
