@@ -22,6 +22,8 @@ import UserProfile from './containers/UserProfile';
 import ViewProfile from './containers/ViewProfile';
 import ThisDriverSchedule from './containers/Driver/ThisDriverSchedule';
 import BlockDrivers from './containers/TravelManager/BlockDriver';
+import GenerateReport from "./containers/TravelManager/GenerateReport";
+import PrintReport from './containers/TravelManager/PrintReport'
 
 export default ({ childProps }) =>
   <Switch>
@@ -45,5 +47,7 @@ export default ({ childProps }) =>
     <AppliedRoute path='/viewprofile' exact component={ViewProfile} props={childProps} />
     <AppliedRoute path='/viewschedule' exact component={ThisDriverSchedule} props={childProps} />
     <AppliedRoute path='/blockdrivers' exact component={BlockDrivers} props={childProps} />
+    <AppliedRoute path='/abcd' exact component={GenerateReport} />
+    <AppliedRoute path='/printReport' exact component={PrintReport} />
     <Route component={NotFound} />
   </Switch>;
