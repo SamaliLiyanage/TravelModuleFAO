@@ -825,3 +825,19 @@ module.exports.driverAvailabilityAll = function (req, res) {
     return res.send(result)
   });
 }
+
+module.exports.generateReportData = function (req, res) {
+  const drivers = req.query.drivers.slice(1, -1);
+  const tripTypes = req.query.tripTypes.slice(1, -1);
+  const tripStatuses = req.query.tripStatuses.slice(1, -1);
+  const startDate = req.query.startDate;
+  const endDate = req.query.endDate;
+
+  let driverList = "( " + drivers + " )";
+  let tripTypeList = "( " + tripTypes + " )";
+  let tripStatusList = "( " + tripStatuses + " )";
+
+  trip.generateReportData(driverList, tripTypeList, tripStatusList, startDate, endDate, (reportData) => {
+    res.send(reportData);
+  });
+}
