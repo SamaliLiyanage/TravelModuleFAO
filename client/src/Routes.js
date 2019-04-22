@@ -46,6 +46,6 @@ export default ({ childProps }) =>
     <AppliedRoute path='/viewprofile' exact component={ViewProfile} props={childProps} />
     <AppliedRoute path='/viewschedule' exact component={ThisDriverSchedule} props={childProps} />
     <AppliedRoute path='/blockdrivers' exact component={BlockDrivers} props={childProps} />
-    <AppliedRoute path='/abcd' exact component={GenerateReport} />
+    <AppliedRoute path='/generateReport' exact component={GenerateReport} props={childProps} />
     <Route component={NotFound} />
   </Switch>;

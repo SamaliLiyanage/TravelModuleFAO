@@ -79,6 +79,9 @@ function SetMenu(props) {
 							<NavItem>View Leave</NavItem>
 						</LinkContainer>
 					</NavDropdown>
+					<LinkContainer to='/generateReport'>
+						<NavItem>Generate Report</NavItem>
+					</LinkContainer>
 					<NavDropdown id="tripRequests" title="My Trips">
 						<LinkContainer to='/requesttrip'>
 							<NavItem>Request Trip</NavItem>
