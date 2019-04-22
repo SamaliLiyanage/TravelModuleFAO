@@ -230,10 +230,10 @@ export default class AdminView extends React.Component {
         axios.get('/loggedin')
         .then(res => {
             if (res.data=="") {
-                infor.userHasAuthenticated(false, null, null);
+                infor.userHasAuthenticated(false, null, null, null, null);
                 infor.history.push('/login');
             } else {
-                infor.userHasAuthenticated(true, res.data.Username, res.data.Role);
+                infor.userHasAuthenticated(true, res.data.Username, res.data.Role, res.data.PlaceTripForFAOR, res.data.GenerateReport);
                 if (res.data.Role==2) {
                     infor.history.push('/viewtrips');
                 } else if (res.data.Role==4) {
