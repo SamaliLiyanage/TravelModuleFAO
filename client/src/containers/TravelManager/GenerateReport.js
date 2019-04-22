@@ -1,7 +1,11 @@
 import React from 'react';
 import axios from 'axios';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { Table, Col, ControlLabel, Form, FormControl, FormGroup, Modal, Checkbox, Button } from "react-bootstrap";
-import { DriverName, TripTypes } from "../../Selections";
+import { DriverName, TripTypes, TripStatus } from "../../Selections";
+
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 function DriverList(props) {
     const driverList = props.driverList;
@@ -145,9 +149,12 @@ function ReportRow(props) {
         return (
             <tr key={tripData.TripID}>
                 <td>{tripData.TripID}</td>
+                <td>{tripDate.getFullYear() + "-" + (tripDate.getMonth() + 1) + "-" + tripDate.getDate()}</td>
                 <td><TripTypes tripType={tripData.Trip_Type} /></td>
                 <td><DriverName driverID={tripData.Driver_ID} driverTuple={driverTuple} /></td>
-                <td>{tripDate.getFullYear() + "-" + (tripDate.getMonth() + 1) + "-" + tripDate.getDate()}</td>
+                <td><TripStatus tripStatus={tripData.Trip_Status} /></td>
+                <td>{(parseInt(tripData.Start_Mileage, 10)) + " km"}</td>
+                <td>{(parseInt(tripData.End_Mileage, 10)) + " km"}</td>
                 <td>{(parseInt(tripData.End_Mileage, 10) - parseInt(tripData.Start_Mileage, 10)) + " km"}</td>
             </tr>
         );
@@ -155,9 +162,12 @@ function ReportRow(props) {
         return (
             <tr key={tripData.TripID}>
                 <td>{tripData.TripID}</td>
+                <td>{tripDate.getFullYear() + "-" + (tripDate.getMonth() + 1) + "-" + tripDate.getDate()}</td>
                 <td><TripTypes tripType={tripData.Trip_Type} /></td>
                 <td><DriverName driverID={tripData.Driver_ID} driverTuple={driverTuple} /></td>
-                <td>{tripDate.getFullYear() + "-" + (tripDate.getMonth() + 1) + "-" + tripDate.getDate()}</td>
+                <td><TripStatus tripStatus={tripData.Trip_Status} /></td>
+                <td>{"N/A"}</td>
+                <td>{"N/A"}</td>
                 <td>{"N/A"}</td>
             </tr>
         );
@@ -174,13 +184,16 @@ function ReportTable(props) {
     });
 
     return(
-        <Table striped bordered condensed hover responsive >
+        <Table striped bordered condensed hover responsive id="table-to-print">
             <thead>
             <tr className="table-danger">
                 <th>Trip ID</th>
+                <th>Trip Date</th>
                 <th>Trip Type</th>
                 <th>Driver</th>
-                <th>Trip Date</th>
+                <th>Trip Status</th>
+                <th>Start Mileage</th>
+                <th>End Mileage</th>
                 <th>Trip Mileage</th>
             </tr>
             </thead>
@@ -222,11 +235,26 @@ export default class GenerateReport extends React.Component {
         this.handleValidation = this.handleValidation.bind(this);
     }
 
-    componentDidMount() {
+    componentWillMount() {
+        const authenticate = this.props;
+
+		axios.get('/loggedin')
+			.then((res) => {
+				if (res.data == "") {
+					authenticate.userHasAuthenticated(false, null, null, null, null);
+					authenticate.history.push('/login')
+				} else {
+					authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role, res.data.PlaceTripForFAOR, res.data.GenerateReport);
+					if (res.data.Role === 4) {
+						authenticate.history.push('/requesttrip');
+					}
+				}
+            });
+        
         axios.get('/users/Role/3').then((res) => {
             let drivers = { '0': 'Unassigned', 'cab': 'Cab Assigned' };
             res.data.forEach((driverDetail) => {
-                drivers[driverDetail.Username] = driverDetail.Full_Name.split(" ")[0];
+                drivers[driverDetail.Username] = driverDetail.Full_Name;
             });
             this.setState({
                 driverList: res.data,
@@ -343,11 +371,116 @@ export default class GenerateReport extends React.Component {
         });
     }
 
-    handlePrint(event) {
-        this.props.history.push({
-            pathname: '/printReport',
-            state: this.state.reportData
+    getDriverName(driverList, driverID) {
+        if(driverList[driverID] === null) {
+            return null;
+        } else {
+            return driverList[driverID];
+        }
+    }
+
+    getTripType(tripType) {
+        switch(parseInt(tripType, 10)) {
+            case 1: return "City Trip";
+            case 2: return "Field Trip";
+            case 3: return "Field Day Trip";
+            case 4: return "Airport";
+            default: return "Undefined"; 
+        }
+    }
+
+    getTripStatus(tripStatus) {
+        switch(tripStatus) {
+            case 1: return "Pending";
+            case 2: return "Assigned";
+            case 3: return "Started";
+            case 4: return "Completed";
+            case 5: return "Cab Assigned";
+            case 6: return "Awaiting Approval";
+            case 7: return "Cancelled";
+            default: return "Error";
+        }
+    }
+
+    handlePrint(event, reportContent) {
+        const dateNow = new Date();
+        const fileName = dateNow.getFullYear() + "_" + (dateNow.getMonth() + 1) + "_" + dateNow.getDate() 
+                        + "_" + dateNow.getHours() + "_" + dateNow.getMinutes() + "_" + dateNow.getSeconds() + ".pdf";
+
+        const titleDrivers = this.state.drivers.map((driver) => {
+            return this.state.driverTuple[driver]
         });
+
+        const headerRow = [
+            {text: 'Trip ID', style: 'tableHeader', alignment: 'center'},
+            {text: 'Trip Date', style: 'tableHeader', alignment: 'center'},
+            {text: 'Trip Type', style: 'tableHeader', alignment: 'center'},
+            {text: 'Driver Name', style: 'tableHeader', alignment: 'center'},
+            {text: 'Trip Status', style: 'tableHeader', alignment: 'center'},
+            {text: 'Start Mileage', style: 'tableHeader', alignment: 'center'},
+            {text: 'End Mileage', style: 'tableHeader', alignment: 'center'},
+            {text: 'Mileage', style: 'tableHeader', alignment: 'center'}
+        ];
+
+        const reportTableBody = reportContent.map((trip) => {
+            let tripDate = new Date(trip.Trip_Date);
+            if (parseInt(trip.Trip_Status, 10) === 4) {
+                return ([
+                    {text: trip.TripID, style:'tableContent'},
+                    {text: tripDate.getFullYear() + "-" + (tripDate.getMonth() + 1) + "-" + tripDate.getDate(), style:'tableContent'},
+                    {text: this.getTripType(trip.Trip_Type), style:'tableContent'},
+                    {text: this.getDriverName(this.state.driverTuple, trip.Driver_ID), style:'tableContent'},
+                    {text: this.getTripStatus(trip.Trip_Status), style: 'tableContent'},
+                    {text: (parseInt(trip.Start_Mileage, 10)) + " km", style:'tableContent', alignment: 'right'},
+                    {text: (parseInt(trip.End_Mileage, 10)) + " km", style:'tableContent', alignment: 'right'},
+                    {text: (parseInt(trip.End_Mileage, 10) - parseInt(trip.Start_Mileage, 10)) + " km", style:'tableContent', alignment: 'right'}
+                ]);
+            } else {
+                return ([
+                    {text: trip.TripID, style:'tableContent'},
+                    {text: tripDate.getFullYear() + "-" + (tripDate.getMonth() + 1) + "-" + tripDate.getDate(), style:'tableContent'},
+                    {text: this.getTripType(trip.Trip_Type), style:'tableContent'},
+                    {text: this.getDriverName(this.state.driverTuple, trip.Driver_ID), style:'tableContent'},
+                    {text: this.getTripStatus(trip.Trip_Status), style: 'tableContent'},
+                    {text: "N/A", style: 'tableContent'},
+                    {text: "N/A", style: 'tableContent'},
+                    {text: "N/A", style: 'tableContent'}
+                ]);
+            }
+        });
+
+        const reportBody = {
+            pageSize: 'A4',
+            content: [
+                {text: 'Report for ' + titleDrivers + ' for ' + this.state.startDate + ' to ' + this.state.endDate, style: 'tableTitle' , alignment: 'center'},
+                '\n',
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: ['auto', 'auto', 'auto', 'auto', 'auto', '*', '*', 'auto'],
+                        body: [headerRow].concat(reportTableBody)
+                    }
+                }
+            ],
+            styles: {
+                tableHeader: {
+                    bold: true,
+                    fontSize: 9,
+                    color: 'black'
+                },
+                tableTitle: {
+                    bold: true,
+                    fontSize: 11,
+                    color: 'black'
+                },
+                tableContent: {
+                    fontSize: 8,
+                    color: 'black'
+                }
+            }
+        }
+
+        pdfMake.createPdf(reportBody).download(fileName);
     }
 
     handleValidation(event) {
@@ -419,7 +552,7 @@ export default class GenerateReport extends React.Component {
             <div>
                 <Form horizontal>
                     <Button name="button" type="button" onClick={(e) => {this.handleModalShow(e)}}>Change Search</Button>
-                    <Button name="button" type="button" onClick={(e) => {this.handlePrint(e)}}>Print Report</Button>
+                    <Button name="button" type="button" onClick={(e) => {this.handlePrint(e, this.state.reportData)}} disabled={this.state.reportData.length === 0}>Download Report</Button>
                 </Form>
                 <QueryModal 
                     handleDataGeneration = {this.handleDataGeneration}
