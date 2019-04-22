@@ -23,5 +23,6 @@ router.post('/testing', tripController.testMobile);
 router.get('/consReq/:tripID', tripController.consolidatedRequest);
 router.get('/filterTrip', tripController.filterTrips);
 router.post('/updateTrip', tripController.updateTrip);
+router.get('/generateReportData', tripController.generateReportData);
 
 module.exports = router;
