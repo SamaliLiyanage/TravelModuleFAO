@@ -22,10 +22,10 @@ export default class ViewProfile extends React.Component {
             .then(res => {
                 console.log(res, authenticate)
                 if (res.data == "") {
-                    authenticate.userHasAuthenticated(false, null, null);
+                    authenticate.userHasAuthenticated(false, null, null, null, null);
                     authenticate.history.push('/login')
                 } else {
-                    authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
+                    authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role, res.data.PlaceTripForFAOR, res.data.GenerateReport);
                     this.setState({
                         fullName: res.data.Full_Name,
                         userName: res.data.Username,
