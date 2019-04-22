@@ -2,7 +2,7 @@ var user = require('../model/user');
 
 //Insert a user
 module.exports.addUser = function (req, res, next) {
-  user.addUser(req.body.userName, req.body.realName, req.body.passWord, req.body.telePhone, req.body.role, res);
+  user.addUser(req.body.userName, req.body.realName, req.body.passWord, req.body.telePhone, req.body.role, req.body.tripsForFAOR, req.body.generateReport, res);
 };
 
 //Get all users with all fields
@@ -30,7 +30,7 @@ module.exports.getUser = function (req, res, next) {
 
 //Update user with given ID
 module.exports.updateUser = function (req, res, next) {
-  user.updateUser(req.body.oldUsername, req.body.userName, req.body.realName, req.body.passWord, req.body.telePhone, req.body.role, res);
+  user.updateUser(req.body.oldUsername, req.body.userName, req.body.realName, req.body.passWord, req.body.telePhone, req.body.role, req.body.tripsForFAOR, req.body.generateReport, res);
 }
 
 //Delete user with given ID

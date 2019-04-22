@@ -94,6 +94,22 @@ function TimeWarning(props) {
   }
 }
 
+function TripForFAOR(props) {
+  if (parseInt(props.tripsForFAOR, 10) === 1) {
+    return (
+      <Col sm={4}>
+        <FormGroup controlId="faor">
+          <Col sm={6}>
+          <Checkbox inline checked={props.faor} onClick={(e)=>{props.onClick(e)}} title="faor"> Trip for FAOR </Checkbox>
+          </Col>
+        </FormGroup>
+      </Col>
+    );
+  } else {
+    return null;
+  }
+}
+
 function FormErrors(props) {
   let formErrors = props.formErrors;
   let fieldNames = props.fieldNames;
@@ -137,6 +153,7 @@ export default class RequestTrip extends React.Component {
       tripPurpose: null,
       cabRequested: false,
       onBehalf: false,
+      faor: false,
       obName: null,
       obEmail: null,
       obMobile: null,
@@ -213,10 +230,10 @@ export default class RequestTrip extends React.Component {
     axios.get('/loggedin')
       .then(res => {
         if (res.data == "") {
-          authenticate.userHasAuthenticated(false, null, null);
+          authenticate.userHasAuthenticated(false, null, null, null, null);
           authenticate.history.push('/login')
         } else {
-          authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
+          authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role, res.data.PlaceTripForFAOR, res.data.GenerateReport);
           this.setState({
             rqstrID: res.data.Username,
           });
@@ -233,6 +250,7 @@ export default class RequestTrip extends React.Component {
     var remarksAdded = this.state.remarksAdded;
     var cabRequested = this.state.cabRequested;
     var onBehalf = this.state.onBehalf;
+    var faor = this.state.faor;
     const formErrors = this.state.formErrors;
 
     if (event.target.parentElement.title === "fRequests") {
@@ -246,13 +264,16 @@ export default class RequestTrip extends React.Component {
       cabRequested = !(cabRequested);
     } else if (event.target.parentElement.title === "onbehalf") {
       onBehalf = !(onBehalf);
+    } else if (event.target.parentElement.title === "faor") {
+      faor = !(faor);
     }
 
     this.setState({
       remarksAdded: remarksAdded,
       cabRequested: cabRequested,
       onBehalf: onBehalf,
-      formErrors: formErrors
+      formErrors: formErrors,
+      faor: faor
     })
   }
 
@@ -364,37 +385,73 @@ export default class RequestTrip extends React.Component {
   handleSubmit(event) {
     event.preventDefault();
 
-    axios.post('/trips/new', {
-      tripID: this.state.tripID,
-      username: this.state.rqstrID,
-      tripType: parseInt(this.state.tripType, 10),
-      tripDuration: this.state.tripDuration,
-      tripDurationMin: this.state.tripDurationMin,
-      tripDate: this.state.tripDate,
-      tripTime: this.state.tripTime,
-      tripPurpose: this.state.tripPurpose,
-      furtherRmrks: this.state.fthrRemarks,
-      destinations: this.state.destinations,
-      destinationTowns: this.state.destinationTowns,
-      budgetingEntity: this.state.budgetingEntity,
-      projectNumber: this.state.projectNumber,
-      cabRequested: this.state.cabRequested,
-      onBehalf: this.state.onBehalf,
-      obName: this.state.obName,
-      obEmail: this.state.obEmail,
-      obMobile: this.state.obMobile,
-      outsideOfficeHours: this.state.outsideOfficeHours
-    })
-      .then(response => {
-        if(response.data.status === "fail"){
-          this.props.history.push('/fail');
-        } else {
-          this.props.history.push('/success/' + this.state.tripID);
-        }
+    if (this.state.faor === true) {
+      axios.post('/trips/newfaor', {
+        tripID: this.state.tripID,
+        username: this.state.rqstrID,
+        tripType: parseInt(this.state.tripType, 10),
+        tripDuration: this.state.tripDuration,
+        tripDurationMin: this.state.tripDurationMin,
+        tripDate: this.state.tripDate,
+        tripTime: this.state.tripTime,
+        tripPurpose: this.state.tripPurpose,
+        furtherRmrks: this.state.fthrRemarks,
+        destinations: this.state.destinations,
+        destinationTowns: this.state.destinationTowns,
+        budgetingEntity: this.state.budgetingEntity,
+        projectNumber: this.state.projectNumber,
+        cabRequested: this.state.cabRequested,
+        faor: this.state.faor,
+        onBehalf: this.state.onBehalf,
+        obName: this.state.obName,
+        obEmail: this.state.obEmail,
+        obMobile: this.state.obMobile,
+        outsideOfficeHours: this.state.outsideOfficeHours
       })
-      .catch(function (error) {
-        console.log(error);
+        .then(response => {
+          console.log(response);
+          if(response.data.status === "fail"){
+            this.props.history.push('/fail');
+          } else {
+            this.props.history.push('/success/' + this.state.tripID);
+          }
+        })
+        .catch(function (error) {
+          console.log(error);
+        })
+    } else {
+      axios.post('/trips/new', {
+        tripID: this.state.tripID,
+        username: this.state.rqstrID,
+        tripType: parseInt(this.state.tripType, 10),
+        tripDuration: this.state.tripDuration,
+        tripDurationMin: this.state.tripDurationMin,
+        tripDate: this.state.tripDate,
+        tripTime: this.state.tripTime,
+        tripPurpose: this.state.tripPurpose,
+        furtherRmrks: this.state.fthrRemarks,
+        destinations: this.state.destinations,
+        destinationTowns: this.state.destinationTowns,
+        budgetingEntity: this.state.budgetingEntity,
+        projectNumber: this.state.projectNumber,
+        cabRequested: this.state.cabRequested,
+        onBehalf: this.state.onBehalf,
+        obName: this.state.obName,
+        obEmail: this.state.obEmail,
+        obMobile: this.state.obMobile,
+        outsideOfficeHours: this.state.outsideOfficeHours
       })
+        .then(response => {
+          if(response.data.status === "fail"){
+            this.props.history.push('/fail');
+          } else {
+            this.props.history.push('/success/' + this.state.tripID);
+          }
+        })
+        .catch(function (error) {
+          console.log(error);
+        })
+    }
   }
 
   handleAddRemove(event, text, index) {
@@ -558,7 +615,7 @@ export default class RequestTrip extends React.Component {
 
   render() {
     const fieldNames = ['Trip Type', 'Trip Date', 'Trip Time', 'Trip Purpose', 'Budgeting Entitiy', 'Further Remarks', 'Trip Duration', 'Trip Duration', 'Name ', 'Email ','Mobile ',''];
-
+    console.log(this.props.tripsForFAOR);
     return (
       <Form horizontal onSubmit={this.handleSubmit}>
         <Row>
@@ -628,11 +685,12 @@ export default class RequestTrip extends React.Component {
               <Col smOffset={5}><Checkbox inline checked={this.state.onBehalf} title="onbehalf" onClick={this.handleClick}>Requesting on behalf of another traveller</Checkbox></Col>
             </FormGroup>
           </Col>
-          <Col sm={4}>
+          <Col sm={2}>
             <FormGroup controlId="cabSelect">
-              <Col sm={7} ><Checkbox inline checked={this.state.cabRequested} title="cab" onClick={this.handleClick}>Assign cab </Checkbox></Col>
+              <Col sm={8} ><Checkbox inline checked={this.state.cabRequested} title="cab" onClick={this.handleClick}>Assign cab </Checkbox></Col>
             </FormGroup>
           </Col>
+          <TripForFAOR tripsForFAOR={this.props.tripsForFAOR} faor={this.state.faor} onClick={this.handleClick} />
         </Row>
 
         <div hidden={!this.state.onBehalf}>

@@ -195,6 +195,48 @@ module.exports.newTrip = function (req, res, next) {
   })
 }
 
+// Insert details on new trip for FAOR
+// req:: username, tripID, tripType, tripDate, tripTime, tripDuration, tripDurationMin, tripPurpose, faor
+module.exports.newFAORTrip = function (req, res, next) {
+  const curDate = new Date();
+  user.newGetUser(req.body.username, requesterDetails => {
+    // record the new trip
+    trip.newTrip(req.body.tripID, requesterDetails[0].Username, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.tripDuration, req.body.tripDurationMin, req.body.tripPurpose, req.body.faor, (response) => {
+      // find the resident driver for the month
+      driver.getCurrentResidentDriver(curDate.getFullYear(), curDate.getMonth() + 1, faorDriver => {
+        if (faorDriver.status === "success" & faorDriver.result != null) {
+          // if resident driver is assigned then find the affected trips
+          trip.getAffectedTrips(faorDriver, req.body.tripType, req.body.tripDate, req.body.tripTime, req.body.tripDuration, req.body.tripDurationMin, (affectedTripIDs) => {
+            if (affectedTripIDs.status === "success") {
+              // remove driver from affected trips
+              let reassignedList = [];
+              affectedTripIDs.result.forEach((tripID) => {
+                trip.assignDriver(tripID, "0", "1", (result) =>{
+                  reassignedList.push(result);
+                });
+              });
+              res.send({
+                status: "success",
+                affectedTrips: reassignedList
+              });
+            } else {
+              res.send({
+                status: "error"
+              });
+            }
+          });
+        } else {
+          // if resident driver is not assigned then return without assigning a driver
+          res.send({
+            status: "not assigned",
+            response:response
+          });
+        }
+      });
+    });
+  });
+}
+
 //Get all trips
 module.exports.allTrips = function (req, res, next) {
   trip.allTrips(res);
@@ -781,5 +823,21 @@ module.exports.updateTrip = function (req, res) {
 module.exports.driverAvailabilityAll = function (req, res) {
   trip.checkDriverAvailabilityAllTypes(req.query.driverID, req.query.tripDate, req.query.tripTime, req.query.tripType, req.query.duration, req.query.durationMinutes, result => {
     return res.send(result)
+  });
+}
+
+module.exports.generateReportData = function (req, res) {
+  const drivers = req.query.drivers.slice(1, -1);
+  const tripTypes = req.query.tripTypes.slice(1, -1);
+  const tripStatuses = req.query.tripStatuses.slice(1, -1);
+  const startDate = req.query.startDate;
+  const endDate = req.query.endDate;
+
+  let driverList = "( " + drivers + " )";
+  let tripTypeList = "( " + tripTypes + " )";
+  let tripStatusList = "( " + tripStatuses + " )";
+
+  trip.generateReportData(driverList, tripTypeList, tripStatusList, startDate, endDate, (reportData) => {
+    res.send(reportData);
   });
 }

@@ -3,6 +3,7 @@ var express = require('express'),
     tripController = require('../controller/trip-controller');
 
 router.post('/new', tripController.newTrip);
+router.post('/newfaor', tripController.newFAORTrip);
 router.get('/all', tripController.allTrips);
 router.get('/lastindex', tripController.getLastIndex);
 router.get('/all/:id', tripController.userTrips);
@@ -22,5 +23,6 @@ router.post('/testing', tripController.testMobile);
 router.get('/consReq/:tripID', tripController.consolidatedRequest);
 router.get('/filterTrip', tripController.filterTrips);
 router.post('/updateTrip', tripController.updateTrip);
+router.get('/generateReportData', tripController.generateReportData);
 
 module.exports = router;

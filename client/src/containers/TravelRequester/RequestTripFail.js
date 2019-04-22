@@ -9,10 +9,10 @@ export default class RequestTripFail extends React.Component {
         axios.get('/loggedin')
             .then(res => {
                 if (res.data == "") {
-                    authenticate.userHasAuthenticated(false, null, null);
+                    authenticate.userHasAuthenticated(false, null, null, null, null);
                     authenticate.history.push('/login')
                 } else {
-                    authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role);
+                    authenticate.userHasAuthenticated(true, res.data.Username, res.data.Role, res.data.PlaceTripForFAOR, res.data.GenerateReport);
                 }
             })
     }
