@@ -176,7 +176,7 @@ export default class RequestTrip extends React.Component {
       obMobileValid: false,
       destDisabled: false,
       remarksAdded: false,
-      formErrors: ['', '', '', '', '', '', '', '', '', '', '', ''],
+      formErrors: ['', '', '', '', '', '', '', '', '', '', '', '', ''],
       outsideOfficeHours: false,
       formValid: false
     }
