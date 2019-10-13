@@ -376,6 +376,20 @@ export default class RequestTrip extends React.Component {
       }
     }
 
+    if (id === "tripDuration") {
+      if (parseInt(value) > 0 ) {
+        formErrors[13] = 'Trips with a duration of an hour or more will first be sent to the Administrator.';
+        this.setState({
+          formErrors: formErrors
+        });
+      } else {
+        formErrors[13] = '';
+        this.setState({
+          formErrors: formErrors
+        });
+      }
+    }
+
     this.setState(
       { [id]: value },
       () => { this.validateField(id, value) }
@@ -614,7 +628,7 @@ export default class RequestTrip extends React.Component {
   }
 
   render() {
-    const fieldNames = ['Trip Type', 'Trip Date', 'Trip Time', 'Trip Purpose', 'Budgeting Entitiy', 'Further Remarks', 'Trip Duration', 'Trip Duration', 'Name ', 'Email ','Mobile ',''];
+    const fieldNames = ['Trip Type', 'Trip Date', 'Trip Time', 'Trip Purpose', 'Budgeting Entitiy', 'Further Remarks', 'Trip Duration', 'Trip Duration', 'Name ', 'Email ','Mobile ','', ''];
     console.log(this.props.tripsForFAOR);
     return (
       <Form horizontal onSubmit={this.handleSubmit}>
