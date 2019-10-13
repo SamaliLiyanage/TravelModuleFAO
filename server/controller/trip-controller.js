@@ -110,7 +110,7 @@ module.exports.newTrip = function (req, res, next) {
           //console.log(response);
         })
       }
-      if ((!(req.body.furtherRmrks === "")) || req.body.outsideOfficeHours) {
+      if ((!(req.body.furtherRmrks === "")) || req.body.outsideOfficeHours || parseInt(req.body.tripDuration, 10) > 0) {
         let furtherRmrk = req.body.furtherRmrks;
         if (req.body.outsideOfficeHours) {
           furtherRmrk = furtherRmrk + ' || Trip OUTSIDE office hours.';
@@ -151,7 +151,7 @@ module.exports.newTrip = function (req, res, next) {
         });
       }
       let month = new Date(req.body.tripDate)
-      if ((req.body.furtherRmrks === "") && (req.body.cabRequested === false) && !req.body.outsideOfficeHours) {
+      if ((req.body.furtherRmrks === "") && (req.body.cabRequested === false) && !req.body.outsideOfficeHours && parseInt(req.body.tripDuration, 10) <= 0) {
         user.getUsersRole(3, driversDetails => {
           let driverList = driversDetails.result.map((driverDetail) => {
             return driverDetail.Username;
