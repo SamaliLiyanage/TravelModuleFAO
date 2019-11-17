@@ -5,6 +5,14 @@ import axios from 'axios';
 import { UserTypes } from '../../Selections';
 import { Table } from 'react-bootstrap';
 
+function UserButton(props) {
+  if (props.enabled == true) {
+    return (<button onClick={props.onClick}>Edit/Delete</button>);
+  } else {
+    return ("User disabled");
+  }
+}
+
 function UserRows(props) {
   const tableContent = props.tableContent;
   return (
@@ -12,7 +20,7 @@ function UserRows(props) {
       <td>{tableContent.Full_Name}</td>
       <td>{tableContent.Username}</td>
       <td><UserTypes role={tableContent.Role} /></td>
-      <td><button onClick={props.onClick}>Edit/Delete</button></td>
+      <td> <UserButton enabled={tableContent.Enabled} onClick={props.onClick} /></td>
     </tr>
   );
 }
