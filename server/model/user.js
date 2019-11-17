@@ -26,7 +26,7 @@ exports.findUser = function(userName, passWord, res) {
 }
 
 exports.getUsers = function(res) {
-  db.connection.query('SELECT * FROM User WHERE Enabled=true', function(err, results, fields) {
+  db.connection.query('SELECT * FROM User', function(err, results, fields) {
     if(err) {
       console.log(err);
       return res.send(err);
