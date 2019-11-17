@@ -4,7 +4,7 @@ var connection = db.connection;
 exports.addUser = function(userName, fullName, passWord, telePhone, role, tripsForFAOR, generateReport, res) {
   var values = [userName, fullName, passWord, telePhone, role, tripsForFAOR, generateReport];
   //console.log(values);
-  db.connection.query('INSERT INTO User (Username, Full_Name, Password, Mobile_No, Role, PlaceTripForFAOR, GenerateReport) VALUES (?, ?, ?, ?, ?, ?, ?)', values, function(err, results) {
+  db.connection.query('INSERT INTO User (Username, Full_Name, Password, Mobile_No, Role, PlaceTripForFAOR, GenerateReport, Enabled) VALUES (?, ?, ?, ?, ?, ?, ?, true)', values, function(err, results) {
     if(err) {
       console.log(err);
       return res.send(err);
@@ -15,7 +15,7 @@ exports.addUser = function(userName, fullName, passWord, telePhone, role, tripsF
 
 exports.findUser = function(userName, passWord, res) {
   var values = [userName, passWord];
-  db.connection.query('SELECT * FROM User WHERE Username= ? AND Password=?', values, function(err, results) {
+  db.connection.query('SELECT * FROM User WHERE Username= ? AND Password=? AND Enabled=true', values, function(err, results) {
     if(err) {
       console.log(err);
       return res.send(err);
@@ -26,7 +26,7 @@ exports.findUser = function(userName, passWord, res) {
 }
 
 exports.getUsers = function(res) {
-  db.connection.query('SELECT * FROM User', function(err, results, fields) {
+  db.connection.query('SELECT * FROM User WHERE Enabled=true', function(err, results, fields) {
     if(err) {
       console.log(err);
       return res.send(err);
@@ -39,7 +39,7 @@ exports.getUsers = function(res) {
 exports.getUsersRole = function(fieldValue, next) {
   value = [fieldValue];
 
-  db.connection.query('SELECT Username, Full_Name, Mobile_No, Role FROM User WHERE Role=?', value, function(err, results) {
+  db.connection.query('SELECT Username, Full_Name, Mobile_No, Role FROM User WHERE Role=? AND Enabled=true', value, function(err, results) {
     var temp;
 
     if(err) {
@@ -61,7 +61,7 @@ exports.getUser = function(userName, next) {
   const value = [userName];
   var temp;
 
-  db.connection.query('SELECT * FROM User WHERE Username=?', value, function(err, results) {
+  db.connection.query('SELECT * FROM User WHERE Username=? AND Enabled=true', value, function(err, results) {
     if(err) {
       console.log(err);
       temp = {
@@ -82,7 +82,7 @@ exports.getUser = function(userName, next) {
 exports.newGetUser = function(userName, next) {
   const value = [userName];
 
-  db.connection.query('SELECT * FROM User WHERE Username=?', value, function(err, results) {
+  db.connection.query('SELECT * FROM User WHERE Username=? AND Enabled=true', value, function(err, results) {
     if(err) {
       console.log(err);
       return res.send(err);
@@ -108,7 +108,7 @@ exports.updateUser = function(oldUserName, userName, realName, passWord, telePho
 exports.deleteUser = function(userName, res) {
   const value = [userName];
 
-  db.connection.query('DELETE FROM User WHERE Username=?', value, function (err, results) {
+  db.connection.query('UPDATE User SET Enabled=false WHERE Username=?', value, function (err, results) {
     if(err) {
       console.log(err);
       return res.send(err);
@@ -119,7 +119,7 @@ exports.deleteUser = function(userName, res) {
 }
 
 exports.isLoggedIn = function(res) {
-  db.connection.query('SELECT * FROM User', function(err, results, fields) {
+  db.connection.query('SELECT * FROM User WHERE Enabled=true', function(err, results, fields) {
     if(err) {
       console.log(err);
       return res.send(err);
