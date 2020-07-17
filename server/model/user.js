@@ -191,3 +191,21 @@ exports.changePassword = function(userName, passWord, next) {
     next(temp);
   })
 }
+
+exports.enableUser = function(userName, next){
+  db.connection.query('UPDATE User SET Enabled=true WHERE Username=?', [userName], (err, result) => {
+    var temp;
+    if (err) {
+      temp = {
+        status: 'fail',
+        result: err
+      }
+    } else {
+      temp = {
+        status: 'success',
+        result: result[0]
+      }
+    }
+    next(temp);
+  })
+}
