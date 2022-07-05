@@ -66,3 +66,14 @@ module.exports.changePassword = function (req, res, next) {
     }
   })
 }
+
+module.exports.enableUser = function (req, res, next) {
+  user.enableUser(req.body.userName, response => {
+    if(response.status == 'success') {
+      res.send(response);
+    } else {
+      console.log("Enabling user failed");
+      res.send(response);
+    }
+  })
+}

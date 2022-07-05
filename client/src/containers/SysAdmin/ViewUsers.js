@@ -3,13 +3,13 @@ import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/css/bootstrap-theme.css';
 import axios from 'axios';
 import { UserTypes } from '../../Selections';
-import { Table } from 'react-bootstrap';
+import { Table, Button } from 'react-bootstrap';
 
 function UserButton(props) {
   if (props.enabled == true) {
-    return (<button onClick={props.onClick}>Edit/Delete</button>);
+    return (<Button onClick={props.onClick}>Edit/Delete</Button>);
   } else {
-    return ("User disabled");
+    return (<Button bsStyle="danger" onClick={props.onClickEnable}>Enable User</Button>);
   }
 }
 
@@ -20,7 +20,7 @@ function UserRows(props) {
       <td>{tableContent.Full_Name}</td>
       <td>{tableContent.Username}</td>
       <td><UserTypes role={tableContent.Role} /></td>
-      <td> <UserButton enabled={tableContent.Enabled} onClick={props.onClick} /></td>
+      <td> <UserButton enabled={tableContent.Enabled} onClick={props.onClick} onClickEnable={props.onClickEnable} /></td>
     </tr>
   );
 }
@@ -34,6 +34,8 @@ export default class ViewUsers extends React.Component {
       tableContent: [],
       clicked: false,
     };
+
+    this.handleEnable = this.handleEnable.bind(this);
   }
 
   componentDidMount() {
@@ -66,9 +68,23 @@ export default class ViewUsers extends React.Component {
     this.props.history.push('/edituser/' + username);
   }
 
+  handleEnable(username) {
+    const auth = this.props;
+    axios.post('/users/enableUser', {
+      userName: username,
+    })
+    .then(function (response) {
+      console.log(response)
+      auth.history.push('/edituser/' + username);
+    })
+    .catch(function (error) {
+      console.log("Error start ", error, "Error end");
+    }) 
+  }
+
   renderRows(tableContents) {
     const content = tableContents.map((item, index) => {
-      return (<UserRows tableContent={item} key={index} name={index} onClick={() => this.handleClick(item.Username)} />);
+      return (<UserRows tableContent={item} key={index} name={index} onClick={() => this.handleClick(item.Username)} onClickEnable={() => this.handleEnable(item.Username)} />);
     });
     return content;
   }
