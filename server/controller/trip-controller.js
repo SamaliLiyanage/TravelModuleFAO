@@ -315,6 +315,10 @@ module.exports.assignDriver = function (req, res, next) {
   
               //Send message to driver
               user.newGetUser(detail.data.Username, (requester) => {
+                tripDate = new Date(detail.data.Trip_Date);
+                driverSMS = "You have been assigned to " + requester[0].Full_Name + "\'s trip with Trip ID " + req.body.tripID
+                + ". The trip will start on " + tripDate.getFullYear() + "/" + tripDate.getMonth() + "/" + tripDate.getDate() 
+                + " at " + detail.data.Trip_Time + ".";
                 emailHelper.sendMessage(
                   driverDetail.result[0].Username,
                   'Trip Request ' + req.body.tripID,
@@ -323,7 +327,7 @@ module.exports.assignDriver = function (req, res, next) {
                 );
                 mobileHelper.sendMessage(
                   "94" + driverDetail.result[0].Mobile_No,
-                  "You have been assigned to " + requester[0].Full_Name + "\'s trip with Trip ID " + req.body.tripID,
+                  driverSMS,
                   result => { console.log(result);}
                 );
               });
