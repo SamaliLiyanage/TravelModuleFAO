@@ -477,7 +477,7 @@ module.exports.fetchStatus = function (req, res) {
                     });
                   })
                 } else {
-                  mobileHelper.sendMessage(req.body.source, 'Error in format of text message', result => {
+                  mobileHelper.sendMessage(req.body.source, 'Trip start has already been recorded', result => {
                     res.send(result);
                   });
                 }
@@ -495,7 +495,7 @@ module.exports.fetchStatus = function (req, res) {
                   });
                 }
               } else {
-                mobileHelper.sendMessage(req.body.source, 'Error in format of text message', result => {
+                mobileHelper.sendMessage(req.body.source, 'Trip status message should start with \'Start\' or \'End\'', result => {
                   res.send(result);
                 });
               }
