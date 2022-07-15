@@ -588,7 +588,7 @@ function process(ordered_driver_index, index, tripTime, tripType, tripDuration, 
                         '</li><li>Destination: ' + destinationList +
                         '</li></ul>';
 
-                        driverSMSMsssage = "You have been assigned to " + userDetails[0].Full_Name +
+                        driverSMSMessage = "You have been assigned to " + userDetails[0].Full_Name +
                         "\'s trip with Trip ID " + tripID +
                         ". The trip will start on " + tripDate +
                         " at " + tripTime +
@@ -602,7 +602,7 @@ function process(ordered_driver_index, index, tripTime, tripType, tripDuration, 
                         );
                         mobileHelper.sendMessage(
                           "94" + tripDriverDetail[0].Mobile_No,
-                          "You have been assigned to " + userDetails[0].Full_Name + "\'s trip with Trip ID: " + tripID,
+                          driverSMSMessage,
                           result => {console.log(result)}
                         );
                       });
