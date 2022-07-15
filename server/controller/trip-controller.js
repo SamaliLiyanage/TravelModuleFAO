@@ -588,6 +588,12 @@ function process(ordered_driver_index, index, tripTime, tripType, tripDuration, 
                         '</li><li>Destination: ' + destinationList +
                         '</li></ul>';
 
+                        driverSMSMsssage = "You have been assigned to " + userDetails[0].Full_Name +
+                        "\'s trip with Trip ID " + tripID +
+                        ". The trip will start on " + tripDate +
+                        " at " + tripTime +
+                        "to" + destinationList + ".";
+
                         emailHelper.sendMessage(
                           tripDriverDetail[0].Username,
                           'Trip Request ' + tripID,
